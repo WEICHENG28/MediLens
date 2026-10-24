@@ -1,0 +1,51 @@
+{
+  "synthetic": true,
+  "notice": "合成测试样本，非真实报告",
+  "description": "非尿检报告；预期提示「当前不支持」",
+  "test_date": "2026-10-01",
+  "rotation_applied": 0,
+  "items": [
+    {
+      "label": "谷丙转氨酶(ALT)",
+      "value": "35",
+      "unit": "U/L",
+      "reference": "9-50",
+      "flag": null,
+      "value_box": {
+        "page": 1,
+        "x": 0.4194,
+        "y": 0.2332,
+        "w": 0.029,
+        "h": 0.0131
+      }
+    },
+    {
+      "label": "谷草转氨酶(AST)",
+      "value": "28",
+      "unit": "U/L",
+      "reference": "15-40",
+      "flag": null,
+      "value_box": {
+        "page": 1,
+        "x": 0.4194,
+        "y": 0.2685,
+        "w": 0.029,
+        "h": 0.0131
+      }
+    },
+    {
+      "label": "总胆红素(TBIL)",
+      "value": "12.3",
+      "unit": "μmol/L",
+      "reference": "0-21",
+      "flag": null,
+      "value_box": {
+        "page": 1,
+        "x": 0.4194,
+        "y": 0.3039,
+        "w": 0.0492,
+        "h": 0.0131
+      }
+    }
+  ]
+}

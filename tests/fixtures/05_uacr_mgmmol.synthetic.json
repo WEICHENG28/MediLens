@@ -1,0 +1,51 @@
+{
+  "synthetic": true,
+  "notice": "合成测试样本，非真实报告",
+  "description": "UACR 以 mg/mmol 报告，换算约 46 mg/g；尿微量白蛋白、尿肌酐为非首期项目",
+  "test_date": "2026-10-01",
+  "rotation_applied": 0,
+  "items": [
+    {
+      "label": "尿微量白蛋白",
+      "value": "42.0",
+      "unit": "mg/L",
+      "reference": null,
+      "flag": null,
+      "value_box": {
+        "page": 1,
+        "x": 0.4194,
+        "y": 0.2332,
+        "w": 0.0492,
+        "h": 0.0131
+      }
+    },
+    {
+      "label": "尿肌酐",
+      "value": "8.1",
+      "unit": "mmol/L",
+      "reference": null,
+      "flag": null,
+      "value_box": {
+        "page": 1,
+        "x": 0.4194,
+        "y": 0.2685,
+        "w": 0.0347,
+        "h": 0.0131
+      }
+    },
+    {
+      "label": "尿微量白蛋白/肌酐",
+      "value": "5.2",
+      "unit": "mg/mmol",
+      "reference": "<3.4",
+      "flag": "↑",
+      "value_box": {
+        "page": 1,
+        "x": 0.4194,
+        "y": 0.3039,
+        "w": 0.0347,
+        "h": 0.0131
+      }
+    }
+  ]
+}

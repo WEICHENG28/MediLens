@@ -36,3 +36,6 @@ local.properties
 # 系统
 .DS_Store
 Thumbs.db
+
+# JVM 内存溢出转储（Gradle OOM 时生成，体积巨大）
+*.hprof

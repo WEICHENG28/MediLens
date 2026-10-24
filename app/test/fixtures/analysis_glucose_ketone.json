@@ -1,0 +1,197 @@
+{
+ "disclaimer": "本结果仅帮助理解报告，不能替代医生诊断。当前使用测试规则，未经医学审核，请勿据此用药或调整治疗。",
+ "is_test_rules": true,
+ "badge": "测试规则，未经医学审核",
+ "versions": {
+  "dictionary": "dict-0.1.0-test",
+  "questions": "questions-0.1.0-test",
+  "rules": "rules-0.1.0-test"
+ },
+ "report_type": "urinalysis",
+ "supported": true,
+ "unsupported_message": null,
+ "items": [
+  {
+   "code": "GLU",
+   "name": "尿葡萄糖",
+   "original_label": "葡萄糖(GLU)",
+   "raw_value": "3+",
+   "unit": null,
+   "reference_text": "阴性",
+   "review_status": "auto_accepted",
+   "usable": true,
+   "grade": 3.0,
+   "positivity": "positive",
+   "numeric_value": null,
+   "normalized_value": null,
+   "normalized_unit": null,
+   "conversion_note": null,
+   "status": "abnormal",
+   "status_reason": "按报告参考范围「阴性」比对",
+   "conflicts": [],
+   "image_box": null
+  },
+  {
+   "code": "KET",
+   "name": "尿酮体",
+   "original_label": "酮体(KET)",
+   "raw_value": "2+",
+   "unit": null,
+   "reference_text": "阴性",
+   "review_status": "auto_accepted",
+   "usable": true,
+   "grade": 2.0,
+   "positivity": "positive",
+   "numeric_value": null,
+   "normalized_value": null,
+   "normalized_unit": null,
+   "conversion_note": null,
+   "status": "abnormal",
+   "status_reason": "按报告参考范围「阴性」比对",
+   "conflicts": [],
+   "image_box": null
+  },
+  {
+   "code": "PRO",
+   "name": "尿蛋白",
+   "original_label": "蛋白质(PRO)",
+   "raw_value": "阴性",
+   "unit": null,
+   "reference_text": "阴性",
+   "review_status": "unknown",
+   "usable": false,
+   "grade": null,
+   "positivity": "unknown",
+   "numeric_value": null,
+   "normalized_value": null,
+   "normalized_unit": null,
+   "conversion_note": null,
+   "status": "unknown",
+   "status_reason": "用户标记为无法确认，不参与判读",
+   "conflicts": [],
+   "image_box": null
+  }
+ ],
+ "counts": {
+  "total": 3,
+  "recognized": 2,
+  "abnormal": 2,
+  "unknown": 1
+ },
+ "urgent_alert": {
+  "show": true,
+  "message": "如出现恶心、呕吐、腹痛、呼吸深快、明显乏力或意识模糊，请立即就医或拨打 120。",
+  "reasons": [
+   "尿糖与尿酮体同时阳性"
+  ]
+ },
+ "overall": {
+  "level": "red",
+  "label": "建议尽快就医",
+  "explanation": "根据已确认的指标和测试规则得出；部分信息缺失，结论可能不完整"
+ },
+ "hits": [
+  {
+   "rule_id": "R-01",
+   "title": "尿糖与尿酮体同时阳性",
+   "level": "red",
+   "priority": 100,
+   "summary": "尿糖和尿酮体同时阳性，需要警惕酮症风险。",
+   "detail": "当尿糖与尿酮体同时阳性时，可能提示身体在大量分解脂肪供能，需要医生结合血糖、血酮等检查评估。 如果同时出现恶心、呕吐、腹痛、呼吸深快、明显乏力或意识模糊，请立即就医或拨打 120。 饥饿、低碳水饮食、呕吐也可能使尿酮体阳性。",
+   "doctor_questions": [
+    "我的尿糖和尿酮体同时阳性，需要尽快查血糖或血酮吗？",
+    "出现哪些症状时我必须马上来医院？"
+   ],
+   "evidence_ids": [
+    "kb-test-ket-001",
+    "kb-test-glu-001"
+   ],
+   "related_items": [
+    "GLU",
+    "KET"
+   ],
+   "review_status": "未审核-测试规则",
+   "is_test_rule": true,
+   "urgent": true
+  }
+ ],
+ "not_evaluable": [
+  {
+   "rule_id": "R-02",
+   "title": "尿糖阳性且正在使用 SGLT2 抑制剂",
+   "missing": [
+    "问题「q_sglt2」未回答或不确定"
+   ],
+   "note": "因信息缺失无法判断，不代表正常"
+  },
+  {
+   "rule_id": "R-03",
+   "title": "UACR 升高且可能存在尿路感染干扰",
+   "missing": [
+    "亚硝酸盐（未识别到）",
+    "尿白蛋白/肌酐比（未识别到）",
+    "白细胞（酯酶）（未识别到）"
+   ],
+   "note": "因信息缺失无法判断，不代表正常"
+  },
+  {
+   "rule_id": "R-04",
+   "title": "UACR 首次升高（30–300 mg/g）",
+   "missing": [
+    "不清楚以前是否查过尿白蛋白/肌酐比升高（本机无历史记录）",
+    "尿白蛋白/肌酐比（未识别到）"
+   ],
+   "note": "因信息缺失无法判断，不代表正常"
+  },
+  {
+   "rule_id": "R-06",
+   "title": "尿蛋白阴性但近一年没有 UACR 记录",
+   "missing": [
+    "尿蛋白（未确认或无法使用）"
+   ],
+   "note": "因信息缺失无法判断，不代表正常"
+  }
+ ],
+ "uncovered_abnormal": [],
+ "missing_key_items": [
+  "尿蛋白",
+  "白细胞（酯酶）",
+  "亚硝酸盐"
+ ],
+ "doctor_questions": [
+  "我的尿糖和尿酮体同时阳性，需要尽快查血糖或血酮吗？",
+  "出现哪些症状时我必须马上来医院？"
+ ],
+ "next_question": {
+  "question_id": "q_sglt2",
+  "plain_language_prompt": "您是否正在使用一类名字常以「格列净」结尾的降糖药（如达格列净、恩格列净）？",
+  "answer_type": "single",
+  "options": [
+   {
+    "id": "yes_known",
+    "label": "是，我知道药名",
+    "exclusive": false
+   },
+   {
+    "id": "yes_unknown_name",
+    "label": "在用降糖药，但不清楚名字",
+    "exclusive": false
+   },
+   {
+    "id": "no",
+    "label": "没有使用",
+    "exclusive": false
+   }
+  ],
+  "allow_unknown": true,
+  "allow_decline": true,
+  "allow_skip": true,
+  "medical_rationale": "该类药物可能使尿糖阳性，影响对尿糖结果的理解。",
+  "trigger_rule": "R-02",
+  "medication_photo_hint": true,
+  "urgent_options": [],
+  "review_status": "未审核-测试题目",
+  "index": 1,
+  "total_triggered": 4
+ }
+}

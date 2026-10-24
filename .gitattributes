@@ -1,0 +1,4 @@
+# OCR 模型与字典按原样保存，禁止换行符转换（字典行号即字符索引）
+*.onnx binary
+app/assets/ocr/ppocrv5_dict.txt -text
+*.png binary
