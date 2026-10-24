@@ -95,6 +95,7 @@ python tools/check_network.py                                                  #
 | 问题 | 处理 |
 |---|---|
 | 「查看解读」提示无法连接 | 后端窗口被关闭 → 重新执行一键启动 |
+| 模拟器窗口跑到屏幕外/只显示一半 | 执行 `powershell -ExecutionPolicy Bypass -File scripts\fit_emulator_window.ps1`，窗口会移到屏幕右侧并缩放到合适大小（一键启动已自动执行） |
 | 模拟器黑屏/很卡 | 关闭其他程序；在模拟器窗口关闭后重新执行一键启动 |
 | 脚本提示「无法加载，因为在此系统上禁止运行脚本」 | 使用文中的 `powershell -ExecutionPolicy Bypass -File ...` 写法 |
 | APP 是测试版本/界面异常 | 跑过集成测试后需重新执行一键启动 |

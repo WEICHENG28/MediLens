@@ -33,13 +33,17 @@ Step "2/4 检查 Android 模拟器"
 $devices = (adb devices) -match "emulator-\d+\s+device"
 if (-not $devices) {
     Write-Host "启动模拟器 MediLens_API35（首次约 1 分钟）..."
-    Start-Process emulator -ArgumentList "-avd", "MediLens_API35", "-no-snapshot-save", "-no-boot-anim" | Out-Null
+    # 模拟器自带的文字控制台窗口最小化，避免挡住画面
+    Start-Process emulator -ArgumentList "-avd", "MediLens_API35", "-no-snapshot-save", "-no-boot-anim" -WindowStyle Minimized | Out-Null
     adb wait-for-device | Out-Null
 }
 for ($i = 0; $i -lt 90; $i++) {
     if ((adb shell getprop sys.boot_completed 2>$null) -match "1") { break }
     Start-Sleep 2
 }
+# 窗口大小按本机屏幕自动调整（手机分辨率比屏幕高，否则窗口会跑出屏幕上方）
+Start-Sleep 3
+& (Join-Path $PSScriptRoot "fit_emulator_window.ps1")
 Write-Host "模拟器已就绪" -ForegroundColor Green
 
 # 3. APK
