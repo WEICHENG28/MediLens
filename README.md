@@ -7,6 +7,7 @@
 - 需求基线：[docs/MediLens_MVP1_跨模型开发交接说明.md](docs/MediLens_MVP1_跨模型开发交接说明.md)
 - 设计记录（小组文档）：[docs/MVP2_设计记录.md](docs/MVP2_设计记录.md)
 - 开发进展（每轮迭代）：[docs/开发进展.md](docs/开发进展.md)
+- **测试与课堂演示指南**：[docs/MVP2_测试与演示指南.md](docs/MVP2_测试与演示指南.md)（一键启动：`powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1`）
 - 网络请求清单与大陆网络测试方案：[docs/网络请求清单与大陆网络测试.md](docs/网络请求清单与大陆网络测试.md)
 
 ## 目录结构
