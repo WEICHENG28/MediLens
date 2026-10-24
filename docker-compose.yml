@@ -1,0 +1,25 @@
+# 一条命令启动：docker compose up --build
+# ⚠️ 开发机未安装 Docker，本文件尚未经过实测；当前请使用 python scripts/run_backend.py
+# 基础镜像来自 Docker Hub，国内网络可能需配置镜像加速（如阿里云容器镜像服务），属于部署环境配置。
+services:
+  api:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://medilens:medilens@db:5432/medilens
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: medilens
+      POSTGRES_PASSWORD: medilens
+      POSTGRES_DB: medilens
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

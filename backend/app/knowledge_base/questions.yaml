@@ -1,0 +1,120 @@
+# 动态选择题（测试版）
+# ⚠️ 仅演示交互，非经审核的临床算法。触发条件与规则库使用相同的条件语法。
+# 题目按顺序检查：触发条件成立且尚未回答 → 下一题。题数由报告与回答决定，不固定。
+# 每题自动附加「不确定 / 不愿透露 / 跳过」中允许的选项；这些回答不会被当作否定。
+version: questions-0.1.0-test
+review_status: 未审核-测试题目
+
+questions:
+  - question_id: q_sglt2
+    trigger_rule: R-02
+    trigger:
+      {item: GLU, positivity: trace_or_positive}
+    plain_language_prompt: 您是否正在使用一类名字常以「格列净」结尾的降糖药（如达格列净、恩格列净）？
+    answer_type: single
+    options:
+      - {id: yes_known, label: 是，我知道药名}
+      - {id: yes_unknown_name, label: 在用降糖药，但不清楚名字}
+      - {id: "no", label: 没有使用}
+    allow_unknown: true
+    allow_decline: true
+    allow_skip: true
+    medical_rationale: 该类药物可能使尿糖阳性，影响对尿糖结果的理解。
+    medication_photo_hint: true   # 引导药盒拍照（药盒识别待实现）
+
+  - question_id: q_ketone_symptoms
+    trigger_rule: R-01
+    trigger:
+      {item: KET, positivity: trace_or_positive}
+    plain_language_prompt: 最近 24 小时内，您是否有以下不适？（可多选）
+    answer_type: multi
+    options:
+      - {id: nausea_vomit, label: 恶心或呕吐}
+      - {id: abdominal_pain, label: 腹痛}
+      - {id: deep_breath, label: 呼吸深快}
+      - {id: fatigue_confusion, label: 明显乏力或意识模糊}
+      - {id: none, label: 以上都没有, exclusive: true}
+    urgent_options: [nausea_vomit, abdominal_pain, deep_breath, fatigue_confusion]
+    allow_unknown: true
+    allow_decline: true
+    allow_skip: true
+    medical_rationale: 酮体阳性伴这些症状时需要立即就医（测试措辞，待审核）。
+
+  - question_id: q_ketone_diet
+    trigger:
+      {item: KET, positivity: trace_or_positive}
+    plain_language_prompt: 检查前几天，您是否有节食、低碳水饮食或长时间没进食？
+    answer_type: single
+    options:
+      - {id: "yes", label: 有}
+      - {id: "no", label: 没有}
+    allow_unknown: true
+    allow_decline: true
+    allow_skip: true
+    medical_rationale: 饥饿或低碳水饮食也可能使尿酮体阳性。
+
+  - question_id: q_uti_symptoms
+    trigger_rule: R-03
+    trigger:
+      any:
+        - {item: LEU, positivity: trace_or_positive}
+        - {item: NIT, positivity: trace_or_positive}
+    plain_language_prompt: 最近是否有尿频、尿急、尿痛或发热？
+    answer_type: single
+    options:
+      - {id: "yes", label: 有}
+      - {id: "no", label: 没有}
+    allow_unknown: true
+    allow_decline: true
+    allow_skip: true
+    medical_rationale: 尿路感染可能影响尿检结果，包括 UACR。
+
+  - question_id: q_uacr_before
+    trigger_rule: R-04
+    trigger:
+      {item: UACR, gte: 30}
+    skip_if_history: UACR   # 本机有 UACR 历史时由历史判断，不再询问
+    plain_language_prompt: 以前做过的尿白蛋白/肌酐比（UACR）检查，有没有被说过偏高？
+    answer_type: single
+    options:
+      - {id: first, label: 这是第一次偏高（以前正常）}
+      - {id: before_high, label: 以前也偏高过}
+      - {id: never_tested, label: 以前没做过这项检查}
+    allow_unknown: true
+    allow_decline: true
+    allow_skip: true
+    medical_rationale: 首次升高与持续升高的复诊关注点不同。
+
+  - question_id: q_pre_test_factors
+    trigger:
+      any:
+        - {item: UACR, gte: 30}
+        - {item: PRO, positivity: trace_or_positive}
+    plain_language_prompt: 留尿检查前 1–2 天，是否有以下情况？（可多选）
+    answer_type: multi
+    options:
+      - {id: exercise, label: 剧烈运动}
+      - {id: fever, label: 发热}
+      - {id: menstruation, label: 月经期}
+      - {id: none, label: 以上都没有, exclusive: true}
+    allow_unknown: true
+    allow_decline: true
+    allow_skip: true
+    medical_rationale: 运动、发热、月经等可能使尿蛋白或 UACR 暂时升高。
+
+  - question_id: q_doctor_order
+    trigger:
+      any:
+        - {item: GLU, positivity: trace_or_positive}
+        - {item: KET, positivity: trace_or_positive}
+        - {item: PRO, positivity: trace_or_positive}
+        - {item: UACR, gte: 30}
+    plain_language_prompt: 医生是否已经针对这份报告给过您建议或安排？
+    answer_type: single
+    options:
+      - {id: "yes", label: 有，医生已经交代过}
+      - {id: "no", label: 还没有看医生}
+    allow_unknown: true
+    allow_decline: true
+    allow_skip: true
+    medical_rationale: 医生医嘱优先；软件提示与医嘱冲突时应以医生意见为准。

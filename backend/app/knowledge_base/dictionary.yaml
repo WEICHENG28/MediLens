@@ -1,0 +1,79 @@
+# 尿检指标字典（测试版）
+# 状态：未经医学审核，仅用于开发与合成报告测试。
+# 同义词用于把不同医院的项目名映射到统一代码；比较时忽略大小写、空格和常见前缀（U-、尿）。
+version: dict-0.1.0-test
+review_status: unreviewed
+
+items:
+  GLU:
+    name: 尿葡萄糖
+    kind: qualitative
+    synonyms: [GLU, U-GLU, 葡萄糖, 尿糖, 尿葡萄糖, GLUCOSE]
+  KET:
+    name: 尿酮体
+    kind: qualitative
+    synonyms: [KET, U-KET, 酮体, 尿酮体, 尿酮, KETONE]
+  PRO:
+    name: 尿蛋白
+    kind: qualitative
+    synonyms: [PRO, U-PRO, 蛋白, 尿蛋白, 蛋白质, PROTEIN]
+  LEU:
+    name: 白细胞（酯酶）
+    kind: qualitative
+    synonyms: [LEU, U-LEU, WBC, 白细胞, 尿白细胞, 白细胞酯酶]
+  NIT:
+    name: 亚硝酸盐
+    kind: qualitative
+    synonyms: [NIT, U-NIT, 亚硝酸盐, 尿亚硝酸盐]
+  BLD:
+    name: 隐血
+    kind: qualitative
+    synonyms: [BLD, U-BLD, ERY, 隐血, 尿隐血, 潜血, 红细胞]
+  SG:
+    name: 比重
+    kind: quantitative
+    unit: null
+    plausible_range: [1.000, 1.050]
+    synonyms: [SG, U-SG, 比重, 尿比重]
+  PH:
+    name: 酸碱度
+    kind: quantitative
+    unit: null
+    plausible_range: [4.0, 9.5]
+    synonyms: [PH, U-PH, 酸碱度, 尿酸碱度]
+  UACR:
+    name: 尿白蛋白/肌酐比
+    kind: quantitative
+    unit: mg/g
+    plausible_range: [0, 10000]
+    synonyms: [UACR, ACR, MALB/CR, 尿白蛋白/肌酐, 尿白蛋白肌酐比, 尿白蛋白/肌酐比, 尿微量白蛋白/肌酐, 尿微量白蛋白肌酐比值, 白蛋白/肌酐比值]
+
+# 定性结果 → 有序等级（用于比较，不等于临床严重度）
+qualitative_grades:
+  "-": 0
+  "阴性": 0
+  "neg": 0
+  "negative": 0
+  "±": 0.5
+  "+-": 0.5
+  "弱阳性": 0.5
+  "trace": 0.5
+  "1+": 1
+  "+": 1
+  "2+": 2
+  "++": 2
+  "3+": 3
+  "+++": 3
+  "4+": 4
+  "++++": 4
+  "阳性": 1
+
+# UACR 单位换算到 mg/g。依据：白蛋白 mg ÷ 肌酐 mmol，肌酐摩尔质量约 113.12 g/mol，
+# 1 mg/mmol ≈ 8.84 mg/g。此换算系数需在医学审核时复核。
+unit_conversions:
+  UACR:
+    "mg/g": 1.0
+    "mg/gcr": 1.0
+    "μg/mg": 1.0
+    "ug/mg": 1.0
+    "mg/mmol": 8.84

@@ -1,0 +1,124 @@
+# 规则库（模拟规则）
+# ⚠️ 全部为「测试规则，未经医学审核」。来源：项目书表 4.2 的 R-01～R-06 候选规则示例。
+# 阈值、等级、措辞均不得用于真实患者。上线前需医学审核并签署版本。
+#
+# 条件语法（三值逻辑：成立 / 不成立 / 信息缺失无法判断）：
+#   all: [...] / any: [...]
+#   {item: GLU, positivity: positive|trace|negative|trace_or_positive}
+#   {item: UACR, gte: 30} / {item: UACR, lt: 300}           # 使用换算后数值（mg/g）
+#   {answer: q_sglt2, in: [yes_known, yes_unknown_name]}     # 未答/不确定/不愿透露 → 无法判断
+#   {grade_rise: PRO, from_max: 0.5, to_min: 2}              # 依赖历史报告
+#   {no_recent: UACR, days: 365}                             # 本次及本机历史近 N 天无该项
+#   {first_elevation: UACR, threshold: 30, answer: q_uacr_before}
+version: rules-0.1.0-test
+review_status: 未审核-测试规则
+
+rules:
+  - id: R-01
+    title: 尿糖与尿酮体同时阳性
+    level: red
+    priority: 100
+    urgent: true
+    when:
+      all:
+        - {item: GLU, positivity: positive}
+        - {item: KET, positivity: positive}
+    summary: 尿糖和尿酮体同时阳性，需要警惕酮症风险。
+    detail: >-
+      当尿糖与尿酮体同时阳性时，可能提示身体在大量分解脂肪供能，需要医生结合血糖、血酮等检查评估。
+      如果同时出现恶心、呕吐、腹痛、呼吸深快、明显乏力或意识模糊，请立即就医或拨打 120。
+      饥饿、低碳水饮食、呕吐也可能使尿酮体阳性。
+    doctor_questions:
+      - 我的尿糖和尿酮体同时阳性，需要尽快查血糖或血酮吗？
+      - 出现哪些症状时我必须马上来医院？
+    related_items: [GLU, KET]
+    evidence_ids: [kb-test-ket-001, kb-test-glu-001]
+
+  - id: R-02
+    title: 尿糖阳性且正在使用 SGLT2 抑制剂
+    level: green
+    priority: 30
+    when:
+      all:
+        - {item: GLU, positivity: trace_or_positive}
+        - {answer: q_sglt2, in: [yes_known, yes_unknown_name]}
+    summary: 您在使用的某类降糖药（SGLT2 抑制剂）可能让尿糖呈阳性，需要结合用药情况理解。
+    detail: >-
+      SGLT2 抑制剂（名称常以「格列净」结尾）通过让尿液排出更多葡萄糖来降糖，因此用药期间尿糖阳性较常见，
+      不能单凭尿糖判断血糖控制情况。请不要因此自行停药或调整剂量，复诊时可向医生确认。
+    doctor_questions:
+      - 我在吃的药会不会让尿糖阳性？还需要看哪些指标判断血糖控制？
+    related_items: [GLU]
+    evidence_ids: [kb-test-sglt2-001]
+
+  - id: R-03
+    title: UACR 升高且可能存在尿路感染干扰
+    level: yellow
+    priority: 60
+    when:
+      all:
+        - {item: UACR, gte: 30}
+        - any:
+            - {item: LEU, positivity: positive}
+            - {item: NIT, positivity: positive}
+    summary: UACR 升高，同时白细胞或亚硝酸盐阳性，感染可能影响 UACR 结果。
+    detail: >-
+      尿路感染等情况可能使尿白蛋白暂时升高，因此本次 UACR 结果可能受到干扰。
+      建议向医生说明是否有尿频、尿急、尿痛或发热，并询问合适的复查时间。
+    doctor_questions:
+      - 我的白细胞/亚硝酸盐阳性，会影响 UACR 结果吗？需要什么时候复查？
+    related_items: [UACR, LEU, NIT]
+    evidence_ids: [kb-test-uacr-001, kb-test-uti-001]
+
+  - id: R-04
+    title: UACR 首次升高（30–300 mg/g）
+    level: yellow
+    priority: 50
+    when:
+      all:
+        - {item: UACR, gte: 30}
+        - {item: UACR, lt: 300}
+        - {first_elevation: UACR, threshold: 30, answer: q_uacr_before}
+    summary: UACR 首次处于升高范围，单次结果不能作为确诊依据，需要结合重复检测和复诊评估。
+    detail: >-
+      UACR 会受到运动、发热、感染、月经等因素影响而波动，通常需要医生安排重复检测后再综合判断。
+      建议近期复诊时带上本次报告，询问是否需要复查以及复查时间。
+    doctor_questions:
+      - 这次 UACR 升高，需要多久后复查？复查前要注意什么？
+    related_items: [UACR]
+    evidence_ids: [kb-test-uacr-001]
+
+  - id: R-05
+    title: 尿蛋白等级上升
+    level: yellow
+    priority: 40
+    silent_if_missing: true
+    when:
+      grade_rise: PRO
+      from_max: 0.5
+      to_min: 2
+    summary: 与以往报告相比，尿蛋白等级从「±」或更低上升到「2+」或更高。
+    detail: >-
+      不同医院、不同检测方法的结果不能机械比较，本提示仅说明记录中出现了变化，
+      建议复诊时把历次报告一起给医生看，重点讨论这一变化。
+    doctor_questions:
+      - 我的尿蛋白比以前高了，需要做什么进一步检查？
+    related_items: [PRO]
+    evidence_ids: [kb-test-pro-001]
+
+  - id: R-06
+    title: 尿蛋白阴性但近一年没有 UACR 记录
+    level: green
+    priority: 10
+    when:
+      all:
+        - {item: PRO, positivity: negative}
+        - {no_recent: UACR, days: 365}
+    summary: 尿常规蛋白阴性不能替代 UACR 检查，本机记录中近一年没有 UACR 结果。
+    detail: >-
+      尿常规试纸对少量白蛋白不敏感，阴性结果不能排除早期肾脏损害。
+      糖尿病患者可询问医生是否需要做 UACR（尿白蛋白/肌酐比）检查。
+    doctor_questions:
+      - 我需要做尿白蛋白/肌酐比（UACR）检查吗？多久查一次？
+    related_items: [PRO, UACR]
+    evidence_ids: [kb-test-pro-001, kb-test-uacr-001]
