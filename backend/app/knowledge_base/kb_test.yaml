@@ -1,0 +1,90 @@
+# 占位测试知识库
+# ⚠️ 以下内容由开发团队为测试检索流程自行编写的通俗说明，**不是任何指南或教材原文**，
+# 未经医学审核，不得作为医学引用。老师提供正式资料后，按 source/version/段落/授权/审核状态 字段替换。
+version: kb-0.1.0-placeholder
+review_status: unreviewed
+
+entries:
+  - id: kb-test-glu-001
+    title: 尿葡萄糖（GLU）是什么
+    codes: [GLU]
+    keywords: [尿糖, 葡萄糖, GLU]
+    source: 开发团队自编占位说明（非指南原文）
+    source_version: "2026-10 占位"
+    authorization: 团队自编，可用于测试
+    review_status: unreviewed
+    text: >-
+      尿葡萄糖反映尿液中是否有葡萄糖。血糖较高超过肾脏的重吸收能力时，尿中可能出现葡萄糖。
+      尿糖不能单独用来诊断糖尿病或判断血糖控制，某些降糖药也会让尿糖呈阳性。
+
+  - id: kb-test-ket-001
+    title: 尿酮体（KET）是什么
+    codes: [KET]
+    keywords: [酮体, 尿酮, KET, 酮症]
+    source: 开发团队自编占位说明（非指南原文）
+    source_version: "2026-10 占位"
+    authorization: 团队自编，可用于测试
+    review_status: unreviewed
+    text: >-
+      尿酮体反映身体分解脂肪供能时产生的酮体。饥饿、低碳水饮食、呕吐时可能出现；
+      糖尿病患者尿糖和尿酮体同时阳性时需要医生评估，若伴有恶心、呕吐、腹痛、呼吸深快等应立即就医。
+
+  - id: kb-test-pro-001
+    title: 尿蛋白（PRO）是什么
+    codes: [PRO]
+    keywords: [尿蛋白, 蛋白, PRO]
+    source: 开发团队自编占位说明（非指南原文）
+    source_version: "2026-10 占位"
+    authorization: 团队自编，可用于测试
+    review_status: unreviewed
+    text: >-
+      尿常规中的尿蛋白是试纸半定量结果，用「阴性、±、1+、2+」等表示。
+      试纸对少量白蛋白不敏感，阴性不能排除早期肾脏变化；运动、发热等也可能让结果暂时升高。
+
+  - id: kb-test-uacr-001
+    title: 尿白蛋白/肌酐比（UACR）是什么
+    codes: [UACR]
+    keywords: [UACR, 白蛋白, 肌酐, 肾]
+    source: 开发团队自编占位说明（非指南原文）
+    source_version: "2026-10 占位"
+    authorization: 团队自编，可用于测试
+    review_status: unreviewed
+    text: >-
+      UACR 用尿白蛋白与尿肌酐的比值来估计尿中白蛋白的量，常用于糖尿病患者的肾脏随访。
+      结果会受运动、发热、感染、月经等影响而波动，通常需要医生结合重复检测判断。
+
+  - id: kb-test-uti-001
+    title: 白细胞与亚硝酸盐
+    codes: [LEU, NIT]
+    keywords: [白细胞, 亚硝酸盐, 感染, LEU, NIT, 尿路感染]
+    source: 开发团队自编占位说明（非指南原文）
+    source_version: "2026-10 占位"
+    authorization: 团队自编，可用于测试
+    review_status: unreviewed
+    text: >-
+      尿白细胞和亚硝酸盐阳性常与尿路感染相关，但也可能受留尿方式影响。
+      感染可能让尿蛋白、UACR 等结果暂时升高，解读这些指标时需要考虑。
+
+  - id: kb-test-sglt2-001
+    title: SGLT2 抑制剂与尿糖
+    codes: [GLU]
+    keywords: [格列净, SGLT2, 达格列净, 恩格列净, 降糖药, 用药]
+    source: 开发团队自编占位说明（非指南原文）
+    source_version: "2026-10 占位"
+    authorization: 团队自编，可用于测试
+    review_status: unreviewed
+    text: >-
+      SGLT2 抑制剂是一类通过增加尿糖排出来降血糖的药物，名称多以「格列净」结尾。
+      使用期间尿糖阳性较常见。是否继续用药、如何调整，必须由医生决定。
+
+  - id: kb-test-misc-001
+    title: 比重、酸碱度与隐血
+    codes: [SG, PH, BLD]
+    keywords: [比重, 酸碱度, pH, 隐血, 潜血, SG, BLD]
+    source: 开发团队自编占位说明（非指南原文）
+    source_version: "2026-10 占位"
+    authorization: 团队自编，可用于测试
+    review_status: unreviewed
+    text: >-
+      比重反映尿液的浓缩程度，喝水多少会影响它，尿液过浓或过稀可能影响其他半定量结果。
+      酸碱度（pH）受饮食影响。隐血阳性可能与多种情况有关，包括月经期留尿。
