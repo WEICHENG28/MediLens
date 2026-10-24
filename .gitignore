@@ -1,0 +1,38 @@
+# 本地开发工具链（Flutter/JDK/Android 工具，体积大，不入库）
+.toolchain/
+
+# 密钥与本地配置：只提交 .env.example
+.env
+.env.*
+!.env.example
+
+# 临时素材目录（OCR 模型整理后会移入 app/assets）
+client_assets_tmp/
+
+# 项目书原稿（公开仓库，可能含个人信息，仅本地保留）
+docs/*.docx
+
+# 真实报告图片一律不入库；合成样本只放 tests/fixtures 且文件名带 synthetic
+real_reports/
+*.real.jpg
+*.real.png
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.db
+
+# Flutter / Dart
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+local.properties
+
+# 系统
+.DS_Store
+Thumbs.db
