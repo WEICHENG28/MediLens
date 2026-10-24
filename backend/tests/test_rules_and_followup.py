@@ -124,3 +124,14 @@ def test_urgent_symptom_answer_escalates_to_red():
     r = analyze(req(items, answers={"q_ketone_symptoms": ["nausea_vomit"]}))
     assert r.urgent_alert.show and r.overall.level == Level.red
     assert any("恶心" in x for x in r.urgent_alert.reasons)
+
+
+def test_uacr_rules_not_listed_when_report_has_no_uacr():
+    r = analyze(req(normal_urinalysis(PRO=item("尿蛋白", "2+", ref="阴性"))))
+    ids = {n.rule_id for n in r.not_evaluable}
+    assert "R-03" not in ids and "R-04" not in ids
+
+
+def test_uacr_rules_listed_when_uacr_present_but_unconfirmed():
+    r = analyze(req([item("UACR", "86", unit="mg/g", ref="<30", status="unknown")]))
+    assert {"R-03", "R-04"} <= {n.rule_id for n in r.not_evaluable}

@@ -179,6 +179,8 @@ def run_rules(ctx: Context) -> RuleResult:
     not_eval: list[NotEvaluable] = []
     for rule in data["rules"]:
         ctx.missing = set()
+        if any(code not in ctx.items for code in rule.get("applies_if_present", [])):
+            continue  # 报告中没有该项目：规则不适用
         result = evaluate(rule["when"], ctx)
         if result is True:
             hits.append(

@@ -10,6 +10,8 @@
 #   {grade_rise: PRO, from_max: 0.5, to_min: 2}              # 依赖历史报告
 #   {no_recent: UACR, days: 365}                             # 本次及本机历史近 N 天无该项
 #   {first_elevation: UACR, threshold: 30, answer: q_uacr_before}
+# applies_if_present: [UACR]  报告中完全没有该项目时规则不适用（不列入「无法判断」）；
+#                             项目存在但无法确认时仍列入「无法判断」。
 version: rules-0.1.0-test
 review_status: 未审核-测试规则
 
@@ -55,6 +57,7 @@ rules:
     title: UACR 升高且可能存在尿路感染干扰
     level: yellow
     priority: 60
+    applies_if_present: [UACR]
     when:
       all:
         - {item: UACR, gte: 30}
@@ -74,6 +77,7 @@ rules:
     title: UACR 首次升高（30–300 mg/g）
     level: yellow
     priority: 50
+    applies_if_present: [UACR]
     when:
       all:
         - {item: UACR, gte: 30}
