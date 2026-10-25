@@ -92,7 +92,10 @@ class _Bubble extends StatelessWidget {
           color: user ? Theme.of(context).colorScheme.primaryContainer : (m.safetyCategory != null ? const Color(0xFFFFF8E1) : Colors.grey.shade100),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child: DefaultTextStyle.merge(
+          // 用户气泡底色随主题变化（老年模式为深色），文字使用配对颜色；其他气泡为固定浅底色，文字固定深色
+          style: TextStyle(color: user ? Theme.of(context).colorScheme.onPrimaryContainer : Colors.black87),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (m.safetyCategory != null)
             const Text('安全提示', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFE65100))),
           Text(m.content),
@@ -104,6 +107,7 @@ class _Bubble extends StatelessWidget {
             ]),
           ],
         ]),
+        ),
       ),
     );
   }

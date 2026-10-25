@@ -60,6 +60,9 @@ class OverviewPage extends ConsumerWidget {
           Card(
             color: Theme.of(context).colorScheme.primaryContainer,
             child: ListTile(
+              // 文字与图标使用与底色配对的颜色（老年模式高对比度下底色为深色）
+              textColor: Theme.of(context).colorScheme.onPrimaryContainer,
+              iconColor: Theme.of(context).colorScheme.onPrimaryContainer,
               key: const Key('start_followup'),
               leading: const Icon(Icons.quiz_outlined),
               title: const Text('回答几个简单问题，让解释更准确'),
@@ -98,7 +101,8 @@ class OverviewPage extends ConsumerWidget {
         Text(label),
       ]);
 
-  Widget _info(String text) => ListTile(dense: true, leading: const Icon(Icons.info_outline, color: Colors.blueGrey), title: Text(text));
+  // 说明文字使用正文字号（不用紧凑版面），老年模式下随主题放大
+  Widget _info(String text) => ListTile(leading: const Icon(Icons.info_outline, color: Colors.blueGrey), title: Text(text));
 }
 
 class _UrgentCard extends StatelessWidget {

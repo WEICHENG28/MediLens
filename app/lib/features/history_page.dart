@@ -3,9 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/settings.dart';
 import '../data/local_store.dart';
 import '../ocr/report_parser.dart';
 import '../widgets/common.dart';
+
+String _typeName(String t) => const {'urinalysis': '尿常规', 'uacr': 'UACR', 'urinalysis+uacr': '尿常规 + UACR'}[t] ?? t;
 
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
@@ -23,6 +26,7 @@ class HistoryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final h = ref.watch(historyProvider);
+    final elder = ref.watch(settingsProvider).elder;
     return Scaffold(
       appBar: AppBar(title: const Text('历史记录'), actions: [
         IconButton(
@@ -52,13 +56,13 @@ class HistoryPage extends ConsumerWidget {
               child: ExpansionTile(
                 leading: LevelChip(r.overallLevel),
                 title: Text('检验日期 ${r.testDate ?? '未知'}'),
-                subtitle: Text('${r.reportType} · 保存于 ${r.savedAt.toString().substring(0, 16)}'),
+                subtitle: Text('${_typeName(r.reportType)} · 保存于 ${r.savedAt.toString().substring(0, 16)}'),
                 children: [
                   for (final i in r.items)
                     ListTile(
-                      dense: true,
+                      dense: !elder, // 老年模式不使用紧凑版面，字号随主题放大
                       title: Text(kItemNames[i['code']] ?? i['original_label'] as String),
-                      trailing: Text('${i['raw_value'] ?? '—'} ${i['unit'] ?? ''}'),
+                      trailing: Text('${i['raw_value'] ?? '—'} ${i['unit'] ?? ''}', style: Theme.of(context).textTheme.bodyLarge),
                       subtitle: Text(i['review_status'] == 'unknown' ? '无法确认' : ''),
                     ),
                   TextButton.icon(

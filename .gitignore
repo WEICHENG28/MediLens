@@ -42,3 +42,6 @@ Thumbs.db
 
 # 评测集图片（可用 tools/eval/gen_eval_set.py 按固定种子重新生成）
 tests/eval/*/images/
+
+# 老年模式检查截图（integration_test/elder_audit_test.dart 生成，按需重新生成）
+docs/screenshots/audit/
