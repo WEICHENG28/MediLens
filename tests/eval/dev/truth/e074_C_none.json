@@ -1,0 +1,71 @@
+{
+ "synthetic": true,
+ "layout": "C",
+ "perturbation": "none",
+ "supported": true,
+ "items": [
+  {
+   "code": "GLU",
+   "label": "GLU",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "KET",
+   "label": "KET",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PRO",
+   "label": "蛋白质(PRO)",
+   "value": "2+",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "LEU",
+   "label": "白细胞酯酶",
+   "value": "阳性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "NIT",
+   "label": "亚硝酸盐(NIT)",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "BLD",
+   "label": "潜血",
+   "value": "3+",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "SG",
+   "label": "比重(SG)",
+   "value": "1.014",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PH",
+   "label": "PH",
+   "value": "5.7",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "UACR",
+   "label": "UACR",
+   "value": "85.5",
+   "unit": "mg/mmol",
+   "reference": null
+  }
+ ]
+}

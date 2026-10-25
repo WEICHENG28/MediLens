@@ -1,0 +1,15 @@
+{
+ "synthetic": true,
+ "layout": "C",
+ "perturbation": "none",
+ "supported": true,
+ "items": [
+  {
+   "code": "UACR",
+   "label": "UACR",
+   "value": "98.4",
+   "unit": "mg/mmol",
+   "reference": "<3.4"
+  }
+ ]
+}

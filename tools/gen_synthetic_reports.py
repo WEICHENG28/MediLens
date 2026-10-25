@@ -126,7 +126,7 @@ def draw_report(case: dict, seed: int) -> tuple[Image.Image, list[dict]]:
         # 在数字上叠加半透明污渍，使 1+/2+ 难以分辨
         smudge = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         sd = ImageDraw.Draw(smudge)
-        sd.ellipse((x0 - 6, y0 - 4, x0 + (x1 - x0) * 0.6, y1 + 6), fill=(90, 90, 90, 175))
+        sd.ellipse((x0 - 6, y0 - 4, x0 + (x1 - x0) * 0.75, y1 + 6), fill=(70, 70, 70, 215))
         img = Image.alpha_composite(img.convert("RGBA"), smudge).convert("RGB")
 
     # 水印

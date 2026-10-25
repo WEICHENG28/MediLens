@@ -1,0 +1,15 @@
+{
+ "synthetic": true,
+ "layout": "A",
+ "perturbation": "lowres",
+ "supported": true,
+ "items": [
+  {
+   "code": "UACR",
+   "label": "UACR",
+   "value": "614.3",
+   "unit": "mg/g",
+   "reference": "<30"
+  }
+ ]
+}

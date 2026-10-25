@@ -1,0 +1,71 @@
+{
+ "synthetic": true,
+ "layout": "B",
+ "perturbation": "skew",
+ "supported": true,
+ "items": [
+  {
+   "code": "GLU",
+   "label": "尿糖",
+   "value": "±",
+   "unit": null,
+   "reference": "-"
+  },
+  {
+   "code": "KET",
+   "label": "酮体(KET)",
+   "value": "±",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "PRO",
+   "label": "蛋白质(PRO)",
+   "value": "阴性",
+   "unit": null,
+   "reference": "-"
+  },
+  {
+   "code": "LEU",
+   "label": "白细胞酯酶",
+   "value": "阴性",
+   "unit": null,
+   "reference": "-"
+  },
+  {
+   "code": "NIT",
+   "label": "亚硝酸盐(NIT)",
+   "value": "阴性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "BLD",
+   "label": "隐血(BLD)",
+   "value": "±",
+   "unit": null,
+   "reference": "-"
+  },
+  {
+   "code": "SG",
+   "label": "尿比重",
+   "value": "1.009",
+   "unit": null,
+   "reference": "1.003-1.030"
+  },
+  {
+   "code": "PH",
+   "label": "PH",
+   "value": "7.2",
+   "unit": null,
+   "reference": "4.5-8.0"
+  },
+  {
+   "code": "UACR",
+   "label": "尿白蛋白/肌酐比",
+   "value": "270.3",
+   "unit": "mg/g",
+   "reference": "<30"
+  }
+ ]
+}

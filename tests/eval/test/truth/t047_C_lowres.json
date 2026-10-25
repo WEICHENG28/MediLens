@@ -1,0 +1,15 @@
+{
+ "synthetic": true,
+ "layout": "C",
+ "perturbation": "lowres",
+ "supported": true,
+ "items": [
+  {
+   "code": "UACR",
+   "label": "尿微量白蛋白/肌酐",
+   "value": "580.3",
+   "unit": "mg/g",
+   "reference": "<30"
+  }
+ ]
+}

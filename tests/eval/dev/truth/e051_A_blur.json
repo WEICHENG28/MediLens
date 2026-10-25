@@ -1,0 +1,64 @@
+{
+ "synthetic": true,
+ "layout": "A",
+ "perturbation": "blur",
+ "supported": true,
+ "items": [
+  {
+   "code": "GLU",
+   "label": "GLU",
+   "value": "阴性",
+   "unit": null,
+   "reference": "-"
+  },
+  {
+   "code": "KET",
+   "label": "酮体(KET)",
+   "value": "阴性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "PRO",
+   "label": "U-PRO",
+   "value": "阳性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "LEU",
+   "label": "白细胞酯酶",
+   "value": "阴性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "NIT",
+   "label": "NIT",
+   "value": "阳性",
+   "unit": null,
+   "reference": "-"
+  },
+  {
+   "code": "BLD",
+   "label": "BLD",
+   "value": "2+",
+   "unit": null,
+   "reference": "-"
+  },
+  {
+   "code": "SG",
+   "label": "比重(SG)",
+   "value": "1.030",
+   "unit": null,
+   "reference": "1.003-1.030"
+  },
+  {
+   "code": "PH",
+   "label": "pH",
+   "value": "7.8",
+   "unit": null,
+   "reference": "4.5-8.0"
+  }
+ ]
+}

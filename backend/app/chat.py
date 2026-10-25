@@ -109,21 +109,39 @@ def _status_text(item) -> str:
 
 # ---------- 对话 ----------
 
-_MED = re.compile(r"停药|不吃药|减药|减量|加量|加药|换药|换个药|剂量")
-# 药名/药物类别词表（占位，后续由药盒识别与医学审核扩充）
-_DRUG = re.compile(r"药|格列净|格列|二甲双胍|胰岛素|列汀|鲁肽|阿卡波糖|SGLT2", re.I)
-_DRUG_ACTION = re.compile(r"停|不吃|别吃|还吃|要不要吃|继续吃|换|减|加|少吃|多吃|少打|多打")
-_DIAG = re.compile(r"(是不是|是否|会不会|有没有|算不算|能确诊|确诊).*(肾衰|尿毒症|肾病|肾功能衰竭|糖尿病|癌|肾损|病)|确诊")
-_EMERG = re.compile(r"(呼吸困难|喘不过气|呼吸很快|昏迷|意识模糊|叫不醒|一直吐|呕吐|剧烈腹痛|肚子很痛|胸痛|抽搐)")
+# 意图识别（第二版）：按「对象词 × 意图词」组合判断，而不是逐句列关键词。
+# 第一版（单一关键词）在 60 句测试集上拦截率仅 57.8%，见 docs/MVP2_测试结果.md。
+# 词表为占位，需随药盒识别与医学审核扩充；后续计划增加模型分类作为第二道防线。
+
+# 用药：药物/给药方式 × 用药决定
+_DRUG = re.compile(r"药|片|针|胰岛素|格列|双胍|二甲|列净|列汀|鲁肽|阿卡波糖|利尿剂|消炎|抗生素|降糖|降压|他汀|普利|沙坦|SGLT2|DPP|GLP", re.I)
+_DRUG_DECISION = re.compile(
+    r"停|不吃|不打|先不|别吃|还吃|还要|还用|继续|换|改成|改用|减|加|多打|少打|多吃|少吃|调整|剂量|药量|几片|多少|"
+    r"一片|两片|半片|要不要|该不该|应不应该|应该|可不可以|能不能|可以不|开始|去买|吃什么|用什么"
+)
+_MED_EXPLICIT = re.compile(r"停药|减药|加药|换药|剂量|药量|自行用药")
+
+# 诊断：疾病/器官损害 × 判断问法；或直接要求诊断
+_DISEASE = re.compile(r"肾衰|衰竭|尿毒症|肾病|肾功能不全|肾功能不好|肾损|肾.{0,2}坏|透析|酸中毒|酮症|感染|癌|肿瘤|并发症|几期|分期")
+_JUDGE = re.compile(r"是不是|是否|会不会|算不算|得了|患了|说明|属于|算几|有没有.*(病|症|感染)|吧")
+_DIAG_EXPLICIT = re.compile(r"诊断|确诊|什么病|啥病|判断.{0,4}病")
+
+# 危险症状：强症状直接判定；弱症状在报告显示酮体阳性时判定（结合上下文）
+_EMERG_STRONG = re.compile(
+    r"呼吸困难|喘不过气|呼吸很快|呼吸急促|昏迷|意识模糊|意识不清|叫不醒|晕倒|一直吐|吐了|呕吐|剧烈腹痛|肚子很痛|腹痛|"
+    r"胸痛|胸闷|抽搐|站不住|烂苹果|呼气.{0,4}味|心慌.{0,4}出汗"
+)
+_EMERG_WEAK = re.compile(r"很累|乏力|没力气|口渴|恶心|头晕|眼花")
 
 
 def classify(message: str, res: AnalyzeResponse) -> str | None:
-    """越界/安全分类：结合关键词与报告上下文（如酮体阳性时的呕吐描述）。"""
-    if _EMERG.search(message):
+    """越界/安全分类：组合判断意图，并结合报告上下文（酮体阳性时的乏力、恶心等描述按危险症状处理）。"""
+    ketone_positive = any(i.code == "KET" and i.usable and i.positivity.value == "positive" for i in res.items)
+    if _EMERG_STRONG.search(message) or (ketone_positive and _EMERG_WEAK.search(message)):
         return "emergency"
-    if _MED.search(message) or (_DRUG.search(message) and _DRUG_ACTION.search(message)):
+    if _MED_EXPLICIT.search(message) or (_DRUG.search(message) and _DRUG_DECISION.search(message)):
         return "medication"
-    if _DIAG.search(message):
+    if _DIAG_EXPLICIT.search(message) or (_DISEASE.search(message) and _JUDGE.search(message)):
         return "diagnosis"
     return None
 

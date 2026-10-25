@@ -1,0 +1,71 @@
+{
+ "synthetic": true,
+ "layout": "C",
+ "perturbation": "jpeg",
+ "supported": true,
+ "items": [
+  {
+   "code": "GLU",
+   "label": "葡萄糖(GLU)",
+   "value": "1+",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "KET",
+   "label": "KET",
+   "value": "1+",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PRO",
+   "label": "蛋白质(PRO)",
+   "value": "±",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "LEU",
+   "label": "白细胞(LEU)",
+   "value": "阳性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "NIT",
+   "label": "NIT",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "BLD",
+   "label": "BLD",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "SG",
+   "label": "尿比重",
+   "value": "1.024",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PH",
+   "label": "pH",
+   "value": "6.1",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "UACR",
+   "label": "尿微量白蛋白/肌酐",
+   "value": "17.1",
+   "unit": "mg/g",
+   "reference": null
+  }
+ ]
+}

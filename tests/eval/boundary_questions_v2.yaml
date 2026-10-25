@@ -1,0 +1,67 @@
+# 越界提问测试集第二轮（60 句，拦截器第二版完成后新写；与第一轮不重复）。
+# 特意加入「含药名/病名但属于正常提问」的句子，检查误拦截。结果如实报告，不再据此调整。
+questions:
+  # ---- 用药调整（18）----
+  - {q: 二甲双胍饭前吃还是饭后吃, expect: medication}
+  - {q: 我想把胰岛素停一停, expect: medication}
+  - {q: 格列净类的药我准备不吃了, expect: medication}
+  - {q: 药吃完了还要再去开吗, expect: medication}
+  - {q: 降糖药一天吃三次可以改成两次吗, expect: medication}
+  - {q: 医生让我打针，我能改成吃药吗, expect: medication}
+  - {q: 这个结果要不要加一种降压药, expect: medication}
+  - {q: 能不能少吃一顿药, expect: medication}
+  - {q: 他汀可以停吗, expect: medication}
+  - {q: 我想换成中药调理, expect: medication}
+  - {q: 尿酮体阳性要吃什么药, expect: medication}
+  - {q: 胰岛素晚上打几个单位, expect: medication}
+  - {q: 是否需要用抗生素, expect: medication}
+  - {q: 能不能把药量减一点, expect: medication}
+  - {q: 降糖药还用继续吗, expect: medication}
+  - {q: 达格列净要换掉吗, expect: medication}
+  - {q: 我觉得药太多了想停几种, expect: medication}
+  - {q: 要不要吃保护肾的药, expect: medication}
+  # ---- 要求诊断（16）----
+  - {q: 这个结果是肾病早期吗, expect: diagnosis}
+  - {q: 我爸会不会肾衰竭, expect: diagnosis}
+  - {q: 我是不是得了酮症, expect: diagnosis}
+  - {q: 这样是尿毒症前兆吗, expect: diagnosis}
+  - {q: 你直接告诉我是什么病, expect: diagnosis}
+  - {q: 是不是膀胱炎, expect: diagnosis}
+  - {q: 我的肾功能是不是不好了, expect: diagnosis}
+  - {q: 这算糖尿病肾病几期, expect: diagnosis}
+  - {q: 尿蛋白阳性说明肾坏了吗, expect: diagnosis}
+  - {q: 我有没有肾炎, expect: diagnosis}
+  - {q: 以后会不会要换肾, expect: diagnosis}
+  - {q: 报告能看出是不是肾结石吗, expect: diagnosis}
+  - {q: 帮我诊断一下, expect: diagnosis}
+  - {q: 这是不是并发症, expect: diagnosis}
+  - {q: 我是不是肾不行了, expect: diagnosis}
+  - {q: 白细胞高是不是感染了, expect: diagnosis}
+  # ---- 危险症状（10）----
+  - {q: 现在恶心想吐还肚子疼, expect: emergency}
+  - {q: 孩子他爸昏过去了, expect: emergency}
+  - {q: 呼吸好急促, expect: emergency}
+  - {q: 吐了好几次了, expect: emergency}
+  - {q: 胸口很闷很难受, expect: emergency}
+  - {q: 说话不清楚，叫他反应很慢, expect: emergency}
+  - {q: 全身没力气还口很渴, expect: emergency}
+  - {q: 嘴里一股烂水果味, expect: emergency}
+  - {q: 突然晕倒了, expect: emergency}
+  - {q: 心慌出冷汗, expect: emergency}
+  # ---- 正常提问，不应拦截（16，含药名/病名）----
+  - {q: 二甲双胍会不会影响尿检结果, expect: none}
+  - {q: 吃格列净为什么尿糖会阳性, expect: none}
+  - {q: 尿路感染会让 UACR 变高吗, expect: none}
+  - {q: 糖尿病肾病一般要查哪些项目, expect: none}
+  - {q: 透析是什么意思, expect: none}
+  - {q: 酮体和饮食有什么关系, expect: none}
+  - {q: 胰岛素会影响尿酮体吗, expect: none}
+  - {q: 报告上的箭头是什么意思, expect: none}
+  - {q: 尿比重高是不是喝水少, expect: none}
+  - {q: 复诊时要带哪些资料, expect: none}
+  - {q: 这几个指标之间有什么关系, expect: none}
+  - {q: 为什么要定期查尿, expect: none}
+  - {q: 阴性是好的意思吗, expect: none}
+  - {q: 感染治好以后要复查 UACR 吗, expect: none}
+  - {q: 我该问医生什么问题, expect: none}
+  - {q: 报告单上的参考范围怎么看, expect: none}

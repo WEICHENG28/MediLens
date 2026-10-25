@@ -39,3 +39,6 @@ Thumbs.db
 
 # JVM 内存溢出转储（Gradle OOM 时生成，体积巨大）
 *.hprof
+
+# 评测集图片（可用 tools/eval/gen_eval_set.py 按固定种子重新生成）
+tests/eval/*/images/

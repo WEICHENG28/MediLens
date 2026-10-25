@@ -5,6 +5,8 @@
 > ⚠️ **内部开发版**：所有判读规则均为**测试规则，未经医学审核**；知识库为开发团队自编的**占位说明**（非指南原文）；只使用**合成报告**测试。不得用于真实患者诊疗。
 
 - 需求基线：[docs/MediLens_MVP1_跨模型开发交接说明.md](docs/MediLens_MVP1_跨模型开发交接说明.md)
+- **测试结果（实测数据与对照实验）**：[docs/MVP2_测试结果.md](docs/MVP2_测试结果.md)
+- 企划书修改稿：[docs/企划书修改稿_MVP2.md](docs/企划书修改稿_MVP2.md)
 - 设计记录（小组文档）：[docs/MVP2_设计记录.md](docs/MVP2_设计记录.md)
 - 开发进展（每轮迭代）：[docs/开发进展.md](docs/开发进展.md)
 - **测试与课堂演示指南**：[docs/MVP2_测试与演示指南.md](docs/MVP2_测试与演示指南.md)（一键启动：`powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1`）
