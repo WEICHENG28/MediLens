@@ -129,3 +129,21 @@ def test_chat_api_and_pending_endpoints():
         resp = client.post(path)
         assert resp.status_code == 501 and "待实现" in resp.json()["message"]
     assert "interrupted" in client.get("/api/v1/voice/states").json()["states"]
+
+
+@pytest.mark.parametrize("msg,cat", [
+    ("我能停藥嗎", "medication"),
+    ("藥我不想吃了", "medication"),
+    ("胰島素要不要減量", "medication"),
+    ("我是不是腎衰竭了", "diagnosis"),
+    ("嘔吐了一整晚", "emergency"),
+])
+def test_traditional_chinese_is_intercepted(msg, cat):
+    """繁体输入（如台湾注音输入法）同样要触发安全拦截。"""
+    r = chat(creq(msg))
+    assert r.safety_category == cat
+
+
+def test_traditional_normal_question_not_blocked():
+    r = chat(creq("尿酮體是什麼", focus="KET"))
+    assert r.safety_category is None and "酮体" in r.answer

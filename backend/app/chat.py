@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import re
 
+from opencc import OpenCC
 from pydantic import BaseModel, Field
 
 from . import guard, knowledge
@@ -15,6 +16,8 @@ from .analysis import DISCLAIMER, AnalyzeResponse, analyze
 from .knowledge import Citation
 from .llm import LLMError, get_provider
 from .schemas import AnalyzeRequest, Level
+
+_T2S = OpenCC("t2s")
 
 SYSTEM_PROMPT = (
     "你是 MediLens 的报告解释助手，面向糖尿病患者与家属，用简体中文、通俗短句回答。"
@@ -116,7 +119,7 @@ def _status_text(item) -> str:
 # 用药：药物/给药方式 × 用药决定
 _DRUG = re.compile(r"药|片|针|胰岛素|格列|双胍|二甲|列净|列汀|鲁肽|阿卡波糖|利尿剂|消炎|抗生素|降糖|降压|他汀|普利|沙坦|SGLT2|DPP|GLP", re.I)
 _DRUG_DECISION = re.compile(
-    r"停|不吃|不打|先不|别吃|还吃|还要|还用|继续|换|改成|改用|减|加|多打|少打|多吃|少吃|调整|剂量|药量|几片|多少|"
+    r"停|不吃|不打|不想|先不|别吃|还吃|还要|还用|继续|换|改成|改用|减|加|多打|少打|多吃|少吃|调整|剂量|药量|几片|多少|"
     r"一片|两片|半片|要不要|该不该|应不应该|应该|可不可以|能不能|可以不|开始|去买|吃什么|用什么"
 )
 _MED_EXPLICIT = re.compile(r"停药|减药|加药|换药|剂量|药量|自行用药")
@@ -203,9 +206,16 @@ def _facts_text(res: AnalyzeResponse, draft: str, cites: list[Citation]) -> str:
     return json.dumps(facts, ensure_ascii=False) + "\n" + "\n".join(c.text for c in cites) + "\n" + draft
 
 
+def to_simplified(text: str) -> str:
+    """繁体 → 简体（OpenCC，本地转换不联网）。安全分类与输出校验都基于简体，避免繁体输入绕过拦截。"""
+    return _T2S.convert(text)
+
+
 def chat(req: ChatRequest) -> ChatResponse:
     res = analyze(req.analysis)
     provider = get_provider()
+    # 统一转为简体后再判断（繁体输入曾导致「我能停藥嗎」未被拦截）
+    req = req.model_copy(update={"message": to_simplified(req.message)})
     category = classify(req.message, res)
     if category:
         return ChatResponse(answer=_safety_answer(category, res), safety_category=category,
@@ -222,7 +232,7 @@ def chat(req: ChatRequest) -> ChatResponse:
     urgent_allowed = res.urgent_alert.show or res.overall.level == Level.red
     try:
         text = provider.complete(SYSTEM_PROMPT, user)
-        result = guard.check(text, facts, urgent_allowed)
+        result = guard.check(to_simplified(text), facts, urgent_allowed)
         if result.ok:
             return ChatResponse(answer=text, citations=cites, provider=provider.name, used_fallback=False)
     except LLMError:
