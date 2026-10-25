@@ -45,3 +45,4 @@ tests/eval/*/images/
 
 # 老年模式检查截图（integration_test/elder_audit_test.dart 生成，按需重新生成）
 docs/screenshots/audit/
+docs/MediLens_report*.pdf
