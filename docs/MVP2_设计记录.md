@@ -24,7 +24,7 @@
 | 解读总览：高风险置顶、未知不变绿、数据完整性 | P04 | analysis | API + widget | 实现 |
 | 动态选择题（YAML，可跳过/回退，未答≠否认） | P05 | followup | pytest 跳转、widget 回退 | 实现 |
 | 逐条「详细了解」、朗读 | P06 | explain | widget：只展开该条 | 实现（朗读用系统 TTS） |
-| 文字对话、越界问题安全模板、输出校验 | P06 | chat + llm adapter + guard | pytest：数值一致、禁用语、来源 | 实现（默认 mock，可切 DeepSeek/通义/智谱） |
+| 文字对话、越界问题安全模板、输出校验 | P06 | chat + llm adapter + guard | pytest：数值一致、禁用语、来源 | 实现；已接入学校多模型平台（DeepSeek-V4.1-Flash），未配置时为 mock |
 | RAG 框架（占位测试知识，不伪造指南） | P06 | knowledge | pytest：检索不到时明确说明 | 框架 + 占位知识 |
 | 本机保存/不保存并明示风险 | 保存选择 | — | 本地存储单测 | 实现（加密 SQLite） |
 | 普通/老年模式全流程 | 全部 | — | 两模式各跑集成测试 | 实现 |
@@ -49,7 +49,7 @@ Flutter APP（Android/iOS 一套代码）
                      │ HTTPS/JSON
 FastAPI 后端（Python 3.11）
  ├ normalize → rules(YAML) → followup(YAML) → knowledge(检索) → llm adapter → guard 校验
- ├ llm adapter：mock（默认）/ deepseek / qwen(DashScope) / zhipu；密钥只在 .env
+ ├ llm adapter：mock / compat（学校等 OpenAI 兼容聚合平台）/ deepseek / qwen / zhipu；密钥只在 .env；关闭推理、超时回退
  ├ voice / cloud_ocr / auth / backup：接口 + mock（讯飞/阿里/百度/腾讯后续接入）
  └ 存储：开发 SQLite；docker-compose 中 PostgreSQL
 ```
@@ -83,7 +83,9 @@ P07 语音[待实现] · P08 药盒[待实现] · P11 设置（普通/老年、O
 | 后端启动方式 | 本地以 `python scripts/run_backend.py` 一条命令启动；同时提供 docker-compose.yml | 开发机未安装 Docker/WSL；Compose 在实测前标注「未经实测」 |
 | 运行设备 | Android 模拟器（开启 Windows 虚拟机监控程序平台） | 小组暂无 Android 真机；BIOS 虚拟化已开启 |
 | iOS | 代码与工程配置保持通用，不做实机编译验证 | 无 Mac 环境 |
-| AI 密钥 | 默认 mock provider 跑通全流程，.env.example 列出所需密钥 | 暂无 API 密钥，不因此删减功能 |
+| 大模型 | 接入学校多模型平台（compat），模型 DeepSeek-V4.1-Flash，关闭推理（thinking=disabled），超时 15 秒回退标准说明 | 只做改写：开启推理时 15–20 秒，关闭后 2–7 秒；未配置时自动 mock |
+| 大模型的使用范围 | 仅提问页回答的通俗改写；判读、选择题、详细了解、越界安全模板均不经过大模型 | 规则定结论、大模型只表达，便于审核 |
+| 知识库不足时 | 检索不到资料即回答「暂时没有可核验的资料」，不交给大模型 | 避免无依据的医学内容；知识库扩充见 docs/知识库资料调研.md |
 | 测试数据 | 脚本生成合成报告图，图上带「合成测试样本」水印 | 不使用真实报告 |
 | 规则 | R-01～R-06 作为模拟规则，界面与 API 均标注「测试规则，未经医学审核」 | 尚未医学审核 |
 | 项目书 docx | 不提交到公开仓库 | 可能含个人信息 |
@@ -155,7 +157,7 @@ P06 详细了解（规则+占位知识，确定性生成）/ 对话（安全分�
 1. Docker 未安装：Compose 文件未经实测。
 2. 仅在 Android 模拟器上测试，未在真机测试。
 3. iOS 无法实机编译验证。
-4. 无 AI/语音/云 OCR 密钥：使用 mock。
+4. 无语音/云 OCR 密钥：使用 mock；大模型已接入学校平台（密钥仅在开发电脑 .env）。
 5. 合成报告测试通过 ≠ 真实报告识别准确率达标。
 
 ## 8. 开发计划与完成情况（每模块：测试 → 中文 commit → push 到 dev）

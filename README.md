@@ -55,7 +55,12 @@ python scripts/run_backend.py            # 首次自动创建 backend/.venv 并�
 # API 文档：http://127.0.0.1:8000/docs     模拟器内访问：http://10.0.2.2:8000
 ```
 
-未配置大模型密钥时自动使用 mock，全流程可跑通。需要真实模型时：复制 `.env.example` 为 `.env`，设置 `LLM_PROVIDER=deepseek`（或 qwen / zhipu）并填写密钥。**密钥只放后端，`.env` 不入库。**
+未配置大模型时自动使用 mock（直接输出基于规则与知识的标准说明），全流程可跑通。启用真实大模型：复制 `.env.example` 为 `.env`（**复制，不要改名**），按其中说明填写，**密钥只放后端，`.env` 不入库**：
+
+- 学校等多模型聚合平台：`LLM_PROVIDER=compat`，填写 `COMPAT_BASE_URL`（网址，如 `https://llmapi.paratera.com`）、`COMPAT_API_KEY`、`COMPAT_MODEL`（当前使用 `DeepSeek-V4.1-Flash`），并保留 `COMPAT_DISABLE_THINKING=true`（关闭推理，响应约 2–7 秒）
+- 官方平台：`LLM_PROVIDER=deepseek` / `qwen` / `zhipu` 并填写对应密钥
+- 检查连线：`backend\.venv\Scripts\python tools\check_llm.py`；对比有/无大模型的回答：`tools\compare_llm.py`
+- 大模型**只用于提问页回答的通俗改写**；判读、选择题、详细了解、安全拦截均不经过大模型
 
 Docker（⚠️ 开发机未安装 Docker，**以下未经实测**）：
 
