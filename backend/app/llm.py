@@ -19,6 +19,8 @@ PROVIDERS = {
     "deepseek": {"base_url": "https://api.deepseek.com", "model": "deepseek-flash", "key_env": "DEEPSEEK_API_KEY"},
     "qwen": {"base_url": "", "model": "qwen-plus", "key_env": "DASHSCOPE_API_KEY"},  # base_url 必须按工作空间配置
     "zhipu": {"base_url": "https://open.bigmodel.cn/api/paas/v4", "model": "glm-5.3-flash", "key_env": "ZHIPU_API_KEY"},
+    # 通用 OpenAI 兼容平台（如学校提供的多模型聚合平台）：接口地址、密钥、模型名均在 .env 配置
+    "compat": {"base_url": "", "model": "DeepSeek-V4.1-Flash", "key_env": "COMPAT_API_KEY"},
 }
 
 

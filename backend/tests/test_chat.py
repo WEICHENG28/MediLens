@@ -147,3 +147,16 @@ def test_traditional_chinese_is_intercepted(msg, cat):
 def test_traditional_normal_question_not_blocked():
     r = chat(creq("尿酮體是什麼", focus="KET"))
     assert r.safety_category is None and "酮体" in r.answer
+
+
+def test_compat_provider_from_env(monkeypatch):
+    """学校等 OpenAI 兼容聚合平台：设置地址、密钥、模型后启用；缺地址时降级 mock。"""
+    from app.llm import OpenAICompatProvider
+    monkeypatch.setenv("LLM_PROVIDER", "compat")
+    monkeypatch.setenv("COMPAT_API_KEY", "test-key")
+    monkeypatch.delenv("COMPAT_BASE_URL", raising=False)
+    assert isinstance(get_provider(), MockProvider)
+    monkeypatch.setenv("COMPAT_BASE_URL", "https://llm.example.edu.cn/v1")
+    monkeypatch.setenv("COMPAT_MODEL", "Qwen3.8-Flash")
+    p = get_provider()
+    assert isinstance(p, OpenAICompatProvider) and p.model == "Qwen3.8-Flash" and p.base_url.endswith("/v1")
