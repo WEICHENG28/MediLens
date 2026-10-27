@@ -51,7 +51,9 @@ void main() {
     expect(u.value, '86.5');
     expect(u.unit, 'mg/g');
     expect(u.reference, '<30');
-    expect(u.status, ReviewStatus.autoAccepted);
+    // UACR 为关键定量指标，即使识别正确也要求用户核对小数点（测试集静默错误均为小数点丢失）
+    expect(u.status, ReviewStatus.needsConfirmation);
+    expect(u.candidates.first, '86.5');
   });
 
   test('mg/mmol 单位 UACR；非首期项目归入其他', () {

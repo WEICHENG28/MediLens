@@ -160,3 +160,38 @@ def test_compat_provider_from_env(monkeypatch):
     monkeypatch.setenv("COMPAT_MODEL", "Qwen3.8-Flash")
     p = get_provider()
     assert isinstance(p, OpenAICompatProvider) and p.model == "Qwen3.8-Flash" and p.base_url.endswith("/v1")
+
+class _FakeIntent:
+    def __init__(self, label):
+        self.label = label
+        self.calls = 0
+
+    def complete(self, system, user):
+        self.calls += 1
+        return self.label
+
+
+def test_intent_layers_keyword_first_then_llm(monkeypatch):
+    """两层越界判断：关键词命中不调用大模型；未命中时由大模型语义判断。"""
+    fake = _FakeIntent("medication")
+    monkeypatch.setattr(chat_mod, "get_intent_provider", lambda: fake)
+    res = chat_mod.analyze(ketone_case())
+    assert chat_mod.classify_intent("我能停药吗", res) == ("medication", "keyword") and fake.calls == 0
+    assert chat_mod.classify_intent("胰岛素晚上打几个单位", res) == ("medication", "llm") and fake.calls == 1
+    fake.label = "none"
+    assert chat_mod.classify_intent("酮体是什么", res) == (None, "none")
+
+
+def test_intent_llm_answer_uses_safety_template(monkeypatch):
+    monkeypatch.setattr(chat_mod, "get_intent_provider", lambda: _FakeIntent("diagnosis"))
+    r = chat(creq("我这算几期了"))
+    assert r.safety_category == "diagnosis" and r.provider == "safety-template"
+
+
+def test_intent_llm_failure_falls_through(monkeypatch):
+    class Down:
+        def complete(self, s, u):
+            raise LLMError("timeout")
+    monkeypatch.setattr(chat_mod, "get_intent_provider", lambda: Down())
+    r = chat(creq("这个指标是什么", focus="KET"))
+    assert r.safety_category is None and "酮体" in r.answer

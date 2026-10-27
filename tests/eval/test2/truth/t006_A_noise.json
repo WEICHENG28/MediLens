@@ -1,0 +1,71 @@
+{
+ "synthetic": true,
+ "layout": "A",
+ "perturbation": "noise",
+ "supported": true,
+ "items": [
+  {
+   "code": "GLU",
+   "label": "GLU",
+   "value": "阳性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "KET",
+   "label": "酮体(KET)",
+   "value": "±",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "PRO",
+   "label": "U-PRO",
+   "value": "阴性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "LEU",
+   "label": "白细胞(LEU)",
+   "value": "3+",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "NIT",
+   "label": "NIT",
+   "value": "阳性",
+   "unit": null,
+   "reference": "-"
+  },
+  {
+   "code": "BLD",
+   "label": "潜血",
+   "value": "阳性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "SG",
+   "label": "比重(SG)",
+   "value": "1.009",
+   "unit": null,
+   "reference": "1.003-1.030"
+  },
+  {
+   "code": "PH",
+   "label": "pH",
+   "value": "5.9",
+   "unit": null,
+   "reference": "4.5-8.0"
+  },
+  {
+   "code": "UACR",
+   "label": "UACR",
+   "value": "518.7",
+   "unit": "mg/g",
+   "reference": "<30"
+  }
+ ]
+}

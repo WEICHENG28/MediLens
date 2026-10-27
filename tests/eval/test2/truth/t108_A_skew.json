@@ -1,0 +1,64 @@
+{
+ "synthetic": true,
+ "layout": "A",
+ "perturbation": "skew",
+ "supported": true,
+ "items": [
+  {
+   "code": "GLU",
+   "label": "GLU",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "KET",
+   "label": "KET",
+   "value": "阳性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PRO",
+   "label": "PRO",
+   "value": "2+",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "LEU",
+   "label": "白细胞(LEU)",
+   "value": "±",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "NIT",
+   "label": "NIT",
+   "value": "阳性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "BLD",
+   "label": "BLD",
+   "value": "阳性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "SG",
+   "label": "比重(SG)",
+   "value": "1.003",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PH",
+   "label": "酸碱度(pH)",
+   "value": "5.7",
+   "unit": null,
+   "reference": null
+  }
+ ]
+}

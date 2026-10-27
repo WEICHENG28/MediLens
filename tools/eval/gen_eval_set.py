@@ -23,7 +23,7 @@ IMG_DIR = ROOT / "tests" / "eval" / SET / "images"
 TRUTH_DIR = ROOT / "tests" / "eval" / SET / "truth"
 FONTS = ["C:/Windows/Fonts/msyh.ttc", "C:/Windows/Fonts/simsun.ttc"]
 W, H = 1240, 1754
-SEED = {"dev": 20261025, "test": 77031}[SET]
+SEED = {"dev": 20261025, "test": 77031, "test2": 50917}[SET]  # test2：评估「UACR 强制确认」改动用的新测试集
 
 # 不同医院常见的项目名写法（与字典同义词一致，用于检验映射能力）
 LABELS = {

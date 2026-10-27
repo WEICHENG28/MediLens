@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor
 
 from opencc import OpenCC
 from pydantic import BaseModel, Field
@@ -14,7 +15,7 @@ from pydantic import BaseModel, Field
 from . import guard, knowledge
 from .analysis import DISCLAIMER, AnalyzeResponse, analyze
 from .knowledge import Citation
-from .llm import LLMError, get_provider
+from .llm import LLMError, get_intent_provider, get_provider
 from .schemas import AnalyzeRequest, Level
 
 _T2S = OpenCC("t2s")
@@ -211,31 +212,76 @@ def to_simplified(text: str) -> str:
     return _T2S.convert(text)
 
 
+INTENT_SYSTEM = (
+    "你是医疗问答的安全分类器。根据糖尿病患者对尿检报告的提问，判断其意图，只输出一个标签，不输出其他文字。\n"
+    "medication：询问或打算停药、减药、加药、换药、调整剂量或用药次数时间、该吃/该买什么药、要不要开始或继续用某种药或打针。\n"
+    "diagnosis：要求判断自己或家人是否患有某种疾病、病情到哪一期、会不会发展成某病、要不要透析或换肾。\n"
+    "emergency：描述正在发生的严重不适，如持续呕吐、剧烈腹痛、呼吸急促或困难、意识模糊、叫不醒、昏倒、胸痛胸闷、呼气烂苹果味、极度乏力。\n"
+    "none：其他问题，如指标含义、指标之间的关系、检查注意事项、复查安排、饮食生活常识、药物对检查结果的影响。\n"
+    "只输出 medication、diagnosis、emergency、none 之一。"
+)
+_INTENT_LABELS = ("medication", "diagnosis", "emergency")
+
+
+def llm_classify(message: str, res: AnalyzeResponse) -> str | None:
+    """第二层：关键词未命中时，用大模型做语义意图判断。失败、超时或未配置时返回 None（继续正常流程，仍有输出校验）。"""
+    provider = get_intent_provider()
+    if provider is None:
+        return None
+    context = "报告中尿酮体阳性。" if any(i.code == "KET" and i.usable and i.positivity.value == "positive" for i in res.items) else ""
+    try:
+        out = provider.complete(INTENT_SYSTEM, f"{context}患者提问：{message}").strip().lower()
+    except LLMError:
+        return None
+    return next((label for label in _INTENT_LABELS if label in out), None)
+
+
+def classify_intent(message: str, res: AnalyzeResponse) -> tuple[str | None, str]:
+    """两层安全分类：关键词（快速、确定）→ 大模型语义判断（覆盖关键词未见过的说法）。返回 (类别, 判定来源)。"""
+    category = classify(message, res)
+    if category:
+        return category, "keyword"
+    category = llm_classify(message, res)
+    return category, ("llm" if category else "none")
+
+
 def chat(req: ChatRequest) -> ChatResponse:
     res = analyze(req.analysis)
     provider = get_provider()
     # 统一转为简体后再判断（繁体输入曾导致「我能停藥嗎」未被拦截）
     req = req.model_copy(update={"message": to_simplified(req.message)})
+    def safety(cat: str) -> ChatResponse:
+        return ChatResponse(answer=_safety_answer(cat, res), safety_category=cat, provider="safety-template", used_fallback=False)
+
+    # 第一层：关键词（快速、确定），命中即回安全模板，不调用大模型
     category = classify(req.message, res)
     if category:
-        return ChatResponse(answer=_safety_answer(category, res), safety_category=category,
-                            provider="safety-template", used_fallback=False)
+        return safety(category)
 
     draft, cites = _draft(req, res)
-    if not draft:
-        return ChatResponse(
-            answer="这个问题暂时没有可核验的资料，我无法据此回答。建议把问题记下来，复诊时询问医生。",
-            provider="template", used_fallback=False, no_evidence=True)
-
-    facts = _facts_text(res, draft, cites)
-    user = f"报告事实：\n{facts}\n\n用户问题：{req.message}\n\n【草稿】{draft}"
+    facts = _facts_text(res, draft, cites) if draft else ""
     urgent_allowed = res.urgent_alert.show or res.overall.level == Level.red
-    try:
-        text = provider.complete(SYSTEM_PROMPT, user)
-        result = guard.check(to_simplified(text), facts, urgent_allowed)
-        if result.ok:
-            return ChatResponse(answer=text, citations=cites, provider=provider.name, used_fallback=False)
-    except LLMError:
-        pass
-    # 校验失败或服务不可用：回退到基于规则与知识的草稿
-    return ChatResponse(answer=draft, citations=cites, provider=provider.name, used_fallback=True)
+
+    def rewrite() -> tuple[str, bool]:
+        """返回 (回答, 是否回退)。校验失败或服务不可用时回退到基于规则与知识的草稿。"""
+        try:
+            text = provider.complete(SYSTEM_PROMPT, f"报告事实：\n{facts}\n\n用户问题：{req.message}\n\n【草稿】{draft}")
+            if guard.check(to_simplified(text), facts, urgent_allowed).ok:
+                return text, False
+        except LLMError:
+            pass
+        return draft, True
+
+    # 第二层：大模型语义判断与回答改写同时进行，用户只需等待较慢的一项（学校平台响应 1–28 秒波动）
+    with ThreadPoolExecutor(2) as ex:
+        intent_f = ex.submit(llm_classify, req.message, res)
+        rewrite_f = ex.submit(rewrite) if draft else None
+        category = intent_f.result()
+        if category:
+            return safety(category)  # 越界：丢弃改写结果，改用安全模板
+        if rewrite_f is None:
+            return ChatResponse(
+                answer="这个问题暂时没有可核验的资料，我无法据此回答。建议把问题记下来，复诊时询问医生。",
+                provider="template", used_fallback=False, no_evidence=True)
+        answer, fell_back = rewrite_f.result()
+    return ChatResponse(answer=answer, citations=cites, provider=provider.name, used_fallback=fell_back)

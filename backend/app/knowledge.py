@@ -1,7 +1,10 @@
-"""知识检索（占位实现：按指标代码与关键词打分）。
+"""知识检索（按指标代码与关键词打分）。
 
-检索结果只用于解释既有规则，不能决定风险等级。检索不到时明确返回空，由调用方说明「暂无可核验资料」。
-正式知识库规模确定后，可替换为向量检索（FAISS/pgvector），接口保持不变。
+数据来源（依序加载）：
+- knowledge_base/kb.yaml       正式知识库：由 tools/kb_import.py 从组员填写的 Excel 导入（存在时加载）
+- knowledge_base/kb_test.yaml  占位知识：开发团队自编，非指南原文
+相关的正式知识优先于占位知识，其次按相关程度、已审核优先。检索结果只用于解释既有规则，不能决定风险等级；检索不到时返回空，
+由调用方说明「暂无可核验资料」。正式知识库规模扩大后可替换为向量检索，接口保持不变。
 """
 from __future__ import annotations
 
@@ -11,7 +14,9 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel
 
-KB_PATH = Path(__file__).parent / "knowledge_base" / "kb_test.yaml"
+KB_DIR = Path(__file__).parent / "knowledge_base"
+KB_FILES = [KB_DIR / "kb.yaml", KB_DIR / "kb_test.yaml"]  # 正式在前
+KB_PATH = KB_DIR / "kb_test.yaml"  # 兼容旧引用
 
 
 class Citation(BaseModel):
@@ -25,8 +30,13 @@ class Citation(BaseModel):
 
 @lru_cache
 def load_kb() -> dict:
-    with open(KB_PATH, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    entries: list[dict] = []
+    for i, path in enumerate(KB_FILES):
+        if path.exists():
+            data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+            for e in data.get("entries", []):
+                entries.append({**e, "_formal": path.name == "kb.yaml", "_order": len(entries)})
+    return {"entries": entries}
 
 
 def get(entry_id: str) -> Citation | None:
@@ -37,7 +47,7 @@ def get(entry_id: str) -> Citation | None:
 
 
 def _cite(e: dict) -> Citation:
-    return Citation(**{k: e[k] for k in Citation.model_fields})
+    return Citation(**{k: str(e[k]) for k in Citation.model_fields})
 
 
 def search(query: str = "", codes: list[str] | None = None, limit: int = 3) -> list[Citation]:
@@ -46,8 +56,10 @@ def search(query: str = "", codes: list[str] | None = None, limit: int = 3) -> l
     scored = []
     for e in load_kb()["entries"]:
         score = 2 * len(set(codes) & set(e["codes"]))
-        score += sum(1 for kw in e["keywords"] if kw.upper() in q)
+        score += sum(1 for kw in e.get("keywords", []) if kw and kw.upper() in q)
         if score > 0:
-            scored.append((score, e))
-    scored.sort(key=lambda x: -x[0])
+            reviewed = e.get("review_status") in ("已审核", "reviewed")
+            # 只要相关（score>0），正式知识优先于占位知识；其次按相关程度、是否已审核排序
+            scored.append(((e["_formal"], score, reviewed, -e["_order"]), e))
+    scored.sort(key=lambda x: x[0], reverse=True)
     return [_cite(e) for _, e in scored[:limit]]

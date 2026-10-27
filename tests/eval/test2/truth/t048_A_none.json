@@ -1,0 +1,15 @@
+{
+ "synthetic": true,
+ "layout": "A",
+ "perturbation": "none",
+ "supported": true,
+ "items": [
+  {
+   "code": "UACR",
+   "label": "尿白蛋白/肌酐比",
+   "value": "884.6",
+   "unit": "mg/g",
+   "reference": "<30"
+  }
+ ]
+}

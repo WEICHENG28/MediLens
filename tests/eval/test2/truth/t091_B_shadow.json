@@ -1,0 +1,64 @@
+{
+ "synthetic": true,
+ "layout": "B",
+ "perturbation": "shadow",
+ "supported": true,
+ "items": [
+  {
+   "code": "GLU",
+   "label": "尿糖",
+   "value": "±",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "KET",
+   "label": "KET",
+   "value": "±",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PRO",
+   "label": "蛋白质(PRO)",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "LEU",
+   "label": "白细胞(LEU)",
+   "value": "3+",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "NIT",
+   "label": "NIT",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "BLD",
+   "label": "隐血(BLD)",
+   "value": "阳性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "SG",
+   "label": "比重(SG)",
+   "value": "1.025",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PH",
+   "label": "酸碱度(pH)",
+   "value": "4.9",
+   "unit": null,
+   "reference": null
+  }
+ ]
+}

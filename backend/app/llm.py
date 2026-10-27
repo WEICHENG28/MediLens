@@ -91,3 +91,19 @@ def get_provider() -> LLMProvider:
         timeout=float(os.environ.get("LLM_TIMEOUT", "15")),
         disable_thinking=os.environ.get(f"{name.upper()}_DISABLE_THINKING", "false").lower() == "true",
     )
+
+def get_intent_provider() -> OpenAICompatProvider | None:
+    """越界意图判断用的模型（可与改写模型不同）。未配置大模型时返回 None。
+    LLM_INTENT_MODEL：分类模型（默认与改写模型相同）；LLM_INTENT_TIMEOUT：等待秒数（默认 15）。"""
+    base = get_provider()
+    if not isinstance(base, OpenAICompatProvider):
+        return None
+    model = os.environ.get("LLM_INTENT_MODEL", base.model)
+    same = model == base.model
+    return OpenAICompatProvider(
+        name=base.name, base_url=base.base_url, model=model, api_key=base.api_key,
+        timeout=float(os.environ.get("LLM_INTENT_TIMEOUT", "15")),  # 与改写并行执行，可用与改写相同的上限
+        # 只有支持该参数的模型才关闭推理（GLM 不接受 thinking 参数）
+        disable_thinking=base.disable_thinking if same else os.environ.get("LLM_INTENT_DISABLE_THINKING", "false").lower() == "true",
+        max_tokens=1000 if not (base.disable_thinking and same) else 10,
+    )

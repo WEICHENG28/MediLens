@@ -1,0 +1,71 @@
+{
+ "synthetic": true,
+ "layout": "C",
+ "perturbation": "smudge",
+ "supported": true,
+ "items": [
+  {
+   "code": "GLU",
+   "label": "尿糖",
+   "value": "1+",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "KET",
+   "label": "KET",
+   "value": "阴性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "PRO",
+   "label": "U-PRO",
+   "value": "3+",
+   "unit": null,
+   "reference": "-"
+  },
+  {
+   "code": "LEU",
+   "label": "白细胞(LEU)",
+   "value": "阴性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "NIT",
+   "label": "NIT",
+   "value": "阳性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "BLD",
+   "label": "潜血",
+   "value": "阴性",
+   "unit": null,
+   "reference": "阴性"
+  },
+  {
+   "code": "SG",
+   "label": "尿比重",
+   "value": "1.016",
+   "unit": null,
+   "reference": "1.003-1.030"
+  },
+  {
+   "code": "PH",
+   "label": "pH",
+   "value": "7.7",
+   "unit": null,
+   "reference": "4.5-8.0"
+  },
+  {
+   "code": "UACR",
+   "label": "UACR",
+   "value": "27.6",
+   "unit": "mg/g",
+   "reference": "<30"
+  }
+ ]
+}

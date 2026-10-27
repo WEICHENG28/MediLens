@@ -1,0 +1,64 @@
+{
+ "synthetic": true,
+ "layout": "B",
+ "perturbation": "smudge",
+ "supported": true,
+ "items": [
+  {
+   "code": "GLU",
+   "label": "GLU",
+   "value": "2+",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "KET",
+   "label": "酮体(KET)",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PRO",
+   "label": "蛋白质(PRO)",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "LEU",
+   "label": "LEU",
+   "value": "1+",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "NIT",
+   "label": "NIT",
+   "value": "阳性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "BLD",
+   "label": "隐血(BLD)",
+   "value": "阴性",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "SG",
+   "label": "尿比重",
+   "value": "1.013",
+   "unit": null,
+   "reference": null
+  },
+  {
+   "code": "PH",
+   "label": "pH",
+   "value": "6.7",
+   "unit": null,
+   "reference": null
+  }
+ ]
+}

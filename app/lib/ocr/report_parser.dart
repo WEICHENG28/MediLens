@@ -135,6 +135,16 @@ List<String> candidatesFor(String code, String v) {
         if (cn != null && cn >= p[0] && cn <= p[1]) out.add(c);
       }
     }
+    // UACR：即使数值看似合理，也给出小数点位置不同的候选（811 → 81.1、8.11；81.1 → 811、8.11）
+    if (code == 'UACR' && n != null) {
+      final digits = v.replaceAll('.', '');
+      if (RegExp(r'^\d{2,}$').hasMatch(digits)) {
+        for (var i = 1; i <= digits.length; i++) {
+          final c = i == digits.length ? digits : '${digits.substring(0, i)}.${digits.substring(i)}';
+          if (!c.endsWith('.') && double.tryParse(c) != null) out.add(c);
+        }
+      }
+    }
   }
   return out.toSet().toList();
 }
@@ -329,6 +339,9 @@ LabItem _buildItem(String code, OcrLine label, OcrLine? value, OcrLine? unit, Oc
         } else if (!_uacrUnits.contains(u)) {
           reasons.add('单位「${unit!.text}」无法识别');
         }
+        // 关键定量指标一律请用户核对：测试集中的静默错误均为小数点丢失（如 81.1 → 811），
+        // 错误值仍在合理范围且置信度高，无法由其他规则发现；UACR 分级（30/300 mg/g）对小数点敏感
+        if (n != null && reasons.isEmpty) reasons.add('关键数值，请对照原图核对小数点');
       }
     }
   }
