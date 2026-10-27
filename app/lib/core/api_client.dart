@@ -46,7 +46,9 @@ class ApiClient {
           .post(Uri.parse('$baseUrl$path'), headers: {'Content-Type': 'application/json; charset=utf-8'}, body: jsonEncode(body))
           .timeout(const Duration(seconds: 25));
     } catch (_) {
-      throw ApiException('无法连接解读服务，请检查网络后重试。已识别的指标仍保留在本机。');
+      // 写出连接地址，便于判断是后端未启动，还是真机使用了仅模拟器有效的 10.0.2.2
+      throw ApiException('无法连接解读服务（$baseUrl），请确认后端已启动、网络正常后重试。'
+          '真机需在「设置 → 解读服务地址」改为电脑的局域网地址。已识别的指标仍保留在本机。');
     }
     final data = jsonDecode(utf8.decode(r.bodyBytes));
     if (r.statusCode != 200) {

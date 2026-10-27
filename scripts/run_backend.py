@@ -29,6 +29,8 @@ def main() -> None:
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--install", action="store_true")
     args = ap.parse_args()
+    if sys.version_info < (3, 10):
+        sys.exit(f"后端需要 Python 3.10 或以上，当前为 {sys.version.split()[0]}。请安装 Python 3.11（python.org 或 Anaconda）后重试。")
     if args.install or not PY.exists():
         if not PY.exists():
             subprocess.check_call([sys.executable, "-m", "venv", str(VENV)])

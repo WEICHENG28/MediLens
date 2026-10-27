@@ -111,7 +111,7 @@ python tools/check_network.py                                                  #
 
 | 问题 | 处理 |
 |---|---|
-| 「查看解读」提示无法连接 | 后端窗口被关闭 → 重新执行一键启动 |
+| 「查看解读」提示无法连接 | ① 后端没有运行：浏览器打开 http://127.0.0.1:8000/api/v1/health，打不开就执行 `python scripts\run_backend.py`（需 Python 3.10 以上）；② APP 装在**真机**上：默认地址 10.0.2.2 只在模拟器内有效，需在「设置 → 解读服务地址」改为电脑的局域网地址（如 http://192.168.1.5:8000），手机与电脑连同一 Wi-Fi，并允许 Windows 防火墙放行 8000 端口；③ 交付包不含开发工具链，组员电脑上一键启动脚本无法直接使用，需先按 README 安装 Flutter 与 Android SDK |
 | 模拟器窗口跑到屏幕外/只显示一半 | 执行 `powershell -ExecutionPolicy Bypass -File scripts\fit_emulator_window.ps1`，窗口会移到屏幕右侧并缩放到合适大小（一键启动已自动执行） |
 | 模拟器黑屏/很卡 | 关闭其他程序；在模拟器窗口关闭后重新执行一键启动 |
 | 脚本提示「无法加载，因为在此系统上禁止运行脚本」 | 使用文中的 `powershell -ExecutionPolicy Bypass -File ...` 写法 |
