@@ -52,7 +52,9 @@ class OpenAICompatProvider:
     base_url: str
     model: str
     api_key: str
-    timeout: float = 20.0
+    timeout: float = 15.0
+    disable_thinking: bool = False  # 只做改写不需要推理；关闭可将响应从约 15–20 秒降到 5–8 秒（学校平台 DeepSeek 实测）
+    max_tokens: int = 400
 
     def complete(self, system: str, user: str) -> str:
         url = self.base_url.rstrip("/") + "/chat/completions"
@@ -60,7 +62,10 @@ class OpenAICompatProvider:
             "model": self.model,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
             "temperature": 0.2,
+            "max_tokens": self.max_tokens,
         }
+        if self.disable_thinking:
+            payload["thinking"] = {"type": "disabled"}
         try:
             r = httpx.post(url, json=payload, headers={"Authorization": f"Bearer {self.api_key}"}, timeout=self.timeout)
             r.raise_for_status()
@@ -80,4 +85,9 @@ def get_provider() -> LLMProvider:
     model = os.environ.get(f"{name.upper()}_MODEL", cfg["model"])
     if not key or not base or not base.lower().startswith(("http://", "https://")):
         return MockProvider()  # 缺密钥/地址或地址格式错误时降级为 mock，并在响应中标明 provider
-    return OpenAICompatProvider(name=name, base_url=base, model=model, api_key=key)
+    return OpenAICompatProvider(
+        name=name, base_url=base, model=model, api_key=key,
+        # 超时后回退为基于规则与知识的标准说明，避免患者久等
+        timeout=float(os.environ.get("LLM_TIMEOUT", "15")),
+        disable_thinking=os.environ.get(f"{name.upper()}_DISABLE_THINKING", "false").lower() == "true",
+    )
