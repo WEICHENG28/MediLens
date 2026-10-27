@@ -78,6 +78,6 @@ def get_provider() -> LLMProvider:
     key = os.environ.get(cfg["key_env"], "")
     base = os.environ.get(f"{name.upper()}_BASE_URL", cfg["base_url"])
     model = os.environ.get(f"{name.upper()}_MODEL", cfg["model"])
-    if not key or not base:
-        return MockProvider()  # 缺密钥/地址时降级为 mock，并在响应中标明 provider
+    if not key or not base or not base.lower().startswith(("http://", "https://")):
+        return MockProvider()  # 缺密钥/地址或地址格式错误时降级为 mock，并在响应中标明 provider
     return OpenAICompatProvider(name=name, base_url=base, model=model, api_key=key)

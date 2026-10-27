@@ -20,6 +20,11 @@ def main() -> int:
         print("当前为 mock 模式：.env 中未设置 LLM_PROVIDER，或缺少对应的密钥 / 接口地址。")
         return 1
     assert isinstance(p, OpenAICompatProvider)
+    if not p.base_url.lower().startswith(("http://", "https://")):
+        # 地址栏误填密钥时不回显内容，避免泄露
+        print("✗ 接口地址格式不对：应以 https:// 开头（例如 https://xxx.edu.cn/v1）。"
+              "看起来可能把密钥填进了地址栏，内容不予显示；请检查 .env 中的 COMPAT_BASE_URL。")
+        return 1
     print(f"服务：{p.name}  地址：{p.base_url}  模型：{p.model}  密钥：{'已设置（' + str(len(p.api_key)) + ' 个字符）' if p.api_key else '未设置'}")
     t = time.perf_counter()
     try:
