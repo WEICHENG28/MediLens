@@ -28,6 +28,7 @@ def main() -> None:
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--install", action="store_true")
+    ap.add_argument("--check-only", action="store_true", help="只创建 venv / 安装依赖，不启动服务（供一键演示脚本使用）")
     args = ap.parse_args()
     if sys.version_info < (3, 10):
         sys.exit(f"后端需要 Python 3.10 或以上，当前为 {sys.version.split()[0]}。请安装 Python 3.11（python.org 或 Anaconda）后重试。")
@@ -35,6 +36,9 @@ def main() -> None:
         if not PY.exists():
             subprocess.check_call([sys.executable, "-m", "venv", str(VENV)])
         subprocess.check_call([str(PY), "-m", "pip", "install", "-q", "-i", MIRROR, "-r", str(BACKEND / "requirements.txt")])
+    if args.check_only:
+        print("后端依赖已就绪")
+        return
     print(f"MediLens 后端启动：http://127.0.0.1:{args.port}/docs （模拟器内访问 http://10.0.2.2:{args.port}）")
     subprocess.call([str(PY), "-m", "uvicorn", "app.main:app", "--host", args.host, "--port", str(args.port)], cwd=BACKEND)
 
