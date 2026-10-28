@@ -2,3 +2,4 @@
 *.onnx binary
 app/assets/ocr/ppocrv5_dict.txt -text
 *.png binary
+*.sh text eol=lf

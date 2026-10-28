@@ -91,6 +91,23 @@ class SettingsPage extends ConsumerWidget {
             if (v != null && v.isNotEmpty) n.update(s.copyWith(apiBaseUrl: v));
           },
         ),
+        ListTile(
+          leading: const Icon(Icons.key_outlined),
+          title: const Text('访问口令'),
+          subtitle: Text(s.apiToken.isEmpty ? '未设置（连接本机后端时不需要）' : '已设置'),
+          onTap: () async {
+            final c = TextEditingController(text: s.apiToken);
+            final v = await showDialog<String>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('访问口令'),
+                content: TextField(controller: c, decoration: const InputDecoration(hintText: '服务器部署时设置的口令')),
+                actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')), FilledButton(onPressed: () => Navigator.pop(ctx, c.text.trim()), child: const Text('确定'))],
+              ),
+            );
+            if (v != null) n.update(s.copyWith(apiToken: v));
+          },
+        ),
         head('关于'),
         const ListTile(
           leading: Icon(Icons.medical_information_outlined),

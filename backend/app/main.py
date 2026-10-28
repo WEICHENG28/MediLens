@@ -4,9 +4,12 @@
 """
 from __future__ import annotations
 
+import hmac
+import os
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from . import config  # noqa: F401  加载 .env
@@ -19,6 +22,16 @@ from .schemas import AnalyzeRequest
 
 app = FastAPI(title="MediLens API", version="0.2.0", docs_url="/docs", redoc_url=None)
 app.include_router(pending_router)
+
+
+@app.middleware("http")
+async def require_token(request: Request, call_next):
+    """设置了 API_TOKEN（部署到共享网络时）就要求请求带上访问口令；健康检查除外。本机开发不设即不检查。"""
+    token = os.environ.get("API_TOKEN", "")
+    if token and request.url.path.startswith("/api/") and request.url.path != "/api/v1/health":
+        if not hmac.compare_digest(request.headers.get("X-MediLens-Token", ""), token):
+            return JSONResponse(status_code=401, content={"message": "访问口令不正确"})
+    return await call_next(request)
 
 
 @app.get("/api/v1/health")

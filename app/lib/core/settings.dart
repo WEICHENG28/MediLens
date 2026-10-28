@@ -15,6 +15,7 @@ class AppSettings {
   final String apiBaseUrl; // 后端地址（开发期可改；正式版固定为国内服务器）
   final bool onboarded; // 是否看过启动说明
   final bool aiConsent; // 同意将脱敏结构化指标发送到云端解读服务（首次使用前单独告知）
+  final String apiToken; // 访问口令（部署在共享网络的服务器要求；本机开发留空）
 
   const AppSettings({
     this.displayMode = DisplayMode.normal,
@@ -24,14 +25,17 @@ class AppSettings {
     this.apiBaseUrl = defaultApiBaseUrl,
     this.onboarded = false,
     this.aiConsent = false,
+    this.apiToken = defaultApiToken,
   });
 
   /// Android 模拟器访问开发机本地后端的地址。可在编译时用 --dart-define=API_BASE_URL=... 覆盖。
   static const defaultApiBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:8000');
 
+  static const defaultApiToken = String.fromEnvironment('API_TOKEN');
+
   bool get elder => displayMode == DisplayMode.elder;
 
-  AppSettings copyWith({DisplayMode? displayMode, String? ocrMode, double? speechRate, bool? autoRead, String? apiBaseUrl, bool? onboarded, bool? aiConsent}) =>
+  AppSettings copyWith({DisplayMode? displayMode, String? ocrMode, double? speechRate, bool? autoRead, String? apiBaseUrl, bool? onboarded, bool? aiConsent, String? apiToken}) =>
       AppSettings(
         displayMode: displayMode ?? this.displayMode,
         ocrMode: ocrMode ?? this.ocrMode,
@@ -40,6 +44,7 @@ class AppSettings {
         apiBaseUrl: apiBaseUrl ?? this.apiBaseUrl,
         onboarded: onboarded ?? this.onboarded,
         aiConsent: aiConsent ?? this.aiConsent,
+        apiToken: apiToken ?? this.apiToken,
       );
 
   Map<String, dynamic> toJson() => {
@@ -50,6 +55,7 @@ class AppSettings {
         'apiBaseUrl': apiBaseUrl,
         'onboarded': onboarded,
         'aiConsent': aiConsent,
+        'apiToken': apiToken,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -60,6 +66,7 @@ class AppSettings {
         apiBaseUrl: j['apiBaseUrl'] as String? ?? defaultApiBaseUrl,
         onboarded: j['onboarded'] as bool? ?? false,
         aiConsent: j['aiConsent'] as bool? ?? false,
+        apiToken: j['apiToken'] as String? ?? defaultApiToken,
       );
 }
 

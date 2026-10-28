@@ -26,8 +26,9 @@ class HistoryBrief {
 
 class ApiClient {
   final String baseUrl;
+  final String token; // 访问口令，空字符串表示不带
   final http.Client _http;
-  ApiClient(this.baseUrl, [http.Client? client]) : _http = client ?? http.Client();
+  ApiClient(this.baseUrl, [http.Client? client, this.token = '']) : _http = client ?? http.Client();
 
   static Map<String, dynamic> analysisBody(ParsedReport report, Map<String, dynamic> answers, List<HistoryBrief> history) => {
         'report': {
@@ -43,7 +44,7 @@ class ApiClient {
     final http.Response r;
     try {
       r = await _http
-          .post(Uri.parse('$baseUrl$path'), headers: {'Content-Type': 'application/json; charset=utf-8'}, body: jsonEncode(body))
+          .post(Uri.parse('$baseUrl$path'), headers: {'Content-Type': 'application/json; charset=utf-8', if (token.isNotEmpty) 'X-MediLens-Token': token}, body: jsonEncode(body))
           .timeout(const Duration(seconds: 25));
     } catch (_) {
       // 写出连接地址，便于判断是后端未启动，还是真机使用了仅模拟器有效的 10.0.2.2
@@ -51,6 +52,7 @@ class ApiClient {
           '真机需在「设置 → 解读服务地址」改为电脑的局域网地址。已识别的指标仍保留在本机。');
     }
     final data = jsonDecode(utf8.decode(r.bodyBytes));
+    if (r.statusCode == 401) throw ApiException('访问口令不正确，请在「设置 → 访问口令」填写服务器的口令。');
     if (r.statusCode != 200) {
       throw ApiException(r.statusCode == 501 ? (data['message'] as String? ?? '功能待实现') : '服务暂时不可用（${r.statusCode}）');
     }
@@ -72,4 +74,4 @@ class ApiClient {
       });
 }
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient(ref.watch(settingsProvider).apiBaseUrl));
+final apiClientProvider = Provider<ApiClient>((ref) => ApiClient(ref.watch(settingsProvider).apiBaseUrl, null, ref.watch(settingsProvider).apiToken));
