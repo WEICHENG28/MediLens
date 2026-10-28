@@ -10,6 +10,7 @@
 - 设计记录（小组文档）：[docs/MVP2_设计记录.md](docs/MVP2_设计记录.md)
 - 开发进展（每轮迭代）：[docs/开发进展.md](docs/开发进展.md)
 - **成果与技术说明（组员版，非计算机专业也能看懂）**：[docs/MediLens成果与技术说明（组员版）.md](docs/MediLens成果与技术说明（组员版）.md)
+- **服务器部署与启动指南（学校 AIOP 平台）**：[docs/服务器部署与启动指南.md](docs/服务器部署与启动指南.md)
 - **组员电脑安装与运行指南（模拟器）**：[docs/组员电脑安装与运行指南.md](docs/组员电脑安装与运行指南.md)
 - **测试与课堂演示指南**：[docs/MVP2_测试与演示指南.md](docs/MVP2_测试与演示指南.md)（一键启动：`powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1`）
 - 网络请求清单与大陆网络测试方案：[docs/网络请求清单与大陆网络测试.md](docs/网络请求清单与大陆网络测试.md)
