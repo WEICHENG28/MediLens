@@ -41,8 +41,8 @@ except urllib.error.HTTPError: pass' "$u" 2>/dev/null; then
 done
 
 SRC_DIR="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)"
-if [ -f "$SRC_DIR/backend/requirements.txt" ] && [ ! -d "$SRC_DIR/.git" ]; then
-  # 从部署包（压缩包）解压后执行：直接使用解压出的目录，不连 GitHub
+if [ -f "$SRC_DIR/backend/requirements.txt" ] && [ ! -d "$SRC_DIR/.git" ] && [ "$SRC_DIR" != "$DIR" ]; then
+  # 从另外解压的部署包执行：直接使用该目录（在已安装的 ~/medilens 里执行则视为「更新」，会重新下载）
   DIR="$SRC_DIR"
   say "2/6 使用部署包中的代码：$DIR"
 elif [ "$GH_OK" = 1 ] && command -v git >/dev/null && [ -d "$DIR/.git" ]; then
