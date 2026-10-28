@@ -51,8 +51,7 @@ class ExplainPanel extends ConsumerWidget {
             if (cites.isNotEmpty) ...[
               const Text('资料来源', style: TextStyle(fontWeight: FontWeight.bold)),
               for (final c in cites)
-                Text('〔${c['id']}〕${c['title']} —— ${c['source']}（${c['review_status'] == 'unreviewed' ? '未审核' : c['review_status']}）',
-                    style: Theme.of(context).textTheme.bodySmall),
+                Text(citationLine(c), style: Theme.of(context).textTheme.bodySmall),
             ] else
               Text('暂无可核验的资料来源', style: Theme.of(context).textTheme.bodySmall),
             Align(

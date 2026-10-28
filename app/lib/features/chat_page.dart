@@ -100,7 +100,8 @@ class _Bubble extends StatelessWidget {
             const Text('安全提示', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFE65100))),
           Text(m.content),
           if (!user) ...[
-            for (final c in m.citations) Text('〔${c['id']}〕${c['source']}', style: Theme.of(context).textTheme.bodySmall),
+            if (m.citations.isNotEmpty) Text('资料来源', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
+            for (final c in m.citations) Text(citationLine(c), style: Theme.of(context).textTheme.bodySmall),
             Row(mainAxisSize: MainAxisSize.min, children: [
               ReadAloudButton(m.content),
               if (m.usedFallback) Text('（使用经规则约束的标准说明）', style: Theme.of(context).textTheme.bodySmall),

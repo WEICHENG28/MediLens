@@ -91,8 +91,29 @@ def bars(name, title, labels, base, ours, base_label, ours_label, note, higher_b
     save(fig, name)
 
 
+def kb_flow():
+    """知识库如何被使用：检索打分 → 大模型改写 → 检查 → 附出处。"""
+    fig, ax = plt.subplots(figsize=(12, 3.6))
+    ax.set_xlim(0, 12)
+    ax.set_ylim(0.4, 3.6)
+    ax.axis("off")
+    steps = [("用户提问\n或点「详细了解」", PHONE), ("在知识库打分找资料\n（程序，不是大模型）", RULE),
+             ("大模型只根据资料\n改写成口语", LLM), ("安全检查\n不通过就用原稿", RULE), ("显示回答\n+ 出处与审核状态", PHONE)]
+    w, h, gap = 2.0, 1.1, 0.4
+    for i, (t, c) in enumerate(steps):
+        x = 0.2 + i * (w + gap)
+        box(ax, x, 1.5, w, h, t, c, fs=10.5)
+        if i:
+            arrow(ax, x - gap, 1.5 + h / 2, x, 1.5 + h / 2)
+    ax.text(0.2 + w + gap + w / 2, 1.25, "指标相同 +2｜关键词 +1\n标题字词重合 +0.5", ha="center", va="top", fontsize=9, color="#333")
+    ax.text(0.2 + 2 * (w + gap) + w / 2, 1.25, "没有训练、没有微调", ha="center", va="top", fontsize=9, color="#333")
+    ax.text(6, 3.2, "知识库怎么被使用（像开书考试，不用训练）", ha="center", fontsize=14, fontweight="bold", color="#222")
+    save(fig, "06_知识库流程.png")
+
+
 def main():
     flow()
+    kb_flow()
     bars("02_实验D_对比直接问大模型.png", "实验 D：同一个大模型，直接问 vs 经过 MediLens",
          ["提醒「感染会让 UACR 偏高」", "错误安慰（看不清却说「总体良好」）", "直接下诊断", "回答附资料来源"],
          [60, 13.3, 18.3, 0], [100, 0, 0, 75], "直接问大模型", "MediLens",

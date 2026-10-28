@@ -11,10 +11,12 @@ def test_formal_kb_loaded_and_ranked_first(tmp_path, monkeypatch):
     monkeypatch.setattr(knowledge, "KB_FILES", [formal, knowledge.KB_DIR / "kb_test.yaml"])
     knowledge.load_kb.cache_clear()
     try:
-        hits = knowledge.search("UACR 和肾有什么关系", codes=["UACR"])
-        assert hits[0].id == "kb-uacr-901"           # 正式知识排在占位知识前
+        hits = knowledge.search(codes=["UACR"])
+        assert hits[0].id == "kb-uacr-901"           # 同样相关时，正式知识排在占位知识前
         assert any(h.id == "kb-test-uacr-001" for h in hits)  # 占位知识仍可检索
         assert knowledge.get("kb-uacr-901").source == "测试指南（p.1）"
+        # 问「是什么」时，标题为「…是什么」的条目更相关，排在前面
+        assert knowledge.search("UACR是什么", codes=["UACR"])[0].id == "kb-test-uacr-001"
     finally:
         knowledge.load_kb.cache_clear()
 

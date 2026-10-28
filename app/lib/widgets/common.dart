@@ -5,6 +5,15 @@ import 'package:flutter_tts/flutter_tts.dart';
 import '../core/settings.dart';
 import '../core/theme.dart';
 
+/// 资料来源一行：标题、出处与年份、是否经医学审核。
+String citationLine(Map c) {
+  final status = c['review_status'];
+  final reviewed = status == 'reviewed' || status == '已审核';
+  final version = (c['source_version'] ?? '').toString();
+  return '· ${c['title']}\n  出处：${c['source']}${version.isEmpty ? '' : '（$version）'}'
+      '${reviewed ? '' : ' · 未经医学审核'}';
+}
+
 /// 「测试规则，未经医学审核」醒目标识：所有展示判读结果的页面都必须显示。
 class TestRuleBanner extends StatelessWidget {
   const TestRuleBanner({super.key});

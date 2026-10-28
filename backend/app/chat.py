@@ -82,7 +82,8 @@ def explain(req: ExplainRequest) -> ExplainResponse:
         sections = [
             ExplainSection(heading="为什么出现这条提示", body=hit.detail),
             ExplainSection(heading="相关指标", body=rel_text or "无"),
-            ExplainSection(heading="依据", body=f"{hit.rule_id}（{hit.review_status}）；参考资料为占位说明，非指南原文"),
+            ExplainSection(heading="依据", body=f"{hit.rule_id}（{hit.review_status}）；参考资料见下方来源"
+                           + ("" if any(not c.id.startswith("kb-test") for c in cites) else "（目前为占位说明，非指南原文）")),
         ]
         return ExplainResponse(target=hit.rule_id, title=hit.title, short=hit.summary, sections=sections,
                                citations=cites, doctor_questions=hit.doctor_questions)
@@ -91,11 +92,19 @@ def explain(req: ExplainRequest) -> ExplainResponse:
     if item is None:
         return ExplainResponse(target=req.target, title="未找到", short="报告中没有这一项，无法解释。",
                                sections=[], citations=[], doctor_questions=[])
-    cites = knowledge.search(codes=[item.code], limit=2)
+    # 一条讲「是什么」，一条讲「这次结果」相关的延伸说明（按结果状态检索）
+    what = knowledge.search(query=f"{item.name}是什么", codes=[item.code], limit=1)
+    state = "阳性升高偏高" if item.status.value == "abnormal" else "阴性正常"
+    on_sglt2 = any("SGLT2" in h.title for h in res.hits)  # 用药相关的说明只在命中用药规则时出现
+    more = [c for c in knowledge.search(query=f"{item.name}{state}", codes=[item.code], limit=4)
+            if (not what or c.id != what[0].id) and (on_sglt2 or "SGLT2" not in c.title)][:1]
+    cites = what + more
     related_hits = [h for h in res.hits if item.code in h.related_items]
     value = f"{item.raw_value or '未识别'}{(' ' + item.unit) if item.unit else ''}"
     short = f"{item.name}：{value}（{_status_text(item)}）"
-    sections = [ExplainSection(heading="这个指标是什么", body=cites[0].text if cites else "暂无可核验的资料。")]
+    sections = [ExplainSection(heading="这个指标是什么", body=what[0].text if what else "暂无可核验的资料。")]
+    if more:
+        sections.append(ExplainSection(heading=more[0].title, body=more[0].text))
     if item.conversion_note:
         sections.append(ExplainSection(heading="单位换算", body=item.conversion_note))
     sections.append(ExplainSection(heading="判断依据", body=item.status_reason or "—"))
