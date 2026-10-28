@@ -195,3 +195,18 @@ def test_intent_llm_failure_falls_through(monkeypatch):
     monkeypatch.setattr(chat_mod, "get_intent_provider", lambda: Down())
     r = chat(creq("这个指标是什么", focus="KET"))
     assert r.safety_category is None and "酮体" in r.answer
+
+def test_overall_question_uses_overview():
+    r = chat(creq("这份报告整体怎么样？"))
+    assert not r.no_evidence and "总体判断" in r.answer and "尿糖和尿酮体同时阳性" in r.answer
+
+
+def test_unrelated_question_still_no_evidence():
+    assert chat(creq("今天天气怎么样")).no_evidence
+
+
+def test_item_named_in_question_without_focus():
+    r = chat(creq("我的白细胞正常吗"))
+    assert "您的白细胞" in r.answer and r.citations
+    r = chat(creq("尿糖和尿酮同时阳性要注意什么？"))
+    assert "酮症" in r.answer and r.citations[0].id == "kb-ket-102"

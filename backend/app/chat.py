@@ -175,6 +175,19 @@ def _safety_answer(category: str, res: AnalyzeResponse) -> str:
             + basis + "建议复诊时直接向医生提出这个问题。")
 
 
+_OVERALL = re.compile(r"整体|总体|总的来说|(报告|结果|检查|指标|这次|化验).*(怎么样|如何|严重|要紧|正常|问题|好不好)")
+_WHAT_IS = re.compile(r"是什么|什么意思|指什么")
+_SHORT_NAMES = {
+    "GLU": ["尿糖", "葡萄糖"], "KET": ["尿酮", "酮体"], "PRO": ["尿蛋白", "蛋白质"], "LEU": ["白细胞"],
+    "NIT": ["亚硝酸"], "BLD": ["隐血", "潜血", "红细胞"], "SG": ["比重"], "PH": ["酸碱", "PH"],
+    "UACR": ["UACR", "白蛋白", "肌酐比"],
+}
+
+
+def _aliases(item) -> list[str]:
+    return [item.name, item.code.upper(), *_SHORT_NAMES.get(item.code.upper(), [])]
+
+
 def _draft(req: ChatRequest, res: AnalyzeResponse) -> tuple[str, list[Citation]]:
     focus = (req.focus or "").upper()
     hit = next((h for h in res.hits if h.rule_id.upper() == focus), None)
@@ -194,7 +207,25 @@ def _draft(req: ChatRequest, res: AnalyzeResponse) -> tuple[str, list[Citation]]
                 return "；".join(h.summary for h in hs), knowledge.search(codes=[item.code])
             return f"本次报告中，{item.name}没有与其他指标一起触发测试规则。", knowledge.search(codes=[item.code])
 
+    if not focus:
+        # 没有指定焦点：从问题里认出提到的指标；问「整体怎么样」时用总览回答
+        codes = [i.code for i in res.items if i.code and any(a in req.message.upper() for a in _aliases(i))]
+        if len(codes) == 1:
+            item = next(i for i in res.items if i.code == codes[0])
+        if codes and not _WHAT_IS.search(req.message):  # 问「是什么」时只解释指标，不套组合规则
+            hit = next((h for h in res.hits if set(codes) <= set(h.related_items)), None) or \
+                next((h for h in res.hits if set(codes) & set(h.related_items)), None)
+        if not codes and _OVERALL.search(req.message):
+            parts = [f"这份报告的总体判断：{res.overall.label}。{res.overall.explanation}"]
+            parts += [f"「{h.title}」：{h.summary}" for h in res.hits]
+            cites = [c for h in res.hits for c in (knowledge.get(e) for e in h.evidence_ids[:1]) if c]
+            return "\n".join(parts), cites
+
     cites = knowledge.search(query=req.message, codes=codes)
+    if hit:  # 命中组合规则时，优先引用该规则的依据
+        cites = [c for c in (knowledge.get(e) for e in hit.evidence_ids) if c][:2] + \
+            [c for c in cites if c.id not in hit.evidence_ids]
+        cites = cites[:3]
     parts = []
     if hit:
         parts.append(hit.summary)
