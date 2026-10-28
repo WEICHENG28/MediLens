@@ -10,9 +10,13 @@
 powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1
 ```
 
-脚本会依次：启动后端（**背景运行，没有单独窗口**，记录写入 `backend\backend.log`；启动失败会直接显示原因）→ 启动模拟器 → 安装 APP → 打开 MediLens。看到「已在模拟器中打开 MediLens」即可。演示结束后可不管后端（重启电脑即关闭），或执行脚本最后显示的 `taskkill` 指令。
+脚本会依次：**确认学校服务器**（http://101.6.162.67:8000，需在校园网内）→ 启动模拟器 → 安装 APP → 打开 MediLens。看到「已在模拟器中打开 MediLens」即可。
 
-- 修改过代码后加 `-Rebuild` 重新构建：`... start_demo.ps1 -Rebuild`
+- **默认连学校服务器**（读取本机 `.env` 里的 `MEDILENS_SERVER` / `MEDILENS_TOKEN`），不需要在电脑上开后端。
+- **连不上服务器时自动改用本机后端**（背景运行，记录写入 `backend\backend.log`），并自动重新打包连本机的 APK；结束后执行脚本最后显示的 `taskkill` 指令关闭后端。
+- 强制使用本机后端（例如要测试还没部署到服务器的改动）：`... start_demo.ps1 -Local`
+- 修改过 APP 代码后加 `-Rebuild` 重新构建：`... start_demo.ps1 -Rebuild`
+- 改了后端代码要让服务器生效：推送到 GitHub 后，在服务器终端执行 `bash ~/medilens/scripts/server-setup.sh`（见 `docs\服务器部署与启动指南.md`）
 - 首次启动模拟器约 1 分钟；建议**上课前 10 分钟**先跑一次
 - 关闭其他大型程序（浏览器多标签页、游戏等），电脑内存 16GB，模拟器约占 3GB
 
@@ -112,7 +116,7 @@ python tools/check_network.py                                                  #
 
 | 问题 | 处理 |
 |---|---|
-| 「查看解读」提示无法连接 | ① 后端没有运行：浏览器打开 http://127.0.0.1:8000/api/v1/health，打不开就执行 `python scripts\run_backend.py`（需 Python 3.10 以上）；② APP 装在**真机**上：默认地址 10.0.2.2 只在模拟器内有效，需在「设置 → 解读服务地址」改为电脑的局域网地址（如 http://192.168.1.5:8000），手机与电脑连同一 Wi-Fi，并允许 Windows 防火墙放行 8000 端口；③ 交付包不含开发工具链，组员电脑上一键启动脚本无法直接使用，需先按 README 安装 Flutter 与 Android SDK |
+| 「查看解读」提示无法连接 | ⓪ 连学校服务器时：确认在校园网内、服务器已开机（浏览器打开 http://101.6.162.67:8000/api/v1/health）；① 使用本机后端时：后端没有运行：浏览器打开 http://127.0.0.1:8000/api/v1/health，打不开就执行 `python scripts\run_backend.py`（需 Python 3.10 以上）；② APP 装在**真机**上：默认地址 10.0.2.2 只在模拟器内有效，需在「设置 → 解读服务地址」改为电脑的局域网地址（如 http://192.168.1.5:8000），手机与电脑连同一 Wi-Fi，并允许 Windows 防火墙放行 8000 端口；③ 交付包不含开发工具链，组员电脑上一键启动脚本无法直接使用，需先按 README 安装 Flutter 与 Android SDK |
 | 模拟器窗口跑到屏幕外/只显示一半 | 执行 `powershell -ExecutionPolicy Bypass -File scripts\fit_emulator_window.ps1`，窗口会移到屏幕右侧并缩放到合适大小（一键启动已自动执行） |
 | 模拟器黑屏/很卡 | 关闭其他程序；在模拟器窗口关闭后重新执行一键启动 |
 | 脚本提示「无法加载，因为在此系统上禁止运行脚本」 | 使用文中的 `powershell -ExecutionPolicy Bypass -File ...` 写法 |
