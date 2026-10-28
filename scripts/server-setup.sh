@@ -29,8 +29,7 @@ python3 -c 'import sys; assert sys.version_info >= (3, 10)' || fail "Python 版�
 echo "Python：$(python3 -V 2>&1)"
 echo "IP 地址：$(hostname -I 2>/dev/null)"
 for u in https://github.com https://mirrors.aliyun.com https://llmapi.paratera.com; do
-  code=$(curl -s -m 8 -o /dev/null -w '%{http_code}' "$u" || true)
-  echo "联网 $u → ${code:-失败}"
+  if wget -q --spider --timeout=8 --tries=1 "$u"; then echo "联网 $u → 可连接"; else echo "联网 $u → 失败"; fi
 done
 
 SRC_DIR="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)"
@@ -72,7 +71,7 @@ if [ ! -x "$VENV/bin/python" ]; then
     echo "系统缺少 venv 组件，改用不需要 sudo 的方式安装 pip"
     rm -rf "$VENV"
     python3 -m venv --without-pip "$VENV" || fail "无法建立虚拟环境"
-    curl -s -m 60 https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py || fail "下载 get-pip 失败"
+    wget -q --timeout=60 --tries=2 -O /tmp/get-pip.py https://mirrors.aliyun.com/pypi/get-pip.py       || wget -q --timeout=60 --tries=2 -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py       || fail "下载 get-pip 失败"
     "$VENV/bin/python" /tmp/get-pip.py -q -i "$PIP_INDEX" || fail "安装 pip 失败"
   fi
 fi

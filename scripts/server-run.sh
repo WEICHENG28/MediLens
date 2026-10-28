@@ -10,8 +10,8 @@ cd "$DIR/backend" || exit 1
 nohup "$DIR/backend/.venv/bin/python" -m uvicorn app.main:app --host 0.0.0.0 --port $PORT >"$LOG" 2>&1 &
 
 for _ in $(seq 1 30); do
-  if curl -s -m 2 "http://127.0.0.1:$PORT/api/v1/health" >/dev/null; then
-    echo "✓ 后端已启动：$(curl -s "http://127.0.0.1:$PORT/api/v1/health")"
+  if HEALTH=$(wget -qO- --timeout=2 --tries=1 "http://127.0.0.1:$PORT/api/v1/health" 2>/dev/null); then
+    echo "✓ 后端已启动：$HEALTH"
     exit 0
   fi
   sleep 1
