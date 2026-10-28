@@ -30,7 +30,10 @@ echo "Python：$(python3 -V 2>&1)"
 echo "IP 地址：$(hostname -I 2>/dev/null)"
 GH_OK=0
 for u in https://github.com https://cdn.jsdelivr.net https://mirrors.aliyun.com https://llmapi.paratera.com; do
-  if wget -q --spider --timeout=8 --tries=1 "$u"; then
+  # 服务器有回应（即使是 404/401）就算可连接
+  if python3 -c 'import sys, urllib.request, urllib.error
+try: urllib.request.urlopen(sys.argv[1], timeout=8)
+except urllib.error.HTTPError: pass' "$u" 2>/dev/null; then
     echo "联网 $u → 可连接"; [ "$u" = https://github.com ] && GH_OK=1
   else
     echo "联网 $u → 失败"
@@ -96,13 +99,29 @@ fi
 
 say "3/6 建立 Python 虚拟环境并安装依赖（首次约 1–3 分钟）"
 VENV="$DIR/backend/.venv"
-if [ ! -x "$VENV/bin/python" ]; then
+if ! "$VENV/bin/python" -m pip --version >/dev/null 2>&1; then
+  rm -rf "$VENV"
   if ! python3 -m venv "$VENV" 2>/dev/null; then
     echo "系统缺少 venv 组件，改用不需要 sudo 的方式安装 pip"
     rm -rf "$VENV"
     python3 -m venv --without-pip "$VENV" || fail "无法建立虚拟环境"
-    wget -q --timeout=60 --tries=2 -O /tmp/get-pip.py https://mirrors.aliyun.com/pypi/get-pip.py       || wget -q --timeout=60 --tries=2 -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py       || fail "下载 get-pip 失败"
-    "$VENV/bin/python" /tmp/get-pip.py -q -i "$PIP_INDEX" || fail "安装 pip 失败"
+    # 系统没有 ensurepip/distutils：从国内镜像下载最新 pip 的 wheel，用它安装自己（新版 pip 不依赖 distutils）
+    PIP_WHL=$(python3 - "$PIP_INDEX" <<'PY'
+import re, sys, urllib.parse, urllib.request
+index = sys.argv[1].rstrip("/") + "/pip/"
+html = urllib.request.urlopen(index, timeout=30).read().decode()
+found = []
+for href in re.findall(r'href="([^"]+)"', html):
+    m = re.search(r"pip-(\d+)\.(\d+)(?:\.(\d+))?-py3-none-any\.whl", href)
+    if m:
+        found.append((tuple(int(x or 0) for x in m.groups()), urllib.parse.urljoin(index, href.split("#")[0])))
+ver, url = max(found)
+dest = "/tmp/" + url.rsplit("/", 1)[1]
+urllib.request.urlretrieve(url, dest)
+print(dest)
+PY
+) || fail "下载 pip 失败"
+    "$VENV/bin/python" "$PIP_WHL/pip" install -q -i "$PIP_INDEX" "$PIP_WHL" || fail "安装 pip 失败"
   fi
 fi
 "$VENV/bin/python" -m pip install -q -i "$PIP_INDEX" -r "$DIR/backend/requirements.txt" \
