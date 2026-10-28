@@ -16,6 +16,7 @@ class AppSettings {
   final bool onboarded; // 是否看过启动说明
   final bool aiConsent; // 同意将脱敏结构化指标发送到云端解读服务（首次使用前单独告知）
   final String apiToken; // 访问口令（部署在共享网络的服务器要求；本机开发留空）
+  final bool connectionCustom; // 用户是否在设置中手动改过地址/口令；未改过则一律使用本版 APK 的预设
 
   const AppSettings({
     this.displayMode = DisplayMode.normal,
@@ -26,6 +27,7 @@ class AppSettings {
     this.onboarded = false,
     this.aiConsent = false,
     this.apiToken = defaultApiToken,
+    this.connectionCustom = false,
   });
 
   /// Android 模拟器访问开发机本地后端的地址。可在编译时用 --dart-define=API_BASE_URL=... 覆盖。
@@ -35,7 +37,7 @@ class AppSettings {
 
   bool get elder => displayMode == DisplayMode.elder;
 
-  AppSettings copyWith({DisplayMode? displayMode, String? ocrMode, double? speechRate, bool? autoRead, String? apiBaseUrl, bool? onboarded, bool? aiConsent, String? apiToken}) =>
+  AppSettings copyWith({DisplayMode? displayMode, String? ocrMode, double? speechRate, bool? autoRead, String? apiBaseUrl, bool? onboarded, bool? aiConsent, String? apiToken, bool? connectionCustom}) =>
       AppSettings(
         displayMode: displayMode ?? this.displayMode,
         ocrMode: ocrMode ?? this.ocrMode,
@@ -45,6 +47,7 @@ class AppSettings {
         onboarded: onboarded ?? this.onboarded,
         aiConsent: aiConsent ?? this.aiConsent,
         apiToken: apiToken ?? this.apiToken,
+        connectionCustom: connectionCustom ?? this.connectionCustom,
       );
 
   Map<String, dynamic> toJson() => {
@@ -56,6 +59,7 @@ class AppSettings {
         'onboarded': onboarded,
         'aiConsent': aiConsent,
         'apiToken': apiToken,
+        'connectionCustom': connectionCustom,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
@@ -63,10 +67,12 @@ class AppSettings {
         ocrMode: 'local', // 本轮无注册用户，强制本地
         speechRate: (j['speechRate'] as num?)?.toDouble() ?? 0.5,
         autoRead: j['autoRead'] as bool? ?? false,
-        apiBaseUrl: j['apiBaseUrl'] as String? ?? defaultApiBaseUrl,
+        // 旧版会把当时的默认地址一并存下；只有用户手动改过才沿用，否则跟随新版 APK 的预设
+        apiBaseUrl: j['connectionCustom'] == true ? (j['apiBaseUrl'] as String? ?? defaultApiBaseUrl) : defaultApiBaseUrl,
         onboarded: j['onboarded'] as bool? ?? false,
         aiConsent: j['aiConsent'] as bool? ?? false,
-        apiToken: j['apiToken'] as String? ?? defaultApiToken,
+        apiToken: j['connectionCustom'] == true ? (j['apiToken'] as String? ?? defaultApiToken) : defaultApiToken,
+        connectionCustom: j['connectionCustom'] as bool? ?? false,
       );
 }
 

@@ -88,7 +88,7 @@ class SettingsPage extends ConsumerWidget {
                 actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')), FilledButton(onPressed: () => Navigator.pop(ctx, c.text.trim()), child: const Text('确定'))],
               ),
             );
-            if (v != null && v.isNotEmpty) n.update(s.copyWith(apiBaseUrl: v));
+            if (v != null && v.isNotEmpty) n.update(s.copyWith(apiBaseUrl: v, connectionCustom: true));
           },
         ),
         ListTile(
@@ -105,7 +105,7 @@ class SettingsPage extends ConsumerWidget {
                 actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')), FilledButton(onPressed: () => Navigator.pop(ctx, c.text.trim()), child: const Text('确定'))],
               ),
             );
-            if (v != null) n.update(s.copyWith(apiToken: v));
+            if (v != null) n.update(s.copyWith(apiToken: v, connectionCustom: true));
           },
         ),
         head('关于'),
