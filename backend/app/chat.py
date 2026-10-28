@@ -210,6 +210,13 @@ def _draft(req: ChatRequest, res: AnalyzeResponse) -> tuple[str, list[Citation]]
             if hs:
                 return "；".join(h.summary for h in hs), knowledge.search(codes=[item.code])
             return f"本次报告中，{item.name}没有与其他指标一起触发测试规则。", knowledge.search(codes=[item.code])
+        # 没有选定指标：概述整份报告中一起触发的组合
+        if res.hits:
+            lines = [f"「{h.title}」（{'、'.join(i.name for i in res.items if i.code in h.related_items)}）：{h.summary}"
+                     for h in res.hits]
+            cites = [c for h in res.hits for c in (knowledge.get(e) for e in h.evidence_ids[:1]) if c]
+            return "本次报告中需要一起看的指标：\n" + "\n".join(lines), cites
+        return "本次报告没有多个指标一起触发测试规则。想了解单个指标，可以直接问，例如「尿蛋白是什么」。", []
 
     if not focus:
         # 没有指定焦点：从问题里认出提到的指标；问「整体怎么样」时用总览回答
@@ -219,6 +226,19 @@ def _draft(req: ChatRequest, res: AnalyzeResponse) -> tuple[str, list[Citation]]
         if codes and not _WHAT_IS.search(req.message):  # 问「是什么」时只解释指标，不套组合规则
             hit = next((h for h in res.hits if set(codes) <= set(h.related_items)), None) or \
                 next((h for h in res.hits if set(codes) & set(h.related_items)), None)
+        if not codes and _WHAT_IS.search(req.message):
+            # 「这个指标是什么」但没有选定指标：解释本次需要关注的指标（最多 3 项）
+            watch = [i for i in res.items if i.code and (i.status.value == "abnormal" or any(i.code in h.related_items for h in res.hits))][:3]
+            parts, cites = [], []
+            for it in watch:
+                c = knowledge.search(query=f"{it.name}是什么", codes=[it.code], limit=1)
+                if c:
+                    parts.append(f"{it.name}（本次结果 {it.raw_value or '未识别'}）：{c[0].text}")
+                    cites += c
+            if parts:
+                return "本次需要关注的指标：\n" + "\n".join(parts), cites
+            return ("本次报告的指标都在参考范围内。想了解某个指标，可以直接问，例如「尿蛋白是什么」，"
+                    "或在总览中点该指标的「就这一条提问」。"), []
         if not codes and _OVERALL.search(req.message):
             parts = [f"这份报告的总体判断：{res.overall.label}。{res.overall.explanation}"]
             parts += [f"「{h.title}」：{h.summary}" for h in res.hits]
@@ -303,6 +323,8 @@ def chat(req: ChatRequest) -> ChatResponse:
         return safety(category)
 
     draft, cites = _draft(req, res)
+    if req.quick == "doctor":  # 复诊问题清单由规则直接生成，不需要大模型改写
+        return ChatResponse(answer=draft, citations=cites, provider="template", used_fallback=False)
     facts = _facts_text(res, draft, cites) if draft else ""
     urgent_allowed = res.urgent_alert.show or res.overall.level == Level.red
 

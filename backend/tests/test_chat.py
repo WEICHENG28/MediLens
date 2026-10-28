@@ -223,3 +223,13 @@ def test_severity_question_uses_overview():
     for q in ["我這個並嚴重嗎", "我这个病严重吗", "要紧吗", "我的情况怎么样"]:
         r = chat(creq(q))
         assert not r.no_evidence and "总体判断" in r.answer, q
+
+
+def test_quick_buttons_without_focus():
+    # 从总览直接进入提问页（未选定指标）时，三个快捷按钮都要有实际回答
+    r = chat(creq("这个指标是什么"))
+    assert not r.no_evidence and "本次需要关注的指标" in r.answer and r.citations
+    r = chat(creq("哪些指标有关", quick="related"))
+    assert "需要一起看的指标" in r.answer and "尿糖与尿酮体同时阳性" in r.answer
+    r = chat(creq("复诊问什么", quick="doctor"))
+    assert "复诊时可以问医生" in r.answer and not r.used_fallback
