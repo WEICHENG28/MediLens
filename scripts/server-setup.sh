@@ -5,6 +5,10 @@
 #   wget raw.githubusercontent.com/weicheng28/medilens/dev/scripts/server-setup.sh
 #   bash server-setup.sh
 #
+# 服务器连不上 GitHub 时，改用部署包 medilens-server.zip（放到服务器的主目录后）：
+#   python3 -m zipfile -e medilens-server.zip medilens
+#   bash medilens/scripts/server-setup.sh
+#
 # 做的事：下载代码 → 建 Python 虚拟环境并安装依赖 → 生成 .env（含访问口令）→ 设定开机自动启动 → 启动后端。
 # 大模型密钥不会由本脚本写入，需要本人用 nano 填写（见最后的提示）。
 set -u
@@ -29,8 +33,13 @@ for u in https://github.com https://mirrors.aliyun.com https://llmapi.paratera.c
   echo "联网 $u → ${code:-失败}"
 done
 
-say "2/6 下载最新代码到 $DIR"
-if command -v git >/dev/null && [ -d "$DIR/.git" ]; then
+SRC_DIR="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)"
+if [ -f "$SRC_DIR/backend/requirements.txt" ] && [ ! -d "$SRC_DIR/.git" ]; then
+  # 从部署包（压缩包）解压后执行：直接使用解压出的目录，不连 GitHub
+  DIR="$SRC_DIR"
+  say "2/6 使用部署包中的代码：$DIR"
+elif command -v git >/dev/null && [ -d "$DIR/.git" ]; then
+  say "2/6 更新代码：$DIR"
   git -C "$DIR" fetch --depth 1 origin "$BRANCH" && git -C "$DIR" reset --hard "origin/$BRANCH" || fail "更新代码失败（检查是否已登录校园网）"
 elif command -v git >/dev/null && [ ! -e "$DIR" ]; then
   git clone --depth 1 -b "$BRANCH" "https://github.com/$REPO.git" "$DIR" || fail "下载代码失败（检查是否已登录校园网）"
@@ -67,7 +76,9 @@ if [ ! -x "$VENV/bin/python" ]; then
     "$VENV/bin/python" /tmp/get-pip.py -q -i "$PIP_INDEX" || fail "安装 pip 失败"
   fi
 fi
-"$VENV/bin/python" -m pip install -q -i "$PIP_INDEX" -r "$DIR/backend/requirements.txt" || fail "安装依赖失败"
+"$VENV/bin/python" -m pip install -q -i "$PIP_INDEX" -r "$DIR/backend/requirements.txt" \
+  || "$VENV/bin/python" -m pip install -q -i https://pypi.tuna.tsinghua.edu.cn/simple -r "$DIR/backend/requirements.txt" \
+  || fail "安装依赖失败（阿里云与清华镜像都连不上）"
 echo "依赖安装完成"
 
 say "4/6 设定 .env（已存在则保留，不覆盖）"
