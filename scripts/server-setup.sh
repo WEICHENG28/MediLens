@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # MediLens 后端服务器部署（Ubuntu 22.04 以上，不需要 sudo）。可重复执行：第二次执行即为「更新到最新版」。
 #
-# 在服务器终端执行（全部小写，方便在不能输入大写的远程桌面里打字）：
-#   wget raw.githubusercontent.com/weicheng28/medilens/dev/scripts/server-setup.sh
-#   bash server-setup.sh
+# 在服务器终端执行（GitHub 被墙时经 jsDelivr 国内可用的 CDN 下载）：
+#   wget https://cdn.jsdelivr.net/gh/weicheng28/medilens@dev/scripts/server-setup.sh
+#   bash server-setup.sh [分支或提交编号，默认 dev]
 #
 # 服务器连不上 GitHub 时，改用部署包 medilens-server.zip（放到服务器的主目录后）：
 #   python3 -m zipfile -e medilens-server.zip medilens
@@ -14,8 +14,8 @@
 set -u
 
 REPO="WEICHENG28/MediLens"
-BRANCH="dev"
-DIR="$HOME/MediLens"
+BRANCH="${1:-dev}"
+DIR="$HOME/medilens"
 PIP_INDEX="https://mirrors.aliyun.com/pypi/simple/"
 PORT=8000
 
@@ -28,8 +28,13 @@ command -v python3 >/dev/null || fail "找不到 python3，请联系管理员安
 python3 -c 'import sys; assert sys.version_info >= (3, 10)' || fail "Python 版本需要 3.10 以上：$(python3 -V)"
 echo "Python：$(python3 -V 2>&1)"
 echo "IP 地址：$(hostname -I 2>/dev/null)"
-for u in https://github.com https://mirrors.aliyun.com https://llmapi.paratera.com; do
-  if wget -q --spider --timeout=8 --tries=1 "$u"; then echo "联网 $u → 可连接"; else echo "联网 $u → 失败"; fi
+GH_OK=0
+for u in https://github.com https://cdn.jsdelivr.net https://mirrors.aliyun.com https://llmapi.paratera.com; do
+  if wget -q --spider --timeout=8 --tries=1 "$u"; then
+    echo "联网 $u → 可连接"; [ "$u" = https://github.com ] && GH_OK=1
+  else
+    echo "联网 $u → 失败"
+  fi
 done
 
 SRC_DIR="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)"
@@ -37,30 +42,49 @@ if [ -f "$SRC_DIR/backend/requirements.txt" ] && [ ! -d "$SRC_DIR/.git" ]; then
   # 从部署包（压缩包）解压后执行：直接使用解压出的目录，不连 GitHub
   DIR="$SRC_DIR"
   say "2/6 使用部署包中的代码：$DIR"
-elif command -v git >/dev/null && [ -d "$DIR/.git" ]; then
+elif [ "$GH_OK" = 1 ] && command -v git >/dev/null && [ -d "$DIR/.git" ]; then
   say "2/6 更新代码：$DIR"
   git -C "$DIR" fetch --depth 1 origin "$BRANCH" && git -C "$DIR" reset --hard "origin/$BRANCH" || fail "更新代码失败（检查是否已登录校园网）"
-elif command -v git >/dev/null && [ ! -e "$DIR" ]; then
+elif [ "$GH_OK" = 1 ] && command -v git >/dev/null && [ ! -e "$DIR" ]; then
+  say "2/6 下载代码（git）：$DIR"
   git clone --depth 1 -b "$BRANCH" "https://github.com/$REPO.git" "$DIR" || fail "下载代码失败（检查是否已登录校园网）"
 else
-  # 没有 git，或目录不是 git 仓库：下载压缩包覆盖代码，保留 .env 与虚拟环境
-  python3 - "$REPO" "$BRANCH" "$DIR" <<'PY' || fail "下载代码失败（检查是否已登录校园网）"
-import io, shutil, sys, urllib.request, zipfile
+  # 没有 git 或连不上 GitHub：先试 GitHub 压缩包，不行就经 jsDelivr 逐个下载后端需要的文件（保留 .env 与虚拟环境）
+  say "2/6 下载代码：$DIR"
+  python3 - "$REPO" "$BRANCH" "$DIR" <<'PY' || fail "下载代码失败（检查网络）"
+import io, json, shutil, sys, urllib.request, zipfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-repo, branch, dest = sys.argv[1], sys.argv[2], Path(sys.argv[3])
-data = urllib.request.urlopen(f"https://codeload.github.com/{repo}/zip/refs/heads/{branch}", timeout=120).read()
-z = zipfile.ZipFile(io.BytesIO(data))
-root = z.namelist()[0].split("/")[0]
+repo, ref, dest = sys.argv[1], sys.argv[2], Path(sys.argv[3])
 dest.mkdir(parents=True, exist_ok=True)
-for name in z.namelist():
-    rel = name[len(root) + 1:]
-    if not rel or name.endswith("/"):
-        continue
-    target = dest / rel
-    target.parent.mkdir(parents=True, exist_ok=True)
-    with z.open(name) as src, open(target, "wb") as out:
-        shutil.copyfileobj(src, out)
-print("已下载并解压", len(z.namelist()), "个文件")
+NEED = ("backend/", "scripts/server-", ".env.example", "tools/check_llm.py")
+
+def get(url, timeout=30):
+    return urllib.request.urlopen(url, timeout=timeout).read()
+
+try:
+    z = zipfile.ZipFile(io.BytesIO(get(f"https://codeload.github.com/{repo}/zip/{ref}", 20)))
+    root = z.namelist()[0].split("/")[0]
+    names = [n for n in z.namelist() if not n.endswith("/") and n[len(root) + 1:].startswith(NEED)]
+    for n in names:
+        t = dest / n[len(root) + 1:]
+        t.parent.mkdir(parents=True, exist_ok=True)
+        t.write_bytes(z.read(n))
+    print(f"已从 GitHub 下载 {len(names)} 个文件")
+except Exception as e:
+    print(f"GitHub 不可用（{type(e).__name__}），改用 jsDelivr")
+    lower = repo.lower()
+    listing = json.loads(get(f"https://data.jsdelivr.com/v1/packages/gh/{lower}@{ref}?structure=flat"))
+    files = [f["name"].lstrip("/") for f in listing["files"] if f["name"].lstrip("/").startswith(NEED)]
+
+    def fetch(rel):
+        t = dest / rel
+        t.parent.mkdir(parents=True, exist_ok=True)
+        t.write_bytes(get(f"https://cdn.jsdelivr.net/gh/{lower}@{ref}/{rel}", 60))
+
+    with ThreadPoolExecutor(8) as ex:
+        list(ex.map(fetch, files))
+    print(f"已从 jsDelivr 下载 {len(files)} 个文件")
 PY
 fi
 
