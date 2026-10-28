@@ -1,20 +1,42 @@
-﻿# MediLens 一键演示：启动后端 → 启动模拟器 → 安装并打开 APP
+﻿# MediLens 一键演示：确认解读服务 → 启动模拟器 → 安装并打开 APP
 # 用法（在 PowerShell 中，于仓库根目录执行）：
 #   powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1
+# 默认连接学校服务器（.env 里的 MEDILENS_SERVER / MEDILENS_TOKEN）；连不上时自动改用本机后端。
 # 可选参数：-Rebuild  重新构建 APK（修改过代码后使用）
+#           -Local    不用学校服务器，强制使用本机后端
 
-param([switch]$Rebuild)
+param([switch]$Rebuild, [switch]$Local)
 
 $ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 . (Join-Path $PSScriptRoot "dev-env.ps1")
-$Apk = Join-Path $Root "app\build\app\outputs\flutter-apk\app-debug.apk"
+$Apk = Join-Path $Root "app\build\app\outputs\flutter-apk\app-x86_64-debug.apk"
+$Marker = Join-Path $Root "app\build\medilens_target.txt"  # 记录现有 APK 连接的是哪个服务
+
+# 从 .env 读取学校服务器设定（.env 不入库）
+$Server = ""; $Token = ""
+$EnvFile = Join-Path $Root ".env"
+if (Test-Path $EnvFile) {
+    foreach ($line in Get-Content $EnvFile -Encoding UTF8) {
+        if ($line -match '^\s*MEDILENS_SERVER\s*=\s*(.+)$') { $Server = $Matches[1].Trim() }
+        if ($line -match '^\s*MEDILENS_TOKEN\s*=\s*(.+)$') { $Token = $Matches[1].Trim() }
+    }
+}
 $AppId = "cn.medilens.medilens"
 
 function Step($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
 
-# 1. 后端
-Step "1/4 检查后端（http://127.0.0.1:8000）"
+# 1. 解读服务：优先学校服务器
+$UseServer = $false
+if (-not $Local -and $Server) {
+    Step "1/4 检查学校服务器（$Server）"
+    try { $UseServer = (Invoke-RestMethod "$Server/api/v1/health" -TimeoutSec 5).status -eq "ok" } catch {}
+    if ($UseServer) { Write-Host "学校服务器正常，APP 将直接连接服务器（不需要启动本机后端）" -ForegroundColor Green }
+    else { Write-Host "连不上学校服务器（需在校园网内，或服务器未开机），改用本机后端" -ForegroundColor Yellow }
+}
+$Target = if ($UseServer) { "server $Server" } else { "local" }
+if (-not $UseServer) {
+Step "1/4 检查本机后端（http://127.0.0.1:8000）"
 $backendOk = $false
 try { $backendOk = (Invoke-RestMethod http://127.0.0.1:8000/api/v1/health -TimeoutSec 3).status -eq "ok" } catch {}
 if (-not $backendOk) {
@@ -47,6 +69,7 @@ if (-not $backendOk) {
     Write-Host "后端已在背景运行。演示结束后关闭：taskkill /T /F /PID $($proc.Id)（或重启电脑）"
 }
 Write-Host "后端正常" -ForegroundColor Green
+}
 
 # 2. 模拟器
 Step "2/4 检查 Android 模拟器"
@@ -68,11 +91,16 @@ Write-Host "模拟器已就绪" -ForegroundColor Green
 
 # 3. APK
 Step "3/4 安装 APP"
-if ($Rebuild -or -not (Test-Path $Apk)) {
-    Write-Host "构建 APK（约 2–5 分钟）..."
+$built = if (Test-Path $Marker) { (Get-Content $Marker -Raw).Trim() } else { "" }
+if ($Rebuild -or -not (Test-Path $Apk) -or $built -ne $Target) {
+    Write-Host "构建 APK（连接：$Target，约 2–5 分钟）..."
+    $defines = @()
+    if ($UseServer) { $defines = @("--dart-define=API_BASE_URL=$Server", "--dart-define=API_TOKEN=$Token") }
     Push-Location (Join-Path $Root "app")
-    flutter build apk --debug
+    flutter build apk --debug --split-per-abi --target-platform android-x64 @defines
     Pop-Location
+    if ($LASTEXITCODE -ne 0) { Write-Host "构建失败" -ForegroundColor Red; exit 1 }
+    Set-Content -Path $Marker -Value $Target -Encoding UTF8
 }
 # -d 允许版本回退（模拟器上可能装过版本号较大的单架构版 APK）；仍失败则卸载重装
 $out = (adb install -r -d $Apk 2>&1) -join " "
