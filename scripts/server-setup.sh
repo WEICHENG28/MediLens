@@ -80,9 +80,15 @@ except Exception as e:
     def fetch(rel):
         t = dest / rel
         t.parent.mkdir(parents=True, exist_ok=True)
-        t.write_bytes(get(f"https://cdn.jsdelivr.net/gh/{lower}@{ref}/{rel}", 60))
+        for attempt in range(3):  # 偶发连线中断时重试
+            try:
+                t.write_bytes(get(f"https://cdn.jsdelivr.net/gh/{lower}@{ref}/{rel}", 60))
+                return
+            except Exception:
+                if attempt == 2:
+                    raise
 
-    with ThreadPoolExecutor(8) as ex:
+    with ThreadPoolExecutor(4) as ex:
         list(ex.map(fetch, files))
     print(f"已从 jsDelivr 下载 {len(files)} 个文件")
 PY
