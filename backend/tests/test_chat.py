@@ -216,3 +216,10 @@ def test_danger_signs_generalized():
     # 酮体阳性时，呼吸深快、口中水果味、言语不清、昏厥、胸闷、冷汗等按危险征象处理
     for q in ["呼吸好急促怎么办", "嘴里有股水果味", "他说话不清楚", "孩子他爸昏过去了", "胸口很闷", "心慌出冷汗"]:
         assert chat(creq(q)).safety_category == "emergency", q
+
+
+def test_severity_question_uses_overview():
+    # 「我这个病严重吗」（含繁体与错字）这类问整体情况的问题，用总览回答而不是「无资料」
+    for q in ["我這個並嚴重嗎", "我这个病严重吗", "要紧吗", "我的情况怎么样"]:
+        r = chat(creq(q))
+        assert not r.no_evidence and "总体判断" in r.answer, q
