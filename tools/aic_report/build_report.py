@@ -12,7 +12,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Cm, Pt
+from docx.shared import Cm, Pt, RGBColor
 
 sys.path.insert(0, str(Path(__file__).parent))
 import content as C  # noqa: E402
@@ -24,6 +24,7 @@ BODY_PT, SMALL_PT = 12, 10.5  # 正文小四号；表格与图题五号
 def set_font(run, size=BODY_PT, bold=None, east="宋体", west="Times New Roman"):
     run.font.size = Pt(size)
     run.font.name = west
+    run.font.color.rgb = RGBColor(0, 0, 0)  # 全文黑色
     rpr = run._element.get_or_add_rPr()
     fonts = rpr.find(qn("w:rFonts"))
     if fonts is None:
@@ -87,7 +88,7 @@ def table(doc, title, head, rows, widths):
         for c, v in enumerate(values):
             cell = t.rows[r].cells[c]
             cell.width = Cm(widths[c])
-            set_cell(cell, v, bold=(r == 0), shade="E8EEF4" if r == 0 else None)
+            set_cell(cell, v, bold=(r == 0))  # 黑白：表头只加粗，不填底色
     # 表头在跨页时重复
     trpr = t.rows[0]._tr.get_or_add_trPr()
     th = OxmlElement("w:tblHeader")
