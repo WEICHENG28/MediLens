@@ -46,3 +46,4 @@ tests/eval/*/images/
 docs/screenshots/audit/
 docs/MediLens_report*.pdf
 backend/*.log
+node_modules/
