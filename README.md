@@ -1,19 +1,17 @@
 # MediLens
 
-面向糖尿病患者的尿常规 / UACR 报告智能解读 APP（课程项目，MVP 2.0「项目可运行」）。
+面向糖尿病患者的尿常规 / UACR 报告智能解读 APP（课程项目），并含「生活打卡 · 小兔陪伴」原型。
 
-> ⚠️ **内部开发版**：所有判读规则均为**测试规则，未经医学审核**；知识库为开发团队自编的**占位说明**（非指南原文）；只使用**合成报告**测试。不得用于真实患者诊疗。
+> ⚠️ **内部开发版**：判读规则为**测试规则，未经医学审核**；知识库含 14 条附文献条目（**未经医学审核**）与 7 条团队自编占位说明；只使用**合成数据**测试。不得用于真实患者诊疗。
 
-- 需求基线：[docs/MediLens_MVP1_跨模型开发交接说明.md](docs/MediLens_MVP1_跨模型开发交接说明.md)
-- **测试结果（实测数据与对照实验）**：[docs/MVP2_测试结果.md](docs/MVP2_测试结果.md)
-- 企划书修改稿：[docs/企划书修改稿_MVP2.md](docs/企划书修改稿_MVP2.md)
-- 设计记录（小组文档）：[docs/MVP2_设计记录.md](docs/MVP2_设计记录.md)
+**文档入口：[docs/文档导览.md](docs/文档导览.md)**（按组员、演示、服务器、知识库、开发记录分组）
+
+常用：
+- 成果与技术说明（组员版）：[docs/MediLens成果与技术说明（组员版）.md](docs/MediLens成果与技术说明（组员版）.md)
+- 测试结果：[docs/MVP2_测试结果.md](docs/MVP2_测试结果.md)
+- 测试与演示指南：[docs/MVP2_测试与演示指南.md](docs/MVP2_测试与演示指南.md)（一键启动：`powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1`）
 - 开发进展（每轮迭代）：[docs/开发进展.md](docs/开发进展.md)
-- **成果与技术说明（组员版，非计算机专业也能看懂）**：[docs/MediLens成果与技术说明（组员版）.md](docs/MediLens成果与技术说明（组员版）.md)
-- **服务器部署与启动指南（学校 AIOP 平台）**：[docs/服务器部署与启动指南.md](docs/服务器部署与启动指南.md)
-- **组员电脑安装与运行指南（模拟器）**：[docs/组员电脑安装与运行指南.md](docs/组员电脑安装与运行指南.md)
-- **测试与课堂演示指南**：[docs/MVP2_测试与演示指南.md](docs/MVP2_测试与演示指南.md)（一键启动：`powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1`）
-- 网络请求清单与大陆网络测试方案：[docs/网络请求清单与大陆网络测试.md](docs/网络请求清单与大陆网络测试.md)
+- 服务器部署与启动：[docs/服务器部署与启动指南.md](docs/服务器部署与启动指南.md)
 
 ## 目录结构
 
@@ -27,8 +25,8 @@ app/        Flutter 客户端（Android / iOS）
 backend/    FastAPI 后端：标准化、规则引擎、选择题、详细了解、对话、大模型 adapter、输出校验、待实现接口
   app/knowledge_base/  指标字典、测试规则、选择题、占位知识（YAML，可版本化）
 tests/fixtures/  合成报告图片（*.synthetic.png，带「合成测试样本」水印）与标注
-tools/      合成报告生成、OCR 参考实现、网络合规检查
-scripts/    一条命令启动后端、开发环境变量
+tools/      合成报告生成、OCR 参考实现、网络合规检查、知识库导入、评测脚本（tools/eval）、竞赛技术方案生成（tools/aic_report）
+scripts/    一键演示、后端启动、服务器部署（server-setup.sh / server-run.sh）、开发环境变量
 ```
 
 ## 环境要求

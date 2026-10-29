@@ -7,7 +7,6 @@
 !.env.example
 
 # 临时素材目录（OCR 模型整理后会移入 app/assets）
-client_assets_tmp/
 
 # 项目书原稿（公开仓库，可能含个人信息，仅本地保留）
 docs/*.docx
