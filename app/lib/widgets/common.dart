@@ -14,6 +14,35 @@ String citationLine(Map c) {
       '${reviewed ? '' : ' · 未经医学审核'}';
 }
 
+/// 资料来源：默认收起，只显示一行「资料来源（n 条）」；点击后展开逐条出处。
+class CitationsBox extends StatelessWidget {
+  final List cites;
+  final Color? textColor;
+  const CitationsBox(this.cites, {super.key, this.textColor});
+
+  @override
+  Widget build(BuildContext context) {
+    final small = Theme.of(context).textTheme.bodySmall?.copyWith(color: textColor);
+    return Theme(
+      // 去掉 ExpansionTile 默认的上下分隔线
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        key: const Key('citations'),
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: const EdgeInsets.only(bottom: 8),
+        dense: true,
+        visualDensity: VisualDensity.compact,
+        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+        leading: Icon(Icons.menu_book_outlined, size: 18, color: textColor),
+        title: Text('资料来源（${cites.length} 条）· 点击查看', style: small?.copyWith(fontWeight: FontWeight.bold)),
+        children: [
+          for (final c in cites) Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(citationLine(c as Map), style: small)),
+        ],
+      ),
+    );
+  }
+}
+
 /// 「测试规则，未经医学审核」醒目标识：所有展示判读结果的页面都必须显示。
 class TestRuleBanner extends StatelessWidget {
   const TestRuleBanner({super.key});

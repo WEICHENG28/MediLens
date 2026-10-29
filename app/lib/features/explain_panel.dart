@@ -48,11 +48,9 @@ class ExplainPanel extends ConsumerWidget {
               for (final q in dq) Text('· $q'),
               const SizedBox(height: 8),
             ],
-            if (cites.isNotEmpty) ...[
-              const Text('资料来源', style: TextStyle(fontWeight: FontWeight.bold)),
-              for (final c in cites)
-                Text(citationLine(c), style: Theme.of(context).textTheme.bodySmall),
-            ] else
+            if (cites.isNotEmpty)
+              CitationsBox(cites)
+            else
               Text('暂无可核验的资料来源', style: Theme.of(context).textTheme.bodySmall),
             Align(
               alignment: Alignment.centerRight,
