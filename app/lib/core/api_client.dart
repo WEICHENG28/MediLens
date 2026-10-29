@@ -64,6 +64,12 @@ class ApiClient {
   Future<Map<String, dynamic>> explain(Map<String, dynamic> analysisBody, String target) =>
       _post('/api/v1/explain', {'analysis': analysisBody, 'target': target});
 
+  /// 生活作息分析：只发送打卡记录（时间、类型、数值），不含姓名等身份信息。
+  Future<Map<String, dynamic>> lifestyle(Map<String, dynamic> body) => _post('/api/v1/lifestyle', body);
+
+  /// 演示用的两周模拟打卡记录（合成数据）。
+  Future<Map<String, dynamic>> lifestyleDemo(String today) => _post('/api/v1/lifestyle/demo', {'days': 14, 'today': today});
+
   Future<Map<String, dynamic>> chat(Map<String, dynamic> analysisBody, String message, {String? focus, String? quick, List<Map<String, String>> history = const []}) =>
       _post('/api/v1/chat', {
         'analysis': analysisBody,

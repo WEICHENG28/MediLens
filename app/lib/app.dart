@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/settings.dart';
 import 'core/theme.dart';
+import 'features/life_page.dart';
 import 'features/chat_page.dart';
 import 'features/doctor_page.dart';
 import 'features/followup_page.dart';
@@ -32,6 +33,7 @@ GoRouter buildRouter(bool onboarded) => GoRouter(
         GoRoute(path: '/history', builder: (_, _) => const HistoryPage()),
         GoRoute(path: '/doctor', builder: (_, _) => const DoctorPage()),
         GoRoute(path: '/settings', builder: (_, _) => const SettingsPage()),
+        GoRoute(path: '/life', builder: (_, _) => const LifePage()),
         GoRoute(path: '/unsupported', builder: (_, _) => const UnsupportedPage()),
         GoRoute(
           path: '/voice',

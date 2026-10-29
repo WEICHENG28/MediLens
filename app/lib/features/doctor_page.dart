@@ -37,7 +37,7 @@ class DoctorPage extends ConsumerWidget {
           },
         ),
         const SizedBox(height: 8),
-        OutlinedButton.icon(icon: const Icon(Icons.alarm), label: const Text('设置复查提醒（待实现）'), onPressed: () => context.push('/reminder')),
+        OutlinedButton.icon(icon: const Icon(Icons.alarm), label: const Text('用药与生活提醒'), onPressed: () => context.push('/life')),
         const SizedBox(height: 12),
         const Text('以上仅为沟通参考，不是处方或诊断。复查时间以医生医嘱为准。', style: TextStyle(color: Colors.black54)),
       ]),

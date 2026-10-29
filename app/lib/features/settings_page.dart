@@ -66,6 +66,7 @@ class SettingsPage extends ConsumerWidget {
             );
             if (ok == true) {
               await ref.read(localStoreProvider).deleteAll();
+              await ref.read(localStoreProvider).putSetting('life_events', '[]');
               ref.invalidate(historyProvider);
               if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已删除')));
             }

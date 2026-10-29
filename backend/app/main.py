@@ -18,6 +18,7 @@ from .chat import ChatRequest, ChatResponse, ExplainRequest, ExplainResponse, ch
 from .followup import validate_answer
 from .llm import get_provider
 from .pending import router as pending_router
+from .lifestyle import LifestyleRequest, LifestyleResponse, analyze_lifestyle
 from .schemas import AnalyzeRequest
 
 app = FastAPI(title="MediLens API", version="0.2.0", docs_url="/docs", redoc_url=None)
@@ -76,3 +77,33 @@ def explain_item(req: ExplainRequest) -> ExplainResponse:
 def chat_message(req: ChatRequest) -> ChatResponse:
     _check_answers(req.analysis)
     return chat(req)
+
+
+@app.post("/api/v1/lifestyle", response_model=LifestyleResponse)
+def lifestyle(req: LifestyleRequest) -> LifestyleResponse:
+    """生活作息 × 血糖规律、陪伴宠物状态与提醒（原型）。只接收打卡记录，不含身份信息。"""
+    return analyze_lifestyle(req)
+
+
+class LifestyleDemoRequest(BaseModel):
+    days: int = 14
+    today: str | None = None  # YYYY-MM-DD，示例数据以此为最后一天
+
+
+@app.post("/api/v1/lifestyle/demo")
+def lifestyle_demo(req: LifestyleDemoRequest) -> dict[str, Any]:
+    """演示用：生成以 today 为最后一天的模拟打卡记录（合成数据，植入已知规律）。"""
+    from datetime import date, timedelta
+
+    import random
+
+    from .lifestyle_sim import SCHEDULE, TRUE_RATES, simulate, simulate_reminders
+
+    days = max(3, min(req.days, 60))
+    end = date.fromisoformat(req.today) if req.today else date.today()
+    start = end - timedelta(days=days - 1)
+    rng = random.Random(7)
+    reminders, _ = simulate_reminders(days, 7, lambda task, ev: rng.choice(list(TRUE_RATES[task])), start=start)
+    events = simulate(days, seed=7, start=start, miss_rate=0.02) + reminders
+    return {"synthetic": True, "events": [e.model_dump(mode="json", exclude_none=True) for e in events],
+            "schedule": [s.model_dump() for s in SCHEDULE]}

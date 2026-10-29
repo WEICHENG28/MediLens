@@ -139,11 +139,11 @@ class HomePage extends ConsumerWidget {
           onPressed: () => _pickSample(context, ref),
         ),
         const Divider(height: 40),
+        _entry(context, Icons.pets, '生活打卡 · 小兔陪伴', '用药、饮食、运动、睡眠与血糖的规律和提醒', '/life'),
         _entry(context, Icons.history, '历史记录', '本机保存的报告', '/history'),
         _entry(context, Icons.question_answer_outlined, '复诊问题', '整理要问医生的问题', '/doctor'),
         _entry(context, Icons.mic_none, '语音对话', '实时语音、可打断（待实现）', '/voice'),
         _entry(context, Icons.medication_outlined, '药盒识别', '拍药盒辅助识别（待实现）', '/medication'),
-        _entry(context, Icons.alarm, '复查提醒', '根据医嘱设置提醒（待实现）', '/reminder'),
       ]),
     );
   }
