@@ -334,9 +334,9 @@ def pet_state(ev, schedule, days: list[date], now: datetime, negative: bool, met
     tir_now, tir_before = metrics_week
     celebrate = tir_now is not None and tir_before is not None and tir_now - tir_before >= 0.05  # 只奖励不惩罚
     if prev_h == "生病了":
-        mood, msg = "担心", "小兔连着几次没按时吃药，生病躺下了……按医嘱用药，我们一起慢慢好起来！"
+        mood, msg = "担心", "小兔连着几次没按时用药或打针，生病躺下了……按医嘱用药，我们一起慢慢好起来！"
     elif missed_today and negative:
-        mood, msg = "担心", "今天忘了用药，小兔也觉得不舒服了。记得按医嘱用药哦！"
+        mood, msg = "担心", "今天漏了用药或打针，小兔也觉得不舒服了。记得按医嘱按时用药哦！"
     elif prev_h == "有点不舒服" and negative:
         mood, msg = "普通", "小兔前几天漏了药，还有点不舒服；接下来按时用药，很快就能恢复精神！"
     elif not negative and missed_today:
