@@ -62,7 +62,7 @@ def tracked() -> list[str]:
 
 
 def is_text(path: str) -> bool:
-    return Path(path).suffix.lower() in {".py", ".md", ".yaml", ".yml", ".txt", ".dart", ".json", ".ps1", ".sh", ".toml", ".xml", ".gradle", ".kts", ".properties", ".html", ".js"}
+    return path.endswith(".example") or Path(path).suffix.lower() in {".py", ".md", ".yaml", ".yml", ".txt", ".dart", ".json", ".ps1", ".sh", ".toml", ".xml", ".gradle", ".kts", ".properties", ".html", ".js"}
 
 
 def scrub(path: str, data: bytes) -> bytes:
