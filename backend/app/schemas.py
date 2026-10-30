@@ -114,6 +114,7 @@ class RuleHit(BaseModel):
     review_status: str
     is_test_rule: bool = True
     urgent: bool = False
+    followup_task: dict | None = None  # {title, days}：可由用户加入「小兔任务」的复查/咨询事项（不含紧急事项）
 
 
 class NotEvaluable(BaseModel):

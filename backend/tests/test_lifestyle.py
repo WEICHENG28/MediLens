@@ -92,3 +92,26 @@ def test_demo_endpoint(monkeypatch):
     d = r.json()
     assert r.status_code == 200 and d["synthetic"] and d["schedule"]
     assert max(e["time"] for e in d["events"]).startswith("2026-10-30") or max(e["time"] for e in d["events"]).startswith("2026-10-29")
+
+
+def test_report_followup_tasks_link_to_pet_and_reminders():
+    from app.lifestyle import Task
+    ev = _day(1) + _day(2)
+    tasks = [Task(id="R-04|2026-10-01", title="3–6 个月内复查 UACR（具体以医生安排为准）", due=date(2026, 10, 2))]
+    r = run(ev, today=date(2026, 10, 2), tasks=tasks)
+    assert "复查事项到期" in r.pet.message and any(x.task == "复查事项" and "UACR" in x.reason for x in r.reminders)
+    done = run(ev, today=date(2026, 10, 2), tasks=[tasks[0].model_copy(update={"done": True})])
+    assert "到期" not in done.pet.message and not any(x.task == "复查事项" for x in done.reminders)
+    # 未到期的任务只出现在提醒里，不影响宠物
+    later = run(ev, today=date(2026, 10, 2), tasks=[tasks[0].model_copy(update={"due": date(2026, 12, 30)})])
+    assert "到期" not in later.pet.message and any(x.task == "复查事项" for x in later.reminders)
+
+
+def test_rules_carry_followup_tasks_but_urgent_rule_has_none():
+    import yaml
+    from app.rules_engine import RULES_PATH
+
+    rules = {r["id"]: r for r in yaml.safe_load(RULES_PATH.read_text(encoding="utf-8"))["rules"]}
+    assert rules["R-01"].get("urgent") and "followup_task" not in rules["R-01"]  # 紧急事项不进宠物任务
+    assert rules["R-04"]["followup_task"]["days"] == 90 and "UACR" in rules["R-04"]["followup_task"]["title"]
+    assert all(r["followup_task"]["title"] for r in rules.values() if "followup_task" in r)

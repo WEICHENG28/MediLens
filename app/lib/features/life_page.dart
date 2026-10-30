@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api_client.dart';
+import '../core/life_tasks.dart';
 import '../data/local_store.dart';
 
 const _kEvents = 'life_events';
@@ -22,6 +23,7 @@ class LifePage extends ConsumerStatefulWidget {
 class _LifePageState extends ConsumerState<LifePage> {
   List<Map<String, dynamic>> events = [];
   List<Map<String, dynamic>> schedule = [];
+  List<LifeTask> tasks = [];
   bool negative = true;
   Map<String, dynamic>? result;
   String? error;
@@ -39,6 +41,7 @@ class _LifePageState extends ConsumerState<LifePage> {
     events = List<Map<String, dynamic>>.from(jsonDecode(await store.getSetting(_kEvents) ?? '[]') as List);
     schedule = List<Map<String, dynamic>>.from(jsonDecode(await store.getSetting(_kSchedule) ?? '[]') as List);
     negative = (await store.getSetting(_kNegative)) != 'false';
+    tasks = await loadTasks(store);
     await _analyze();
   }
 
@@ -52,7 +55,7 @@ class _LifePageState extends ConsumerState<LifePage> {
   static String _today() => DateTime.now().toIso8601String().substring(0, 10);
 
   Future<void> _analyze() async {
-    if (events.isEmpty) {
+    if (events.isEmpty && tasks.isEmpty) {
       setState(() => result = null);
       return;
     }
@@ -61,6 +64,7 @@ class _LifePageState extends ConsumerState<LifePage> {
       final r = await ref.read(apiClientProvider).lifestyle({
         'events': events.length > 3000 ? events.sublist(events.length - 3000) : events,
         'schedule': schedule,
+        'tasks': tasks.map((t) => {'id': t.id, 'title': t.title, 'due': t.due, 'done': t.done}).toList(),
         'today': _today(),
         'negative_feedback': negative,
       });
@@ -179,6 +183,25 @@ class _LifePageState extends ConsumerState<LifePage> {
           _chip(Icons.bloodtype_outlined, '记血糖', _askGlucose),
         ]),
         if (r != null) ..._results(context, r),
+        if (tasks.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text('复查与咨询事项（来自报告解读）', style: Theme.of(context).textTheme.titleMedium),
+          for (final t in tasks)
+            CheckboxListTile(
+              key: Key('task_${t.id}'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              value: t.done,
+              title: Text(t.title, style: TextStyle(decoration: t.done ? TextDecoration.lineThrough : null)),
+              subtitle: Text(t.due == null ? '下次复诊时，以医生安排为准' : '最早 ${t.due} 起（以医生安排为准）'),
+              onChanged: (v) async {
+                tasks = [for (final x in tasks) x.id == t.id ? x.copyWith(done: v ?? false) : x];
+                await saveTasks(store, tasks);
+                await _analyze();
+              },
+            ),
+        ],
         const SizedBox(height: 16),
         Text('用药时间（按医嘱）', style: Theme.of(context).textTheme.titleMedium),
         for (final (i, s) in schedule.indexed)

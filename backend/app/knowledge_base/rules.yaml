@@ -72,6 +72,7 @@ rules:
       - 我的白细胞/亚硝酸盐阳性，会影响 UACR 结果吗？需要什么时候复查？
     related_items: [UACR, LEU, NIT]
     evidence_ids: [kb-uacr-102, kb-leu-101, kb-test-uacr-001, kb-test-uti-001]
+    followup_task: {title: "感染好转后，向医生确认复查 UACR 的时间", days: null}
 
   - id: R-04
     title: UACR 首次升高（30–300 mg/g）
@@ -91,6 +92,7 @@ rules:
       - 这次 UACR 升高，需要多久后复查？复查前要注意什么？
     related_items: [UACR]
     evidence_ids: [kb-uacr-101, kb-uacr-102, kb-test-uacr-001]
+    followup_task: {title: "3–6 个月内复查 UACR（具体以医生安排为准）", days: 90}
 
   - id: R-05
     title: 尿蛋白等级上升
@@ -109,6 +111,7 @@ rules:
       - 我的尿蛋白比以前高了，需要做什么进一步检查？
     related_items: [PRO]
     evidence_ids: [kb-pro-101, kb-test-pro-001]
+    followup_task: {title: "复诊时与医生讨论尿蛋白的变化", days: null}
 
   - id: R-06
     title: 尿蛋白阴性但近一年没有 UACR 记录
@@ -126,3 +129,4 @@ rules:
       - 我需要做尿白蛋白/肌酐比（UACR）检查吗？多久查一次？
     related_items: [PRO, UACR]
     evidence_ids: [kb-uacr-104, kb-pro-101, kb-test-pro-001]
+    followup_task: {title: "向医生咨询是否需要做 UACR 检查", days: null}

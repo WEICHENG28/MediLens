@@ -196,6 +196,7 @@ def run_rules(ctx: Context) -> RuleResult:
                     related_items=rule.get("related_items", []),
                     review_status=data["review_status"],
                     urgent=bool(rule.get("urgent")),
+                    followup_task=rule.get("followup_task"),
                 )
             )
         elif result is None and not rule.get("silent_if_missing"):

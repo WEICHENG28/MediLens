@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/life_tasks.dart';
 import '../core/session.dart';
+import '../data/local_store.dart';
 import '../widgets/common.dart';
 import 'explain_panel.dart';
 
@@ -89,6 +91,20 @@ class OverviewPage extends ConsumerWidget {
         const SizedBox(height: 8),
         OutlinedButton.icon(icon: const Icon(Icons.question_answer_outlined), label: const Text('复诊时问医生什么'), onPressed: () => context.push('/doctor')),
         const SizedBox(height: 8),
+        if (candidatesFromHits(hits, ref.read(sessionProvider).report?.testDate).isNotEmpty) ...[
+          OutlinedButton.icon(
+            key: const Key('add_tasks'),
+            icon: const Icon(Icons.pets),
+            label: const Text('把复查建议加入小兔任务'),
+            onPressed: () async {
+              final n = await addTasks(ref.read(localStoreProvider), candidatesFromHits(hits, ref.read(sessionProvider).report?.testDate));
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(n > 0 ? '已加入 $n 项，可在「生活打卡 · 小兔陪伴」查看' : '这些事项已经在小兔任务里了')));
+              }
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
         FilledButton.icon(key: const Key('finish'), icon: const Icon(Icons.check), label: const Text('完成并选择是否保存'), onPressed: () => context.push('/save')),
         DisclaimerText(text: a['disclaimer'] as String),
         Text('规则版本：${(a['versions'] as Map).values.join(' / ')}', style: t.bodySmall),

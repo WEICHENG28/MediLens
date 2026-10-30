@@ -40,8 +40,17 @@ class ScheduleItem(BaseModel):
     label: str = ""
 
 
+class Task(BaseModel):
+    """由尿检解读生成、用户选择加入的复查/咨询任务（不含紧急事项，紧急情况只由界面提示卡传达）。"""
+    id: str
+    title: str
+    due: date | None = None   # 最早建议日期；None 表示「下次复诊/以医生为准」
+    done: bool = False
+
+
 class LifestyleRequest(BaseModel):
     events: list[Event] = Field(default_factory=list, max_length=5000)
+    tasks: list[Task] = Field(default_factory=list, max_length=50)
     schedule: list[ScheduleItem] = Field(default_factory=list, max_length=20)
     today: date | None = None
     negative_feedback: bool = True     # 宠物是否会因漏用药而「生病」
@@ -306,7 +315,8 @@ def safety_alerts(ev, now: datetime) -> list[Alert]:
 
 # ---------- 宠物 ----------
 
-def pet_state(ev, schedule, days: list[date], now: datetime, negative: bool, metrics_week: tuple[float | None, float | None]) -> PetState:
+def pet_state(ev, schedule, days: list[date], now: datetime, negative: bool, metrics_week: tuple[float | None, float | None],
+              tasks: list[Task] | None = None) -> PetState:
     health, energy, streak = 100.0, 60.0, 0
     prev_h, prev_e = "健康", "平静"
     missed_today = False
@@ -332,11 +342,14 @@ def pet_state(ev, schedule, days: list[date], now: datetime, negative: bool, met
         prev_e = _band(energy, prev_e, [(70, "活泼"), (40, "平静"), (0, "困倦")])
 
     tir_now, tir_before = metrics_week
+    overdue = [t for t in (tasks or []) if not t.done and t.due is not None and t.due <= days[-1]]
     celebrate = tir_now is not None and tir_before is not None and tir_now - tir_before >= 0.05  # 只奖励不惩罚
     if prev_h == "生病了":
         mood, msg = "担心", "小兔连着几次没按时用药或打针，生病躺下了……按医嘱用药，我们一起慢慢好起来！"
     elif missed_today and negative:
         mood, msg = "担心", "今天漏了用药或打针，小兔也觉得不舒服了。记得按医嘱按时用药哦！"
+    elif overdue:
+        mood, msg = "普通", f"有 {len(overdue)} 项复查事项到期了：{overdue[0].title}。记得向医生确认时间哦！"
     elif prev_h == "有点不舒服" and negative:
         mood, msg = "普通", "小兔前几天漏了药，还有点不舒服；接下来按时用药，很快就能恢复精神！"
     elif not negative and missed_today:
@@ -394,6 +407,9 @@ def choose_slot(task: str, ev, rng: random.Random) -> dict:
 def build_reminders(req: LifestyleRequest, ev, now: datetime, rng: random.Random, insights: list[Insight]) -> list[Reminder]:
     out = [Reminder(task="打胰岛素" if s.task == "insulin" else "用药", when=s.time, reason=s.label or "按医嘱时间")
            for s in sorted(req.schedule, key=lambda s: s.time)]
+    for t in req.tasks:
+        if not t.done:
+            out.append(Reminder(task="复查事项", when=t.due.isoformat() + " 起" if t.due else "下次复诊", reason=t.title))
     for task in ADAPTIVE_TASKS:
         choice = choose_slot(task, ev, rng)
         out.append(Reminder(task=task, when=choice["slot"], reason="根据您过去完成提醒的情况自动调整时段", adaptive=choice))
@@ -419,6 +435,6 @@ def analyze_lifestyle(req: LifestyleRequest) -> LifestyleResponse:
         vals = [g.glucose for g in ev["glucose"] if g.glucose is not None and a <= g.time.date() <= b]
         return sum(LOW <= v <= HIGH for v in vals) / len(vals) if len(vals) >= 10 else None
     week = (tir_between(today - timedelta(days=6), today), tir_between(today - timedelta(days=13), today - timedelta(days=7)))
-    pet = pet_state(ev, req.schedule, days, now, req.negative_feedback, week)
+    pet = pet_state(ev, req.schedule, days, now, req.negative_feedback, week, req.tasks)
     return LifestyleResponse(metrics=metrics, insights=insights, alerts=safety_alerts(ev, now), pet=pet,
                              reminders=build_reminders(req, ev, now, rng, insights))
