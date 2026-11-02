@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:medilens/core/api_client.dart';
 import 'package:medilens/core/settings.dart';
+import 'package:medilens/data/local_store.dart';
 import 'package:medilens/ocr/ocr_engine.dart';
 import 'package:medilens/ocr/report_parser.dart';
 
@@ -15,7 +16,9 @@ void main() {
 
   testWidgets('端到端耗时', (t) async {
     final engine = OnnxOcrEngine();
-    final api = ApiClient(AppSettings.defaultApiBaseUrl);
+    final raw = await SqlCipherStore().getSetting('app_settings');
+    final settings = raw == null ? const AppSettings() : AppSettings.fromJson(jsonDecode(raw));
+    final api = ApiClient(settings.apiBaseUrl, null, settings.apiToken);
     final names = ['02_glucose_ketone', '01_normal_urinalysis', '03_protein_ambiguous', '04_uacr_infection',
       '05_uacr_mgmmol', '06_missing_reference', '07_non_target_liver', '08_rotated_glucose_ketone'];
     final rows = <Map<String, Object>>[];

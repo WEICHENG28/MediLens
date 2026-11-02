@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../core/api_client.dart';
 import '../core/session.dart';
 import '../widgets/common.dart';
+import '../widgets/medication_reference.dart';
 
 class FollowupPage extends ConsumerStatefulWidget {
   const FollowupPage({super.key});
@@ -34,6 +35,8 @@ class _FollowupPageState extends ConsumerState<FollowupPage> {
     setState(() => busy = true);
     try {
       await ref.read(sessionProvider.notifier).back();
+    } on ApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -84,6 +87,7 @@ class _FollowupPageState extends ConsumerState<FollowupPage> {
           const SizedBox(height: 4),
           Text('为什么问：${q['medical_rationale']}', style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 16),
+          if (q['medication_photo_hint'] == true) MedicationReference(key: ValueKey('medication_reference_$qid')),
           for (final o in options)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
@@ -113,7 +117,7 @@ class _FollowupPageState extends ConsumerState<FollowupPage> {
             ),
           if (isMulti) FilledButton(onPressed: multi.isEmpty ? null : () => _submit(qid, multi.toList()), child: const Text('确定')),
           if (q['medication_photo_hint'] == true)
-            TextButton.icon(icon: const Icon(Icons.medication_outlined), label: const Text('拍药盒帮我识别（待实现）'), onPressed: () => context.push('/medication')),
+            TextButton.icon(icon: const Icon(Icons.medication_outlined), label: const Text('拍药盒核对药名'), onPressed: () => context.push('/medication')),
           const Divider(height: 32),
           Wrap(spacing: 8, runSpacing: 8, children: [
             if (q['allow_unknown'] == true) OutlinedButton(key: const Key('ans_unknown'), onPressed: () => _submit(qid, '__unknown__'), child: const Text('不确定')),

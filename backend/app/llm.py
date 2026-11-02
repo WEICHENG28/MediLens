@@ -25,7 +25,10 @@ PROVIDERS = {
 
 
 class LLMError(Exception):
-    pass
+    """Safe message plus a closed failure category; never carries a response body."""
+    def __init__(self, message: str, *, reason: str = "upstream_error"):
+        super().__init__(message)
+        self.reason = reason if reason in ("timeout", "upstream_error") else "upstream_error"
 
 
 class LLMProvider(Protocol):
@@ -69,8 +72,13 @@ class OpenAICompatProvider:
         try:
             r = httpx.post(url, json=payload, headers={"Authorization": f"Bearer {self.api_key}"}, timeout=self.timeout)
             r.raise_for_status()
-            return r.json()["choices"][0]["message"]["content"]
-        except (httpx.HTTPError, KeyError, IndexError, ValueError) as e:
+            content = r.json()["choices"][0]["message"]["content"]
+            if not isinstance(content, str) or not content.strip():
+                raise ValueError("empty or non-text model content")
+            return content
+        except httpx.TimeoutException as e:
+            raise LLMError(f"{self.name} 调用超时", reason="timeout") from e
+        except (httpx.HTTPError, KeyError, IndexError, ValueError, TypeError) as e:
             # 日志脱敏：不记录请求内容与密钥
             raise LLMError(f"{self.name} 调用失败：{type(e).__name__}") from e
 

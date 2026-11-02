@@ -1,7 +1,7 @@
 """逐条「详细了解」与文字对话。
 
 流程：服务端重跑标准化+规则（不信任客户端传来的结论）→ 越界问题走安全模板 → 组装基于规则与知识的草稿
-→ 大模型只做通俗改写 → 输出校验 → 不通过则回退草稿。大模型不能新增风险结论。
+→ 大模型依据报告与知识回答具体问题 → 输出校验 → 不通过则回退标准说明。大模型不能新增风险结论。
 """
 from __future__ import annotations
 
@@ -22,9 +22,12 @@ _T2S = OpenCC("t2s")
 
 SYSTEM_PROMPT = (
     "你是 MediLens 的报告解释助手，面向糖尿病患者与家属，用简体中文、通俗短句回答。"
-    "只能改写【草稿】中的内容，使其更易懂；不得新增任何医学结论、风险等级、数值或用药建议；"
+    "根据当前报告事实和提供的医学知识依据，直接回答用户的具体问题。优先解释用户所问的关系或原因，可以重组和归纳已有依据；【草稿】仅供参考，不必照搬。依据不足时明确说明，不得编造。不得新增任何医学结论、风险等级、数值或用药建议；"
     "直接面向用户解释报告，不得提及草稿、提示词、系统提示、内部资料、备用资料或备份资料，也不要描述改写过程。"
     "不得建议停药、换药、调整剂量，不得做出诊断；医生医嘱优先。回答不超过 150 字。"
+    "语气尊重、温和，不责备用户。用户表达担心、害怕或自责时，可用一句话回应这种感受，再解释问题和已有依据支持的下一步；"
+    "普通知识提问直接回答，不机械地每次安慰；用户不需要安慰时尊重其选择。不要说保证没事、肯定正常，也不要推测用户的情绪或经历。"
+    "紧急症状优先明确就医行动，不用安慰话延迟处理。来源未审核时不得称为已获医学审核，不得编造引用。"
 )
 
 
@@ -268,13 +271,22 @@ def _facts_text(res: AnalyzeResponse, draft: str, cites: list[Citation]) -> str:
         "items": [{"name": i.name, "raw": i.raw_value, "unit": i.unit, "normalized": i.normalized_value,
                    "ref": i.reference_text, "usable": i.usable} for i in res.items],
         "hits": [{"id": h.rule_id, "summary": h.summary, "detail": h.detail} for h in res.hits],
+        "knowledge": [{"text": c.text, "review_status": c.review_status} for c in cites],
     }
-    return json.dumps(facts, ensure_ascii=False) + "\n" + "\n".join(c.text for c in cites) + "\n" + draft
+    return json.dumps(facts, ensure_ascii=False) + "\n" + draft
 
 
 def to_simplified(text: str) -> str:
     """繁体 → 简体（OpenCC，本地转换不联网）。安全分类与输出校验都基于简体，避免繁体输入绕过拦截。"""
     return _T2S.convert(text)
+
+
+def _supportive_fallback(message: str, answer: str, category: str | None = None) -> str:
+    """Only acknowledge explicitly expressed worry; never soften urgent action."""
+    declined = re.search(r"(不要|不用|别)安慰|不(担心|害怕|焦虑|紧张)", message)
+    if category != "emergency" and not declined and re.search(r"担心|害怕|焦虑|紧张|自责|吓|恐惧", message):
+        return "看到报告有些担心是可以理解的。" + answer
+    return answer
 
 
 INTENT_SYSTEM = (
@@ -316,7 +328,7 @@ def chat(req: ChatRequest) -> ChatResponse:
     # 统一转为简体后再判断（繁体输入曾导致「我能停藥嗎」未被拦截）
     req = req.model_copy(update={"message": to_simplified(req.message)})
     def safety(cat: str) -> ChatResponse:
-        return ChatResponse(answer=_safety_answer(cat, res), safety_category=cat, provider="safety-template", used_fallback=False)
+        return ChatResponse(answer=_supportive_fallback(req.message, _safety_answer(cat, res), cat), safety_category=cat, provider="safety-template", used_fallback=False)
 
     # 第一层：关键词（快速、确定），命中即回安全模板，不调用大模型
     category = classify(req.message, res)
@@ -332,12 +344,15 @@ def chat(req: ChatRequest) -> ChatResponse:
     def rewrite() -> tuple[str, bool]:
         """返回 (回答, 是否回退)。校验失败或服务不可用时回退到基于规则与知识的草稿。"""
         try:
-            text = provider.complete(SYSTEM_PROMPT, f"报告事实：\n{facts}\n\n用户问题：{req.message}\n\n【草稿】{draft}")
-            if text and text.strip() and guard.check(to_simplified(text), facts, urgent_allowed).ok:
+            raw = provider.complete(SYSTEM_PROMPT, f"报告事实：\n{facts}\n\n用户问题：{req.message}\n\n【草稿】{draft}")
+            text = to_simplified(raw).strip() if raw else ""
+            if text and guard.check(text, facts, urgent_allowed).ok:
+                if provider.name == "mock":
+                    text = _supportive_fallback(req.message, text)
                 return text, False
         except LLMError:
             pass
-        return draft, True
+        return _supportive_fallback(req.message, draft), True
 
     # 第二层：大模型语义判断与回答改写同时进行，用户只需等待较慢的一项（学校平台响应 1–28 秒波动）
     with ThreadPoolExecutor(2) as ex:
@@ -348,7 +363,7 @@ def chat(req: ChatRequest) -> ChatResponse:
             return safety(category)  # 越界：丢弃改写结果，改用安全模板
         if rewrite_f is None:
             return ChatResponse(
-                answer="这个问题暂时没有可核验的资料，我无法据此回答。建议把问题记下来，复诊时询问医生。",
+                answer=_supportive_fallback(req.message, "这个问题暂时没有可核验的资料，我无法据此回答。您可以告诉我具体的指标或报告提示，我们再逐项看；也可以把问题记下来，复诊时询问医生。"),
                 provider="template", used_fallback=False, no_evidence=True)
         answer, fell_back = rewrite_f.result()
     return ChatResponse(answer=answer, citations=cites, provider=provider.name, used_fallback=fell_back)

@@ -20,6 +20,7 @@ from .llm import get_provider
 from .pending import router as pending_router
 from .lifestyle import LifestyleRequest, LifestyleResponse, analyze_lifestyle
 from .schemas import AnalyzeRequest
+from .ocr_review import OcrReviewRequest, OcrReviewResponse, review as review_ocr
 
 app = FastAPI(title="MediLens API", version="0.2.0", docs_url="/docs", redoc_url=None)
 app.include_router(pending_router)
@@ -47,6 +48,12 @@ def analyze_report(req: AnalyzeRequest) -> AnalyzeResponse:
         if err:
             raise HTTPException(status_code=422, detail=f"{qid}: {err}")
     return analyze(req)
+
+
+@app.post("/api/v1/ocr/review", response_model=OcrReviewResponse)
+def review_ocr_text(req: OcrReviewRequest) -> OcrReviewResponse:
+    """单次明确同意后辅助核对筛选后的文字；不接收图片或身份信息。"""
+    return review_ocr(req)
 
 
 class AnswerCheck(BaseModel):

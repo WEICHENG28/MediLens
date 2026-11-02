@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/session.dart';
+import '../core/speech.dart';
 import '../widgets/common.dart';
 import 'explain_panel.dart';
 
@@ -43,7 +44,7 @@ class OverviewPage extends ConsumerWidget {
               Row(children: [
                 LevelChip(overall['level'] as String, label: overall['label'] as String),
                 const Spacer(),
-                ReadAloudButton('${overall['label']}。${hits.map((h) => h['summary']).join('。')}'),
+                ReadAloudButton(overviewSpeechText(a), autoRead: true),
               ]),
               const SizedBox(height: 8),
               Text(overall['explanation'] as String, style: t.bodyMedium),

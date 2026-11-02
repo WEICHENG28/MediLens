@@ -15,7 +15,7 @@ import yaml
 from pydantic import BaseModel
 
 KB_DIR = Path(__file__).parent / "knowledge_base"
-KB_FILES = [KB_DIR / "kb.yaml", KB_DIR / "kb_test.yaml"]  # 正式在前
+KB_FILES = [KB_DIR / "kb.yaml", KB_DIR / "kb_curated.yaml", KB_DIR / "kb_test.yaml"]
 KB_PATH = KB_DIR / "kb_test.yaml"  # 兼容旧引用
 
 
@@ -26,6 +26,8 @@ class Citation(BaseModel):
     source_version: str
     review_status: str
     text: str
+    source_url: str = ""
+    checked_at: str = ""
 
 
 @lru_cache
@@ -35,7 +37,7 @@ def load_kb() -> dict:
         if path.exists():
             data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
             for e in data.get("entries", []):
-                entries.append({**e, "_formal": path.name == "kb.yaml", "_order": len(entries)})
+                entries.append({**e, "_formal": path.name != "kb_test.yaml", "_order": len(entries)})
     return {"entries": entries}
 
 
@@ -47,7 +49,7 @@ def get(entry_id: str) -> Citation | None:
 
 
 def _cite(e: dict) -> Citation:
-    return Citation(**{k: str(e[k]) for k in Citation.model_fields})
+    return Citation(**{k: str(e[k]) for k in Citation.model_fields if e.get(k) is not None})
 
 
 def _bigrams(text: str) -> set[str]:

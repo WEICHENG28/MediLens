@@ -4,23 +4,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/settings.dart';
+import 'core/speech.dart';
+import 'core/pet_interaction.dart';
 import 'core/theme.dart';
 import 'features/life_page.dart';
+import 'features/reminder_page.dart';
+import 'features/checkup_page.dart';
+import 'features/desktop_pet_page.dart';
 import 'features/chat_page.dart';
+import 'features/voice_page.dart';
+import 'features/realtime_voice_page.dart';
 import 'features/doctor_page.dart';
 import 'features/followup_page.dart';
 import 'features/history_page.dart';
+import 'features/history_trends_page.dart';
 import 'features/home_page.dart';
 import 'features/import_page.dart';
 import 'features/overview_page.dart';
 import 'features/review_page.dart';
 import 'features/save_page.dart';
 import 'features/settings_page.dart';
+import 'features/speech_page.dart';
+import 'features/medication_page.dart';
+import 'features/medication_records_page.dart';
 import 'features/welcome_page.dart';
 import 'widgets/common.dart';
 
 GoRouter buildRouter(bool onboarded) => GoRouter(
       initialLocation: onboarded ? '/home' : '/welcome',
+      observers: [speechRoutes, petRoutes],
       routes: [
         GoRoute(path: '/welcome', builder: (_, _) => const WelcomePage()),
         GoRoute(path: '/home', builder: (_, _) => const HomePage()),
@@ -31,27 +43,18 @@ GoRouter buildRouter(bool onboarded) => GoRouter(
         GoRoute(path: '/chat', builder: (_, s) => ChatPage(focus: s.uri.queryParameters['focus'])),
         GoRoute(path: '/save', builder: (_, _) => const SavePage()),
         GoRoute(path: '/history', builder: (_, _) => const HistoryPage()),
+        GoRoute(path: '/trends', builder: (_, _) => const HistoryTrendsPage()),
         GoRoute(path: '/doctor', builder: (_, _) => const DoctorPage()),
+        GoRoute(path: '/checkup-reminders', builder: (_, _) => const CheckupPage()),
+        GoRoute(path: '/speech-settings', builder: (_, _) => const SpeechPage()),
         GoRoute(path: '/settings', builder: (_, _) => const SettingsPage()),
         GoRoute(path: '/life', builder: (_, _) => const LifePage()),
+        GoRoute(path: '/desktop-pet', builder: (_, _) => const DesktopPetPage()),
         GoRoute(path: '/unsupported', builder: (_, _) => const UnsupportedPage()),
-        GoRoute(
-          path: '/voice',
-          builder: (_, _) => const PendingFeaturePage(
-            title: '语音对话',
-            description: '用户主动进入的实时双向语音对话。与文字对话共享同一份报告和会话，切换时上下文不丢失；重要医疗提示同步显示文字。'
-                '状态：未开启 → 连接中 → 聆听 → 思考 → 播报 → 被打断 → 重连 → 失败（失败时退回文字）。',
-            plan: ['候选服务：讯飞开放平台 / 阿里云智能语音交互（国内可直接访问）', '支持说话打断（barge-in）、停止播报、转换话题', '弱网、断线、麦克风权限被拒时降级到文字', '实测自然度、延迟、老年人可听清程度'],
-          ),
-        ),
-        GoRoute(
-          path: '/medication',
-          builder: (_, _) => const PendingFeaturePage(
-            title: '药盒/处方识别',
-            description: '拍摄药盒或处方，辅助识别药品名称与可能类别，需要您确认；识别不确定时不会猜测药名。只解释经审核的药物类别与尿检指标的可能关联，不给出停药、换药或调整剂量的建议。',
-            plan: ['端侧 OCR 识别药名 + 药品名称字典匹配', '识别结果逐项确认', '与选择题「是否在用某类降糖药」联动'],
-          ),
-        ),
+        GoRoute(path: '/realtime-voice', builder: (_, s) => RealtimeVoicePage(focus: s.uri.queryParameters['focus'], initialDraft: s.extra is String ? s.extra as String : null)),
+        GoRoute(path: '/voice', builder: (_, s) => VoicePage(focus: s.uri.queryParameters['focus'], initialDraft: s.extra is String ? s.extra as String : null)),
+        GoRoute(path: '/medications-saved', builder: (_, _) => const MedicationRecordsPage()),
+        GoRoute(path: '/medication', builder: (_, _) => const MedicationPage()),
         GoRoute(
           path: '/auth',
           builder: (_, _) => const PendingFeaturePage(
@@ -62,11 +65,7 @@ GoRouter buildRouter(bool onboarded) => GoRouter(
         ),
         GoRoute(
           path: '/reminder',
-          builder: (_, _) => const PendingFeaturePage(
-            title: '复查提醒',
-            description: '复查时间来源必须是您确认的医嘱或经审核的规则，不由 AI 自由决定。使用本机通知，不依赖境外推送服务。',
-            plan: ['手动录入医嘱复查时间', '本地通知（通知权限由您决定）'],
-          ),
+          builder: (_, _) => const ReminderPage(),
         ),
       ],
     );

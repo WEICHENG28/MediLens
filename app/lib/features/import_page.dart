@@ -13,7 +13,8 @@ class ImportPage extends ConsumerWidget {
   Future<void> _recognize(BuildContext context, WidgetRef ref) async {
     final sw = Stopwatch()..start();
     try {
-      await runWithProgress(context, '正在本机识别报告…\n（图片不会上传）', () => ref.read(sessionProvider.notifier).runOcr());
+      final applied = await runWithProgress(context, '正在本机识别报告…\n（图片不会上传）', () => ref.read(sessionProvider.notifier).runOcr());
+      if (applied != true) return;
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('识别失败，请重拍或换一张图片（$e）')));

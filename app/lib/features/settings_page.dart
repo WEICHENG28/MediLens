@@ -5,6 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/settings.dart';
+import '../core/medication_records.dart';
+import '../core/life_journal.dart';
+import '../core/local_reminders.dart';
+import '../core/task_receipts.dart';
+import '../core/checkup_reminders.dart';
 import '../core/theme.dart';
 import '../data/local_store.dart';
 
@@ -30,6 +35,7 @@ class SettingsPage extends ConsumerWidget {
           value: s.elder,
           onChanged: (v) => n.update(s.copyWith(displayMode: v ? DisplayMode.elder : DisplayMode.normal)),
         ),
+        ListTile(leading: const Icon(Icons.pets_outlined), title: const Text('桌面小兔'), subtitle: const Text('把陪伴小兔添加到 Android 手机桌面'), onTap: () => context.push('/desktop-pet')),
         head('报告识别'),
         const ListTile(
           leading: Icon(Icons.phone_android),
@@ -42,8 +48,22 @@ class SettingsPage extends ConsumerWidget {
           title: const Text('朗读语速'),
           subtitle: Slider(value: s.speechRate, min: 0.3, max: 0.7, divisions: 4, label: s.speechRate.toStringAsFixed(1), onChanged: (v) => n.update(s.copyWith(speechRate: v))),
         ),
-        SwitchListTile(secondary: const Icon(Icons.record_voice_over_outlined), title: const Text('自动朗读解释'), value: s.autoRead, onChanged: (v) => n.update(s.copyWith(autoRead: v))),
-        const ListTile(leading: Icon(Icons.graphic_eq), title: Text('音色选择、实时语音对话（待实现）'), subtitle: Text('当前朗读使用手机系统中文语音')),
+        SwitchListTile(
+          key: const Key('auto_read_overview'),
+          secondary: const Icon(Icons.record_voice_over_outlined),
+          title: const Text('自动朗读总览摘要'),
+          subtitle: const Text('开启后进入解读总览会出声朗读摘要；只使用已安装的离线中文语音。切页或进入后台即停止，可随时点击停止。'),
+          value: s.autoRead,
+          onChanged: (v) async {
+            try { await n.update(s.copyWith(autoRead: v)); }
+            catch (_) {
+              if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('自动朗读设置未能保存，请重试。')));
+            }
+          },
+        ),
+        ListTile(leading: const Icon(Icons.graphic_eq), title: const Text('中文朗读与音色'), subtitle: const Text('检测离线中文语音、选择音色、试听与停止'), onTap: () => context.push('/speech-settings')),
+        ListTile(leading: const Icon(Icons.mic_none), title: const Text('语音对话'), subtitle: const Text('按键或连续实时对话，普通话离线识别'), onTap: () => context.push('/voice')),
+        ListTile(leading: const Icon(Icons.medication_outlined), title: const Text('本机药名记录'), subtitle: const Text('查看主动保存的药名和本人确认的使用情况'), onTap: () => context.push('/medications-saved')),
         head('隐私与数据'),
         SwitchListTile(
           secondary: const Icon(Icons.cloud_outlined),
@@ -59,21 +79,39 @@ class SettingsPage extends ConsumerWidget {
           onTap: () async {
             final ok = await showDialog<bool>(
               context: context,
-              builder: (c) => AlertDialog(content: const Text('删除本机全部报告记录？此操作不可恢复。'), actions: [
+              builder: (c) => AlertDialog(content: const Text('删除本机全部报告、药名记录、生活打卡、任务完成记录和用药时间？本机提醒也会关闭。此操作不可恢复。'), actions: [
                 TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
                 FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('删除')),
               ]),
             );
             if (ok == true) {
+              final reminders = ref.read(remindersProvider);
+              if (reminders.available && !await ref.read(checkupProvider.notifier).clearAll()) {
+                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('复查提醒未能撤销，暂未删除记录，请重试。')));
+                return;
+              }
+              if (reminders.available && !await ref.read(remindersProvider.notifier).setEnabled(false)) return;
+              try { await ref.read(medicationRecordsProvider).clear(); } catch (_) {
+                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('药名记录未能清除，暂未继续删除其他记录，请重试。')));
+                return;
+              }
+              ref.invalidate(savedMedicationsProvider);
               await ref.read(localStoreProvider).deleteAll();
               await ref.read(localStoreProvider).putSetting('life_events', '[]');
+              await ref.read(localStoreProvider).putSetting('life_schedule', '[]');
+              await ref.read(localStoreProvider).putSetting('life_demo_mode', 'false');
+              await ref.read(localStoreProvider).putSetting(TaskReceipts.storageKey, '{}');
+              ref.invalidate(taskReceiptsProvider);
+              await ref.read(localStoreProvider).putSetting(ReminderNotifier.enabledKey, 'false');
+              await updateLocalCompanion(ref.read(localStoreProvider), DateTime.now());
               ref.invalidate(historyProvider);
               if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已删除')));
             }
           },
         ),
         head('提醒'),
-        ListTile(leading: const Icon(Icons.notifications_none), title: const Text('复查提醒（待实现）'), subtitle: const Text('使用本机通知，不依赖境外推送服务'), onTap: () => context.push('/reminder')),
+        ListTile(leading: const Icon(Icons.notifications_none), title: const Text('本机任务提醒'), subtitle: const Text('按确认的用药时间通知'), onTap: () => context.push('/reminder')),
+        ListTile(leading: const Icon(Icons.event_available), title: const Text('复查日期提醒'), subtitle: const Text('按医嘱手动设置一次性提醒'), onTap: () => context.push('/checkup-reminders')),
         head('开发调试'),
         ListTile(
           leading: const Icon(Icons.dns_outlined),

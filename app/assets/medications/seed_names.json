@@ -1,0 +1,78 @@
+{
+  "version": "names-2026-11-01-v2",
+  "checked_at": "2026-11-01",
+  "scope": "目前仅6个完整通用名称；不是全国药品库，不用于核验真伪、注册状态或适应症",
+  "sources": [
+    {
+      "id": "nmpa-20220704",
+      "title": "国家药监局：2022年07月04日药品批准证明文件待领取信息",
+      "url": "https://www.nmpa.gov.cn/zwfw/sdxx/sdxxyp/yppjfb/20220704142913120.html?type=pc",
+      "publication_date": "2022-07-04",
+      "checked_at": "2026-11-01",
+      "verification": "official_search_index",
+      "medical_review": "not_reviewed"
+    },
+    {
+      "id": "nmpa-20260410",
+      "title": "国家药监局：药品说明书适老化及无障碍改革试点名单（第六批）",
+      "url": "https://www.nmpa.gov.cn/yaopin/ypjgdt/20260410140849135.html?m=&type=pc",
+      "publication_date": "2026-04-10",
+      "checked_at": "2026-11-01",
+      "verification": "official_search_index",
+      "medical_review": "not_reviewed"
+    },
+    {
+      "id": "nmpa-20260206",
+      "title": "国家药监局：2026年02月06日药品批准证明文件送达信息",
+      "url": "https://www.nmpa.gov.cn/zwfw/sdxx/sdxxyp/yppjfb/20260206154739144.html",
+      "publication_date": "2026-02-06",
+      "checked_at": "2026-11-01",
+      "verification": "official_search_index",
+      "medical_review": "not_reviewed"
+    },
+    {
+      "id": "nmpa-20260112",
+      "title": "国家药监局：2026年01月12日药品批准证明文件送达信息",
+      "url": "https://www.nmpa.gov.cn/zwfw/sdxx/sdxxyp/yppjfb/20260112165128149.html",
+      "publication_date": "2026-01-12",
+      "checked_at": "2026-11-01",
+      "verification": "official_search_index",
+      "medical_review": "not_reviewed"
+    },
+    {
+      "id": "nmpa-20210621",
+      "title": "国家药监局：2021年06月21日药品批准证明文件待领取信息发布",
+      "url": "https://www.nmpa.gov.cn/directory/web/nmpa/zwfw/sdxx/sdxxyp/yppjfb/20210621084907105.html",
+      "publication_date": "2021-06-21",
+      "checked_at": "2026-11-01",
+      "verification": "official_search_index",
+      "medical_review": "not_reviewed"
+    }
+  ],
+  "entries": [
+    {
+      "name": "盐酸二甲双胍片",
+      "source": "nmpa-20220704"
+    },
+    {
+      "name": "盐酸二甲双胍缓释片",
+      "source": "nmpa-20260410"
+    },
+    {
+      "name": "阿卡波糖片",
+      "source": "nmpa-20260410"
+    },
+    {
+      "name": "达格列净片",
+      "source": "nmpa-20260206"
+    },
+    {
+      "name": "恩格列净片",
+      "source": "nmpa-20260112"
+    },
+    {
+      "name": "磷酸西格列汀片",
+      "source": "nmpa-20210621"
+    }
+  ]
+}

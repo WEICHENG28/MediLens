@@ -1,4 +1,4 @@
-// 后端接口客户端。只发送用户确认后的结构化指标与问答，不发送图像、姓名、医院。
+// 后端接口客户端。发送结构化指标与问答；可单次同意发送筛选后的待复核文字。不发送图像、姓名、医院。
 // 运行时只访问配置的 MediLens 后端（正式部署在中国大陆云服务器），不直接访问任何第三方服务。
 
 import 'dart:convert';
@@ -28,56 +28,108 @@ class ApiClient {
   final String baseUrl;
   final String token; // 访问口令，空字符串表示不带
   final http.Client _http;
-  ApiClient(this.baseUrl, [http.Client? client, this.token = '']) : _http = client ?? http.Client();
+  ApiClient(this.baseUrl, [http.Client? client, this.token = ''])
+    : _http = client ?? http.Client();
 
-  static Map<String, dynamic> analysisBody(ParsedReport report, Map<String, dynamic> answers, List<HistoryBrief> history) => {
-        'report': {
-          'report_type': 'auto',
-          'test_date': report.testDate,
-          'items': report.items.map((i) => i.toApi()).toList(),
-        },
-        'answers': answers,
-        'history': history.map((h) => h.toJson()).toList(),
-      };
+  static Map<String, dynamic> analysisBody(
+    ParsedReport report,
+    Map<String, dynamic> answers,
+    List<HistoryBrief> history,
+  ) => {
+    'report': {
+      'report_type': 'auto',
+      'test_date': report.testDate,
+      'items': report.items.map((i) => i.toApi()).toList(),
+    },
+    'answers': answers,
+    'history': history.map((h) => h.toJson()).toList(),
+  };
 
-  Future<Map<String, dynamic>> _post(String path, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> _post(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
     final http.Response r;
     try {
       r = await _http
-          .post(Uri.parse('$baseUrl$path'), headers: {'Content-Type': 'application/json; charset=utf-8', if (token.isNotEmpty) 'X-MediLens-Token': token}, body: jsonEncode(body))
+          .post(
+            Uri.parse('$baseUrl$path'),
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+              if (token.isNotEmpty) 'X-MediLens-Token': token,
+            },
+            body: jsonEncode(body),
+          )
           .timeout(const Duration(seconds: 25));
     } catch (_) {
       // 写出连接地址，便于判断是后端未启动，还是真机使用了仅模拟器有效的 10.0.2.2
-      throw ApiException('无法连接解读服务（$baseUrl），请确认后端已启动、网络正常后重试。'
-          '真机需在「设置 → 解读服务地址」改为电脑的局域网地址。已识别的指标仍保留在本机。');
+      throw ApiException(
+        '无法连接解读服务（$baseUrl），请确认后端已启动、网络正常后重试。'
+        '请在「设置 → 解读服务地址」核对团队提供的服务器地址。已识别的指标仍保留在本机。',
+      );
     }
-    final data = jsonDecode(utf8.decode(r.bodyBytes));
-    if (r.statusCode == 401) throw ApiException('访问口令不正确，请在「设置 → 访问口令」填写服务器的口令。');
+    if (r.statusCode == 401) {
+      throw ApiException('访问口令不正确，请在「设置 → 访问口令」填写服务器的口令。');
+    }
     if (r.statusCode != 200) {
-      throw ApiException(r.statusCode == 501 ? (data['message'] as String? ?? '功能待实现') : '服务暂时不可用（${r.statusCode}）');
+      throw ApiException('服务暂时不可用（${r.statusCode}），请稍后重试。');
     }
-    return data as Map<String, dynamic>;
+    try {
+      final data = jsonDecode(utf8.decode(r.bodyBytes));
+      if (data is! Map<String, dynamic>) throw const FormatException();
+      return data;
+    } catch (_) {
+      throw ApiException('解读服务返回的数据暂时无法读取，请稍后重试。');
+    }
   }
 
-  Future<Map<String, dynamic>> analyze(Map<String, dynamic> analysisBody) => _post('/api/v1/analyze', analysisBody);
+  Future<Map<String, dynamic>> analyze(Map<String, dynamic> analysisBody) =>
+      _post('/api/v1/analyze', analysisBody);
 
-  Future<Map<String, dynamic>> explain(Map<String, dynamic> analysisBody, String target) =>
-      _post('/api/v1/explain', {'analysis': analysisBody, 'target': target});
+  Future<Map<String, dynamic>> reviewOcr(Map<String, dynamic> body) async {
+    try {
+      return await _post('/api/v1/ocr/review', body);
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      throw ApiException('辅助核对暂不可用，原识别结果没有改变。');
+    }
+  }
+
+  Future<Map<String, dynamic>> explain(
+    Map<String, dynamic> analysisBody,
+    String target,
+  ) => _post('/api/v1/explain', {'analysis': analysisBody, 'target': target});
 
   /// 生活作息分析：只发送打卡记录（时间、类型、数值），不含姓名等身份信息。
-  Future<Map<String, dynamic>> lifestyle(Map<String, dynamic> body) => _post('/api/v1/lifestyle', body);
+  Future<Map<String, dynamic>> lifestyle(Map<String, dynamic> body) =>
+      _post('/api/v1/lifestyle', body);
 
   /// 演示用的两周模拟打卡记录（合成数据）。
-  Future<Map<String, dynamic>> lifestyleDemo(String today) => _post('/api/v1/lifestyle/demo', {'days': 14, 'today': today});
+  Future<Map<String, dynamic>> lifestyleDemo(String today) =>
+      _post('/api/v1/lifestyle/demo', {'days': 14, 'today': today});
 
-  Future<Map<String, dynamic>> chat(Map<String, dynamic> analysisBody, String message, {String? focus, String? quick, List<Map<String, String>> history = const []}) =>
-      _post('/api/v1/chat', {
-        'analysis': analysisBody,
-        'message': message,
-        'focus': focus,
-        'quick': quick,
-        'history': history.length > 20 ? history.sublist(history.length - 20) : history,
-      });
+  Future<Map<String, dynamic>> chat(
+    Map<String, dynamic> analysisBody,
+    String message, {
+    String? focus,
+    String? quick,
+    List<Map<String, String>> history = const [],
+  }) => _post('/api/v1/chat', {
+    'analysis': analysisBody,
+    'message': message,
+    'focus': focus,
+    'quick': quick,
+    'history': history.length > 20
+        ? history.sublist(history.length - 20)
+        : history,
+  });
 }
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient(ref.watch(settingsProvider).apiBaseUrl, null, ref.watch(settingsProvider).apiToken));
+final apiClientProvider = Provider<ApiClient>(
+  (ref) => ApiClient(
+    ref.watch(settingsProvider).apiBaseUrl,
+    null,
+    ref.watch(settingsProvider).apiToken,
+  ),
+);

@@ -14,7 +14,12 @@ import 'package:medilens/core/settings.dart';
 import 'package:medilens/data/local_store.dart';
 
 /// 等待目标出现；列表懒加载时目标可能尚未构建，等待一段时间后向下滚动查找。
-Future<void> pumpUntil(WidgetTester t, Finder f, {Duration timeout = const Duration(seconds: 60), bool scroll = true}) async {
+Future<void> pumpUntil(
+  WidgetTester t,
+  Finder f, {
+  Duration timeout = const Duration(seconds: 60),
+  bool scroll = true,
+}) async {
   final end = DateTime.now().add(timeout);
   var waited = 0;
   while (DateTime.now().isBefore(end)) {
@@ -22,8 +27,15 @@ Future<void> pumpUntil(WidgetTester t, Finder f, {Duration timeout = const Durat
     if (f.evaluate().isNotEmpty) return;
     waited++;
     final scrollables = find.byType(Scrollable);
-    if (scroll && waited > 8 && scrollables.evaluate().isNotEmpty && !_dialogOpen()) {
-      await t.drag(scrollables.first, const Offset(0, -400), warnIfMissed: false);
+    if (scroll &&
+        waited > 8 &&
+        scrollables.evaluate().isNotEmpty &&
+        !_dialogOpen()) {
+      await t.drag(
+        scrollables.first,
+        const Offset(0, -400),
+        warnIfMissed: false,
+      );
     }
   }
   throw TestFailure('等待超时：$f');
@@ -35,7 +47,9 @@ Future<void> goBack(WidgetTester t) async {
   await t.pump(const Duration(seconds: 1));
 }
 
-bool _dialogOpen() => find.byType(AlertDialog).evaluate().isNotEmpty || find.byType(BottomSheet).evaluate().isNotEmpty;
+bool _dialogOpen() =>
+    find.byType(AlertDialog).evaluate().isNotEmpty ||
+    find.byType(BottomSheet).evaluate().isNotEmpty;
 
 Future<void> tapWhenReady(WidgetTester t, Finder f) async {
   await pumpUntil(t, f);
@@ -47,11 +61,22 @@ Future<void> tapWhenReady(WidgetTester t, Finder f) async {
   await t.pump(const Duration(milliseconds: 300));
 }
 
+class _IsolatedSettings extends SettingsNotifier {
+  @override
+  AppSettings build() =>
+      const AppSettings(apiBaseUrl: 'http://10.0.2.2:18765', apiToken: '');
+}
+
 Future<void> startApp(WidgetTester t, MemoryStore store) async {
-  await t.pumpWidget(ProviderScope(
-    overrides: [localStoreProvider.overrideWithValue(store)],
-    child: const MediLensApp(onboarded: false),
-  ));
+  await t.pumpWidget(
+    ProviderScope(
+      overrides: [
+        localStoreProvider.overrideWithValue(store),
+        settingsProvider.overrideWith(_IsolatedSettings.new),
+      ],
+      child: const MediLensApp(onboarded: false),
+    ),
+  );
   await t.pump(const Duration(seconds: 1));
 }
 
