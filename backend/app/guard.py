@@ -37,6 +37,8 @@ def _numbers(text: str) -> set[str]:
 
 def check(text: str, facts_text: str, urgent_allowed: bool) -> GuardResult:
     problems = []
+    if re.search(r"草稿|提示词|系统提示|内部资料|备用资料|备份资料", text):
+        problems.append("出现内部生成用语")
     for p in FORBIDDEN_PATTERNS:
         if re.search(p, text):
             problems.append(f"越界表述：{p}")

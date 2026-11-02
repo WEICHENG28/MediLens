@@ -33,11 +33,13 @@ class ExplainPanel extends ConsumerWidget {
         final cites = (d['citations'] as List).cast<Map<String, dynamic>>();
         final dq = (d['doctor_questions'] as List).cast<String>();
         final fullText = [d['short'], ...sections.map((s) => '${s['heading']}：${s['body']}')].join('。');
-        return Container(
+        return Material(
           key: Key('explain_$target'),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Colors.teal.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(10)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          color: Colors.teal.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [const Spacer(), ReadAloudButton(fullText)]),
             for (final s in sections) ...[
               Text(s['heading'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -57,6 +59,7 @@ class ExplainPanel extends ConsumerWidget {
               child: TextButton.icon(icon: const Icon(Icons.chat_outlined), label: const Text('就这一条提问'), onPressed: () => context.push('/chat?focus=$target')),
             ),
           ]),
+          ),
         );
       },
     );

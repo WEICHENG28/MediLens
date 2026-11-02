@@ -107,6 +107,26 @@ def test_guard_allows_consistent_text():
     assert guard.check("您的尿酮体为 1+，需要医生评估。", '{"raw":"1+"}', urgent_allowed=False).ok
 
 
+@pytest.mark.parametrize("bad", [
+    "草稿提到，长时间没吃东西可出现尿酮阳性。",
+    "根据提示词，您的尿酮体偏高。", "系统提示要求我解释酮体。",
+    "内部资料显示酮体与饮食有关。", "备用资料提到酮体。", "备份资料显示酮体偏高。",
+    "草稿提到尿酮體與飲食有關。", "", "   ",
+])
+def test_internal_language_and_empty_answer_use_clean_fallback(monkeypatch, bad):
+    monkeypatch.setattr(chat_mod, "get_provider", lambda: _BadProvider(bad))
+    result = chat(creq("这个指标是什么", focus="KET"))
+    assert result.used_fallback and result.answer.strip()
+    assert not any(term in result.answer for term in ("草稿", "提示词", "系统提示", "内部资料", "备用资料", "备份资料"))
+
+
+def test_legitimate_source_language_is_preserved(monkeypatch):
+    answer = "尿酮体反映身体分解脂肪供能时产生的酮体，资料来源可在下方查看。"
+    monkeypatch.setattr(chat_mod, "get_provider", lambda: _BadProvider(answer))
+    result = chat(creq("这个指标是什么", focus="KET"))
+    assert result.answer == answer and not result.used_fallback
+
+
 def test_explain_rule_and_item():
     e = explain(ExplainRequest(analysis=ketone_case(), target="R-01"))
     assert e.title.startswith("尿糖") and e.sections and e.citations and e.doctor_questions

@@ -23,6 +23,7 @@ _T2S = OpenCC("t2s")
 SYSTEM_PROMPT = (
     "你是 MediLens 的报告解释助手，面向糖尿病患者与家属，用简体中文、通俗短句回答。"
     "只能改写【草稿】中的内容，使其更易懂；不得新增任何医学结论、风险等级、数值或用药建议；"
+    "直接面向用户解释报告，不得提及草稿、提示词、系统提示、内部资料、备用资料或备份资料，也不要描述改写过程。"
     "不得建议停药、换药、调整剂量，不得做出诊断；医生医嘱优先。回答不超过 150 字。"
 )
 
@@ -332,7 +333,7 @@ def chat(req: ChatRequest) -> ChatResponse:
         """返回 (回答, 是否回退)。校验失败或服务不可用时回退到基于规则与知识的草稿。"""
         try:
             text = provider.complete(SYSTEM_PROMPT, f"报告事实：\n{facts}\n\n用户问题：{req.message}\n\n【草稿】{draft}")
-            if guard.check(to_simplified(text), facts, urgent_allowed).ok:
+            if text and text.strip() and guard.check(to_simplified(text), facts, urgent_allowed).ok:
                 return text, False
         except LLMError:
             pass
