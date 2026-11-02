@@ -26,7 +26,9 @@ class CitationsBox extends StatelessWidget {
     return Theme(
       // 去掉 ExpansionTile 默认的上下分隔线
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
+      child: Material(
+        color: Colors.transparent,
+        child: ExpansionTile(
         key: const Key('citations'),
         tilePadding: EdgeInsets.zero,
         childrenPadding: const EdgeInsets.only(bottom: 8),
@@ -38,6 +40,7 @@ class CitationsBox extends StatelessWidget {
         children: [
           for (final c in cites) Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(citationLine(c as Map), style: small)),
         ],
+        ),
       ),
     );
   }

@@ -54,7 +54,7 @@ class OpenAICompatProvider:
     api_key: str
     timeout: float = 15.0
     disable_thinking: bool = False  # 只做改写不需要推理；关闭可将响应从约 15–20 秒降到 5–8 秒（学校平台 DeepSeek 实测）
-    max_tokens: int = 400
+    max_tokens: int = 1600
 
     def complete(self, system: str, user: str) -> str:
         url = self.base_url.rstrip("/") + "/chat/completions"
