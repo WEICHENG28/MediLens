@@ -18,6 +18,7 @@ import '../core/session.dart';
 import '../core/settings.dart';
 import '../ocr/report_parser.dart';
 import '../widgets/common.dart';
+import '../widgets/ai_ocr_review.dart';
 
 class ReviewPage extends ConsumerStatefulWidget {
   const ReviewPage({super.key});
@@ -111,6 +112,9 @@ class _ReviewPageState extends ConsumerState<ReviewPage> {
             FilledButton.tonal(key: Key('candidate_$c'), onPressed: () => _resolve(item, value: c), child: Text(c, style: const TextStyle(fontSize: 22))),
           OutlinedButton(onPressed: () => _manual(item), child: const Text('其他（手动更正）')),
         ]),
+        const SizedBox(height: 12),
+        AiOcrReviewCard(key: ObjectKey(item), item: item,
+            onConfirm: (value) => _resolve(item, value: value)),
         const SizedBox(height: 16),
         OutlinedButton.icon(
           key: const Key('cannot_confirm'),

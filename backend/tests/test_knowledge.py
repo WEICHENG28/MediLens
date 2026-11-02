@@ -28,3 +28,17 @@ def test_missing_formal_kb_is_fine(tmp_path, monkeypatch):
         assert knowledge.search(codes=["KET"])[0].id == "kb-test-ket-001"
     finally:
         knowledge.load_kb.cache_clear()
+
+
+def test_existing_sources_keep_original_url():
+    entry = knowledge.get("kb-uacr-101")
+    assert entry.source_url.startswith("https://pmc.ncbi.nlm.nih.gov/")
+    assert entry.review_status == "未审核"
+
+
+def test_checked_patient_education_is_not_medically_reviewed():
+    entry = knowledge.get("kb-uacr-education-001")
+    assert entry.checked_at == "2026-10-30"
+    assert entry.source_url.startswith("https://www.niddk.nih.gov/")
+    assert entry.review_status == "未审核"
+    assert any(c.id == entry.id for c in knowledge.search("尿白蛋白复测", codes=["UACR"]))

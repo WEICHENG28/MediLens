@@ -54,7 +54,7 @@ class AppSettings {
         'displayMode': displayMode.name,
         'ocrMode': ocrMode,
         'speechRate': speechRate,
-        'autoRead': autoRead,
+        'autoReadOverviewV1': autoRead,
         'apiBaseUrl': apiBaseUrl,
         'onboarded': onboarded,
         'aiConsent': aiConsent,
@@ -66,7 +66,8 @@ class AppSettings {
         displayMode: DisplayMode.values.firstWhere((m) => m.name == j['displayMode'], orElse: () => DisplayMode.normal),
         ocrMode: 'local', // 本轮无注册用户，强制本地
         speechRate: (j['speechRate'] as num?)?.toDouble() ?? 0.5,
-        autoRead: j['autoRead'] as bool? ?? false,
+        // Require a fresh opt-in: the legacy switch had no playback implementation.
+        autoRead: j['autoReadOverviewV1'] == true,
         // 旧版会把当时的默认地址一并存下；只有用户手动改过才沿用，否则跟随新版 APK 的预设
         apiBaseUrl: j['connectionCustom'] == true ? (j['apiBaseUrl'] as String? ?? defaultApiBaseUrl) : defaultApiBaseUrl,
         onboarded: j['onboarded'] as bool? ?? false,

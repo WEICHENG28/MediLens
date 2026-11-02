@@ -142,8 +142,8 @@ class HomePage extends ConsumerWidget {
         _entry(context, Icons.pets, '生活打卡 · 小兔陪伴', '用药、饮食、运动、睡眠与血糖的规律和提醒', '/life'),
         _entry(context, Icons.history, '历史记录', '本机保存的报告', '/history'),
         _entry(context, Icons.question_answer_outlined, '复诊问题', '整理要问医生的问题', '/doctor'),
-        _entry(context, Icons.mic_none, '语音对话', '实时语音、可打断（待实现）', '/voice'),
-        _entry(context, Icons.medication_outlined, '药盒识别', '拍药盒辅助识别（待实现）', '/medication'),
+        _entry(context, Icons.mic_none, '语音对话', '按键或连续对话，普通话离线识别', '/voice'),
+        _entry(context, Icons.medication_outlined, '药盒识别', '本机识字、候选药名与人工核对', '/medication'),
       ]),
     );
   }

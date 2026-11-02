@@ -2,13 +2,20 @@
 // 记录保存在本机（加密数据库）；分析时只发送打卡记录（时间、类型、数值），不含身份信息。
 
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 
 import '../core/api_client.dart';
 import '../core/life_tasks.dart';
+import '../core/local_reminders.dart';
+import '../core/task_receipts.dart';
+import '../core/life_journal.dart';
 import '../data/local_store.dart';
+import '../widgets/interactive_bunny.dart';
 
 const _kEvents = 'life_events';
 const _kSchedule = 'life_schedule';
@@ -24,7 +31,10 @@ class _LifePageState extends ConsumerState<LifePage> {
   List<Map<String, dynamic>> events = [];
   List<Map<String, dynamic>> schedule = [];
   List<LifeTask> tasks = [];
-  bool negative = true;
+  bool companion = true;
+  bool demo = false;
+  bool adding = false;
+  List<Map<String, dynamic>> projected = [];
   Map<String, dynamic>? result;
   String? error;
   bool busy = false;
@@ -38,41 +48,59 @@ class _LifePageState extends ConsumerState<LifePage> {
   }
 
   Future<void> _load() async {
-    events = List<Map<String, dynamic>>.from(jsonDecode(await store.getSetting(_kEvents) ?? '[]') as List);
+    try {
+    events = await loadManualEvents(store);
     schedule = List<Map<String, dynamic>>.from(jsonDecode(await store.getSetting(_kSchedule) ?? '[]') as List);
-    negative = (await store.getSetting(_kNegative)) != 'false';
+    companion = await store.getSetting('life_companion_enabled') != 'false';
+    demo = await store.getSetting('life_demo_mode') == 'true';
     tasks = await loadTasks(store);
-    await _analyze();
+    if (mounted) await _analyze();
+    } catch (_) {
+      if (mounted) setState(() => error = '本机记录暂时无法读取，请重试；原记录没有删除。');
+    }
   }
 
   Future<void> _save() async {
+    for (final plan in schedule) {
+      if (plan['id'] is! String || !RegExp(r'^[a-f0-9-]{36}$').hasMatch(plan['id'] as String)) plan['id'] = const Uuid().v4();
+    }
     await store.putSetting(_kEvents, jsonEncode(events));
     await store.putSetting(_kSchedule, jsonEncode(schedule));
-    await store.putSetting(_kNegative, negative ? 'true' : 'false');
+    await store.putSetting(_kNegative, 'false');
+    await store.putSetting('life_companion_enabled', companion ? 'true' : 'false');
+    await store.putSetting('life_demo_mode', demo ? 'true' : 'false');
+    await ref.read(remindersProvider.notifier).syncFromStore();
   }
 
-  static String _now() => DateTime.now().toIso8601String().substring(0, 19);
-  static String _today() => DateTime.now().toIso8601String().substring(0, 10);
+  String _now() => ref.read(taskClockProvider)().toIso8601String().substring(0, 19);
+  String _today() => taskDay(ref.read(taskClockProvider)());
 
   Future<void> _analyze() async {
-    if (events.isEmpty && tasks.isEmpty) {
-      setState(() => result = null);
-      return;
-    }
     setState(() => busy = true);
     try {
+      final receipts = ref.read(taskReceiptsProvider.notifier);
+      await receipts.load();
+      projected = effectiveLifeEvents(events, demo ? {} : ref.read(taskReceiptsProvider), demo ? {} : receipts.manualLinks);
+      unawaited(updateLocalCompanion(store, ref.read(taskClockProvider)()).catchError((Object _) {}));
+      if (!mounted) return;
+      if (projected.isEmpty && tasks.isEmpty) { setState(() { result = null; error = null; }); return; }
       final r = await ref.read(apiClientProvider).lifestyle({
-        'events': events.length > 3000 ? events.sublist(events.length - 3000) : events,
+        'events': (projected.length > 3000 ? projected.sublist(projected.length - 3000) : projected).map((e) => {
+          for (final key in ['type', 'time', 'taken', 'insulin_kind', 'meal_size', 'minutes', 'glucose', 'task', 'slot'])
+            if (e.containsKey(key)) key: e[key],
+        }).toList(),
         'schedule': schedule,
         'tasks': tasks.map((t) => {'id': t.id, 'title': t.title, 'due': t.due, 'done': t.done}).toList(),
         'today': _today(),
-        'negative_feedback': negative,
+        'negative_feedback': false,
       });
+      if (!mounted) return;
       setState(() {
         result = r;
         error = null;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => error = e.toString());
     } finally {
       if (mounted) setState(() => busy = false);
@@ -80,16 +108,51 @@ class _LifePageState extends ConsumerState<LifePage> {
   }
 
   Future<void> _add(Map<String, dynamic> e) async {
-    events.add({'time': _now(), ...e});
-    await _save();
-    await _analyze();
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已记录'), duration: Duration(seconds: 1)));
+    if (adding || demo) return;
+    adding = true;
+    try {
+      if ({'medication', 'insulin'}.contains(e['type']) && e['taken'] == true) {
+        await ref.read(taskReceiptsProvider.notifier).load();
+        if (!mounted) return;
+        final matches = ref.read(taskReceiptsProvider).entries.where((r) => r.key.startsWith('${_today()}|') && r.key.split('|')[2] == e['type']).toList();
+        if (matches.isNotEmpty) {
+          final choice = await showDialog<String>(context: context, builder: (c) => AlertDialog(
+            title: const Text('今天已有同类任务完成记录'),
+            content: Text('已记录的计划时间：${matches.map((r) => r.key.split('|').last).join('、')}。\n本次是否是同一次？不会仅按时间自动合并。'),
+            actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text('取消')),
+              TextButton(onPressed: () => Navigator.pop(c, 'same'), child: const Text('同一次，不重复记录')),
+              FilledButton(onPressed: () => Navigator.pop(c, 'new'), child: const Text('不是同一次，另记一次'))]));
+          if (choice != 'new' || !mounted) {
+            if (mounted && choice == 'same') ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已保留原任务记录，没有重复添加')));
+            return;
+          }
+        }
+      }
+      final next = [...events, {'id': const Uuid().v4(), 'time': _now(), ...e}];
+      await store.putSetting(_kEvents, jsonEncode(next));
+      events = next;
+      await _analyze();
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已记录'), duration: Duration(seconds: 1)));
+    } catch (_) {
+      if (mounted) setState(() => error = '记录未能完成，请检查后重试。');
+    } finally { adding = false; }
   }
 
   Future<void> _loadDemo() async {
+    final ok = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
+      title: const Text('载入合成演示记录？'),
+      content: const Text('这会替换当前生活打卡和用药时间，并关闭本机提醒。任务完成记录会保留，但不合并到演示分析。请不要用演示数据代替自己的记录。'),
+      actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('继续载入'))]));
+    if (ok != true || !mounted) return;
     setState(() => busy = true);
     try {
+      if (ref.read(remindersProvider).available && !await ref.read(remindersProvider.notifier).setEnabled(false)) {
+        if (mounted) setState(() => error = '请先在本机提醒中关闭通知，再载入演示记录。');
+        return;
+      }
       final d = await ref.read(apiClientProvider).lifestyleDemo(_today());
+      demo = true;
       events = List<Map<String, dynamic>>.from(d['events'] as List);
       schedule = List<Map<String, dynamic>>.from(d['schedule'] as List);
       await _save();
@@ -102,7 +165,15 @@ class _LifePageState extends ConsumerState<LifePage> {
   }
 
   Future<void> _clear() async {
+    final ok = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
+      content: const Text('清空生活打卡与任务完成记录，并关闭本机提醒？用药时间计划保留。此操作不可恢复。'),
+      actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('清空'))]));
+    if (ok != true || !mounted) return;
+    if (ref.read(remindersProvider).available && !await ref.read(remindersProvider.notifier).setEnabled(false)) return;
+    await ref.read(taskReceiptsProvider.notifier).clear();
     events = [];
+    demo = false;
     await _save();
     await _analyze();
   }
@@ -134,6 +205,14 @@ class _LifePageState extends ConsumerState<LifePage> {
   }
 
   Future<void> _addSchedule() async {
+    if (demo) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请先清空演示，再添加自己的用药时间。')));
+      return;
+    }
+    if (schedule.length >= 32) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('最多添加 32 个用药时间，请先删除不再使用的时间。')));
+      return;
+    }
     final t = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 8, minute: 0));
     if (t == null || !mounted) return;
     final task = await showDialog<String>(
@@ -144,7 +223,9 @@ class _LifePageState extends ConsumerState<LifePage> {
       ]),
     );
     if (task == null) return;
-    schedule.add({'task': task, 'time': '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}', 'label': '按医嘱'});
+    final time = '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+    if (schedule.any((s) => s['task'] == task && s['time'] == time)) return;
+    schedule.add({'id': const Uuid().v4(), 'task': task, 'time': time, 'label': '按医嘱'});
     await _save();
     await _analyze();
   }
@@ -152,22 +233,26 @@ class _LifePageState extends ConsumerState<LifePage> {
   @override
   Widget build(BuildContext context) {
     final r = result;
+    final reminders = ref.watch(remindersProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('生活打卡 · 小兔陪伴'), actions: [
         PopupMenuButton<String>(
           onSelected: (v) => v == 'demo' ? _loadDemo() : _clear(),
           itemBuilder: (_) => const [
             PopupMenuItem(value: 'demo', child: Text('载入两周示例记录（演示用）')),
-            PopupMenuItem(value: 'clear', child: Text('清空打卡记录')),
+            PopupMenuItem(value: 'clear', child: Text('清空生活与任务记录')),
           ],
         ),
       ]),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         if (busy) const LinearProgressIndicator(),
         if (error != null) Card(child: Padding(padding: const EdgeInsets.all(12), child: Text(error!))),
-        if (r != null) _PetCard(pet: r['pet'] as Map<String, dynamic>) else _emptyPet(),
+        if (reminders.error != null) Card(child: Padding(padding: const EdgeInsets.all(12), child: Text(reminders.error!))),
+        if (demo) const Text('合成演示数据：不合并个人任务记录。请先清空演示，再记录自己的生活。', style: TextStyle(color: Colors.deepOrange)),
+        if (companion) _PetCard(summary: companionSummary(projected, ref.read(taskClockProvider)())),
         if (r != null)
           for (final a in (r['alerts'] as List)) _AlertCard(a as Map<String, dynamic>),
+        if (r?['pet']?['safety_note'] != null) _AlertCard({'level': 'yellow', 'title': '已记录的用药疑问', 'text': r!['pet']['safety_note']}),
         const SizedBox(height: 12),
         Text('打卡', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 6),
@@ -221,12 +306,16 @@ class _LifePageState extends ConsumerState<LifePage> {
             ),
           ),
         TextButton.icon(onPressed: _addSchedule, icon: const Icon(Icons.add), label: const Text('添加用药时间')),
+        ListTile(contentPadding: EdgeInsets.zero, leading: const Icon(Icons.notifications_none),
+          title: const Text('本机任务提醒'),
+          subtitle: Text(reminders.enabled ? '已开启；点击检查权限和测试送达' : '默认关闭；添加时间不会自动发送通知'),
+          onTap: () async { await context.push('/reminder'); if (mounted) _load(); }),
         SwitchListTile(
-          title: const Text('漏用药时小兔会生病'),
-          subtitle: const Text('提醒按时用药；按时用药 1–2 天即可恢复，小兔不会死亡。关闭后小兔只会等你'),
-          value: negative,
+          title: const Text('小兔陪伴反馈'),
+          subtitle: const Text('只鼓励确认过的记录，不扣健康分，也不把未记录当作漏药。小兔状态不代表真实病情。'),
+          value: companion,
           onChanged: (v) async {
-            setState(() => negative = v);
+            setState(() => companion = v);
             await _save();
             await _analyze();
           },
@@ -238,18 +327,8 @@ class _LifePageState extends ConsumerState<LifePage> {
     );
   }
 
-  Widget _emptyPet() => const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(children: [
-            Text('🐰', style: TextStyle(fontSize: 64)),
-            Text('还没有打卡记录。先添加用药时间，再开始打卡；也可以在右上角载入示例记录看看效果。', textAlign: TextAlign.center),
-          ]),
-        ),
-      );
-
   Widget _chip(IconData icon, String label, VoidCallback onTap) =>
-      ActionChip(key: Key('life_$label'), avatar: Icon(icon, size: 18), label: Text(label), onPressed: busy ? null : onTap);
+      ActionChip(key: Key('life_$label'), avatar: Icon(icon, size: 18), label: Text(label), onPressed: busy || demo ? null : onTap);
 
   List<Widget> _results(BuildContext context, Map<String, dynamic> r) {
     final m = r['metrics'] as Map<String, dynamic>;
@@ -265,7 +344,7 @@ class _LifePageState extends ConsumerState<LifePage> {
           child: Wrap(spacing: 24, runSpacing: 8, children: [
             _stat('血糖在 3.9–10 的比例', pct(m['tir'])),
             _stat('偏低次数', '${m['low_events']}'),
-            _stat('按时用药', pct(m['adherence'])),
+            _stat('用药记录覆盖（原型）', pct(m['adherence'])),
             _stat('血糖记录', '${m['readings']} 次'),
           ]),
         ),
@@ -312,60 +391,17 @@ class _LifePageState extends ConsumerState<LifePage> {
 }
 
 class _PetCard extends StatelessWidget {
-  final Map<String, dynamic> pet;
-  const _PetCard({required this.pet});
-
+  final CompanionSummary summary;
+  const _PetCard({required this.summary});
   @override
-  Widget build(BuildContext context) {
-    final health = pet['health_state'] as String;
-    final energy = pet['energy_state'] as String;
-    final mood = pet['mood'] as String;
-    final face = health == '生病了' ? '🤒' : health == '有点不舒服' ? '🤧' : mood == '开心' ? '🥳' : energy == '困倦' ? '😪' : '😊';
-    final bg = health == '生病了'
-        ? const Color(0xFFFDECEA)
-        : mood == '开心'
-            ? const Color(0xFFE8F5E9)
-            : Theme.of(context).colorScheme.surfaceContainerHighest;
-    return Card(
-      color: bg,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Stack(children: [
-              Text(health == '生病了' ? '🛏️' : '🐰', key: const Key('pet_avatar'), style: const TextStyle(fontSize: 64)),
-              Positioned(right: 0, bottom: 0, child: Text(face, style: const TextStyle(fontSize: 28))),
-            ]),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('小兔 · $health · $energy', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                const SizedBox(height: 6),
-                _bar('健康（按时用药）', pet['health'] as int, Colors.red.shade400),
-                _bar('活力（运动·睡眠·记录）', pet['energy'] as int, Colors.teal),
-                if ((pet['streak_days'] as int) > 0)
-                  Text('连续按时用药 ${pet['streak_days']} 天', style: const TextStyle(fontSize: 12, color: Colors.black87)),
-              ]),
-            ),
-          ]),
-          const SizedBox(height: 8),
-          Text(pet['message'] as String, key: const Key('pet_message'), style: const TextStyle(fontSize: 16, color: Colors.black87)),
-          if (pet['safety_note'] != null) ...[
-            const SizedBox(height: 6),
-            Text(pet['safety_note'] as String, style: const TextStyle(color: Color(0xFFB71C1C), fontWeight: FontWeight.bold)),
-          ],
-        ]),
-      ),
-    );
-  }
-
-  Widget _bar(String label, int v, Color c) => Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('$label  $v', style: const TextStyle(fontSize: 12, color: Colors.black87)),
-          LinearProgressIndicator(value: v / 100, color: c, backgroundColor: Colors.white, minHeight: 6),
-        ]),
-      );
+  Widget build(BuildContext context) => Card(child: Padding(
+    padding: const EdgeInsets.all(16), child: Column(children: [
+      const InteractiveBunny(),
+      const SizedBox(height: 8),
+      Text(summary.message, key: const Key('pet_message'), textAlign: TextAlign.center),
+      const SizedBox(height: 8),
+      const Text('未记录不代表未完成；小兔的样子不代表您的健康状况。'),
+    ])));
 }
 
 class _AlertCard extends StatelessWidget {

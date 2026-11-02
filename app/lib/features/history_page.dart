@@ -1,7 +1,8 @@
-// P09 历史记录：按检验日期排序，查看、单条删除、全部删除。趋势图待实现（不可比时须提示「不可直接比较」）。
+// P09 历史记录：查看、删除与历史指标对照入口。
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../core/settings.dart';
 import '../data/local_store.dart';
@@ -45,10 +46,11 @@ class HistoryPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('读取失败：$e')),
         data: (list) => ListView(padding: const EdgeInsets.all(12), children: [
-          const ListTile(
-            leading: Icon(Icons.show_chart),
-            title: Text('趋势对比（待实现）'),
-            subtitle: Text('将对可比的指标自动生成趋势；不同医院/方法/单位的结果会标注「不可直接比较」'),
+          ListTile(
+            leading: const Icon(Icons.show_chart),
+            title: const Text('历史指标对照'),
+            subtitle: const Text('按原单位与参考范围分组；检测方法需人工核对，不自动判断病情变化'),
+            onTap: list.isEmpty ? null : () => context.push('/trends'),
           ),
           if (list.isEmpty) const Padding(padding: EdgeInsets.all(24), child: Text('本机还没有保存的报告', textAlign: TextAlign.center)),
           for (final r in list)

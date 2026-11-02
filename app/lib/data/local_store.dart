@@ -30,15 +30,21 @@ class SavedReport {
     this.messages = const [],
   });
 
-  String get overallLevel => (analysis?['overall'] as Map?)?['level'] as String? ?? 'unknown';
+  String get overallLevel =>
+      (analysis?['overall'] as Map?)?['level'] as String? ?? 'unknown';
 
   Map<String, Object?> toRow() => {
-        'id': id,
-        'test_date': testDate,
-        'saved_at': savedAt.toIso8601String(),
-        'report_type': reportType,
-        'payload': jsonEncode({'items': items, 'answers': answers, 'analysis': analysis, 'messages': messages}),
-      };
+    'id': id,
+    'test_date': testDate,
+    'saved_at': savedAt.toIso8601String(),
+    'report_type': reportType,
+    'payload': jsonEncode({
+      'items': items,
+      'answers': answers,
+      'analysis': analysis,
+      'messages': messages,
+    }),
+  };
 
   factory SavedReport.fromRow(Map<String, Object?> r) {
     final payload = jsonDecode(r['payload'] as String) as Map<String, dynamic>;
@@ -50,7 +56,8 @@ class SavedReport {
       items: (payload['items'] as List).cast<Map<String, dynamic>>(),
       answers: (payload['answers'] as Map).cast<String, dynamic>(),
       analysis: (payload['analysis'] as Map?)?.cast<String, dynamic>(),
-      messages: ((payload['messages'] as List?) ?? const []).cast<Map<String, dynamic>>(),
+      messages: ((payload['messages'] as List?) ?? const [])
+          .cast<Map<String, dynamic>>(),
     );
   }
 }
@@ -66,7 +73,17 @@ abstract class LocalStore {
 
 class SqlCipherStore implements LocalStore {
   Database? _db;
-  static const _keyName = 'medilens_db_key';
+  final String _fileName, _keyName;
+  SqlCipherStore() : _fileName = 'medilens.db', _keyName = 'medilens_db_key';
+
+  /// Dedicated device-test database and keystore entry; never touches the user's store.
+  SqlCipherStore.forTesting()
+    : _fileName = 'medilens_device_test.db',
+      _keyName = 'medilens_device_test_key';
+  Future<void> close() async {
+    await _db?.close();
+    _db = null;
+  }
 
   Future<Database> get _database async {
     if (_db != null) return _db!;
@@ -77,44 +94,62 @@ class SqlCipherStore implements LocalStore {
       key = base64UrlEncode(List<int>.generate(32, (_) => rnd.nextInt(256)));
       await secure.write(key: _keyName, value: key);
     }
-    final path = p.join(await getDatabasesPath(), 'medilens.db');
+    final path = p.join(await getDatabasesPath(), _fileName);
     _db = await openDatabase(
       path,
       password: key,
       version: 1,
       onCreate: (db, v) async {
-        await db.execute('CREATE TABLE reports (id TEXT PRIMARY KEY, test_date TEXT, saved_at TEXT, report_type TEXT, payload TEXT)');
-        await db.execute('CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT)');
+        await db.execute(
+          'CREATE TABLE reports (id TEXT PRIMARY KEY, test_date TEXT, saved_at TEXT, report_type TEXT, payload TEXT)',
+        );
+        await db.execute(
+          'CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT)',
+        );
       },
     );
     return _db!;
   }
 
   @override
-  Future<void> saveReport(SavedReport r) async =>
-      (await _database).insert('reports', r.toRow(), conflictAlgorithm: ConflictAlgorithm.replace);
+  Future<void> saveReport(SavedReport r) async => (await _database).insert(
+    'reports',
+    r.toRow(),
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
 
   @override
   Future<List<SavedReport>> listReports() async {
-    final rows = await (await _database).query('reports', orderBy: 'test_date DESC, saved_at DESC');
+    final rows = await (await _database).query(
+      'reports',
+      orderBy: 'test_date DESC, saved_at DESC',
+    );
     return rows.map(SavedReport.fromRow).toList();
   }
 
   @override
-  Future<void> deleteReport(String id) async => (await _database).delete('reports', where: 'id = ?', whereArgs: [id]);
+  Future<void> deleteReport(String id) async =>
+      (await _database).delete('reports', where: 'id = ?', whereArgs: [id]);
 
   @override
   Future<void> deleteAll() async => (await _database).delete('reports');
 
   @override
   Future<String?> getSetting(String key) async {
-    final rows = await (await _database).query('settings', where: 'key = ?', whereArgs: [key]);
+    final rows = await (await _database).query(
+      'settings',
+      where: 'key = ?',
+      whereArgs: [key],
+    );
     return rows.isEmpty ? null : rows.first['value'] as String;
   }
 
   @override
   Future<void> putSetting(String key, String value) async =>
-      (await _database).insert('settings', {'key': key, 'value': value}, conflictAlgorithm: ConflictAlgorithm.replace);
+      (await _database).insert('settings', {
+        'key': key,
+        'value': value,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
 }
 
 /// 内存实现：用于测试，以及「不保存」模式下的会话。
@@ -138,10 +173,13 @@ class MemoryStore implements LocalStore {
   @override
   Future<String?> getSetting(String key) async => settings[key];
   @override
-  Future<void> putSetting(String key, String value) async => settings[key] = value;
+  Future<void> putSetting(String key, String value) async =>
+      settings[key] = value;
 }
 
 final localStoreProvider = Provider<LocalStore>((ref) => SqlCipherStore());
 
 /// 历史列表（保存/删除后需 invalidate）。
-final historyProvider = FutureProvider<List<SavedReport>>((ref) => ref.watch(localStoreProvider).listReports());
+final historyProvider = FutureProvider<List<SavedReport>>(
+  (ref) => ref.watch(localStoreProvider).listReports(),
+);

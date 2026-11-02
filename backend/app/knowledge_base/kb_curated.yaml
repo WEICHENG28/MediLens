@@ -1,0 +1,16 @@
+# 只读官方资料的通俗摘要；与 Excel 导入分开，避免下次导入覆盖。
+# checked_at 仅表示核对网页日期，不代表医学专家审核或大陆网络可达性认证。
+version: kb-curated-20261030
+review_status: unreviewed
+entries:
+  - id: kb-uacr-education-001
+    title: 尿白蛋白结果为什么需要结合复查理解
+    codes: [UACR]
+    keywords: [尿白蛋白, 尿白蛋白复查, 尿白蛋白结果, 尿白蛋白复测]
+    source: NIDDK 患者教育：Chronic Kidney Disease Tests & Diagnosis（通俗摘要）
+    source_version: 网页核对版 2026-10-30
+    source_url: https://www.niddk.nih.gov/health-information/kidney-disease/chronic-kidney-disease-ckd/tests-diagnosis
+    checked_at: '2026-10-30'
+    authorization: 仅保存自行撰写的简短摘要和出处链接，不复制全文
+    review_status: 未审核
+    text: 尿白蛋白检查用于了解尿中是否漏出白蛋白。检测发现白蛋白时，医生可能安排重复检查来确认结果，并结合血液检查评估肾功能。单次数字的意义需要结合个人情况讨论；可以带上历次报告，向医生询问哪些变化需要关注。

@@ -1,0 +1,11 @@
+Offline voice recognition notices
+
+Vosk API (com.alphacephei:vosk-android), Copyright Alpha Cephei Inc., Apache License 2.0.
+Chinese model vosk-model-small-cn-0.22, Alpha Cephei model catalog, Apache License 2.0.
+Source: https://alphacephei.com/vosk/models
+JNA (net.java.dev.jna:jna), JNA project, dual licensed LGPL 2.1 or Apache License 2.0; distributed here under Apache License 2.0.
+Source: https://github.com/java-native-access/jna
+Full Apache license is included in LICENSE-APACHE-2.0.txt.
+
+The model is bundled for offline use; no model or audio download/upload occurs at runtime.
+Small general-purpose ASR can misrecognize medical terms and numbers. Confirm the editable text before sending it.

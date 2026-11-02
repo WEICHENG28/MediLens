@@ -253,3 +253,61 @@ def test_quick_buttons_without_focus():
     assert "需要一起看的指标" in r.answer and "尿糖与尿酮体同时阳性" in r.answer
     r = chat(creq("复诊问什么", quick="doctor"))
     assert "复诊时可以问医生" in r.answer and not r.used_fallback
+
+
+def test_model_can_answer_specific_question_from_grounded_evidence(monkeypatch):
+    seen = {}
+    class QuestionProvider:
+        name = "test"
+        def complete(self, system, user):
+            seen.update(system=system, user=user)
+            return "饥饿时身体可能分解脂肪供能，出现尿酮体；仅凭这一项不能判断原因。"
+    monkeypatch.setattr(chat_mod, "get_provider", lambda: QuestionProvider())
+    result = chat(creq("酮体和饮食有什么关系？"))
+    assert not result.used_fallback and result.citations
+    assert "直接回答用户的具体问题" in seen["system"]
+    assert "医学知识依据" in seen["system"]
+    assert "不得新增任何医学结论" in seen["system"]
+    assert "酮体和饮食有什么关系" in seen["user"]
+    assert "报告事实" in seen["user"] and "饥饿" in seen["user"]
+
+
+def test_traditional_model_output_is_returned_as_simplified(monkeypatch):
+    monkeypatch.setattr(chat_mod, "get_provider", lambda: _BadProvider("尿酮體反映身體分解脂肪供能，不能單憑這項結果確定原因。"))
+    result = chat(creq("尿酮體是什麼", focus="KET"))
+    assert not result.used_fallback
+    assert "酮体" in result.answer and "身体" in result.answer
+    assert "體" not in result.answer and "這" not in result.answer
+
+
+def test_worry_gets_acknowledged_even_when_model_fails(monkeypatch):
+    monkeypatch.setattr(chat_mod, "get_provider", lambda: _FailProvider())
+    result = chat(creq("我很担心，尿酮体是什么", focus="KET"))
+    assert result.used_fallback and "担心是可以理解的" in result.answer
+    assert "酮体" in result.answer and result.citations
+    assert "肯定没事" not in result.answer
+
+
+def test_ordinary_question_does_not_get_assumed_emotion():
+    result = chat(creq("尿酮体是什么", focus="KET"))
+    assert "担心是可以理解的" not in result.answer
+
+
+@pytest.mark.parametrize("message", ["我不担心，尿酮体是什么", "有些害怕，但不要安慰我，尿酮体是什么"])
+def test_user_can_decline_reassurance(message):
+    result = chat(creq(message, focus="KET"))
+    assert "担心是可以理解的" not in result.answer
+
+
+def test_care_does_not_delay_emergency_action():
+    result = chat(creq("很害怕，我现在一直吐，呼吸很快"))
+    assert result.safety_category == "emergency"
+    assert result.answer.startswith("您描述的情况可能需要紧急处理")
+    assert "120" in result.answer
+
+
+@pytest.mark.parametrize("bad", ["別擔心，肯定沒事。", "不用担心，尿酮体没有问题。", "都怪你不听话。"])
+def test_false_reassurance_and_blame_fall_back(monkeypatch, bad):
+    monkeypatch.setattr(chat_mod, "get_provider", lambda: _BadProvider(bad))
+    result = chat(creq("尿酮体是什么", focus="KET"))
+    assert result.used_fallback and result.answer != bad

@@ -44,6 +44,18 @@ DOC_HOSTS = {"api-docs.deepseek.com", "help.aliyun.com", "docs.bigmodel.cn", "d.
              "schemas.android.com", "www.apple.com"}
 
 
+# Citation URLs are displayed as text. They are not fetched by app or backend.
+# Limit this exception to reviewed metadata locations, never executable code.
+CITATION_FILES = {
+    "backend/app/knowledge_base/kb.yaml": {"pmc.ncbi.nlm.nih.gov", "pubmed.ncbi.nlm.nih.gov"},
+    "backend/app/knowledge_base/kb_curated.yaml": {"www.niddk.nih.gov"},
+}
+
+
+def citation_only(host: str, files: set[str]) -> bool:
+    return bool(files) and all(host in CITATION_FILES.get(f, set()) for f in files)
+
+
 def scan_sources() -> tuple[dict[str, set[str]], list[str]]:
     hosts: dict[str, set[str]] = {}
     problems: list[str] = []
@@ -60,7 +72,7 @@ def scan_sources() -> tuple[dict[str, set[str]], list[str]]:
                 host = re.sub(r"^.*}", "", m.group(1)).strip(".")
                 hosts.setdefault(host, set()).add(rel)
     for host, files in hosts.items():
-        if host in DOC_HOSTS:
+        if host in DOC_HOSTS or citation_only(host, files):
             continue
         if not any(host == a or host.endswith("." + a) or host.endswith(a) for a in ALLOWED):
             problems.append(f"未登记的域名 {host}（{', '.join(sorted(files))}）")
@@ -114,7 +126,7 @@ def main() -> int:
     hosts, problems = scan_sources()
     print("源码中出现的域名：")
     for h in sorted(hosts):
-        tag = "文档链接" if h in DOC_HOSTS else next((v for k, v in ALLOWED.items() if h.endswith(k)), "未登记")
+        tag = "出处文字（不发起请求）" if citation_only(h, hosts[h]) else "文档链接" if h in DOC_HOSTS else next((v for k, v in ALLOWED.items() if h.endswith(k)), "未登记")
         print(f"  {h:40s} {tag}")
     if args.apk:
         problems += scan_apk(ROOT / args.apk)
@@ -123,7 +135,7 @@ def main() -> int:
         for p in problems:
             print("  ✗", p)
         return 1
-    print("\n✓ 未发现境外服务依赖或未登记域名")
+    print("\n✓ 静态检查未发现未登记的运行时依赖；仍须国内真机网络实测")
     return 0
 
 

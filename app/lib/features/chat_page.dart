@@ -1,5 +1,5 @@
 // P06 文字对话：快捷问题为主，自由输入为辅；越界问题（停药/确诊）由服务端安全模板回答。
-// 与语音模式（待实现）共享同一会话。
+// 与按键语音模式共享同一会话。
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,8 +23,9 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     if (text.trim().isEmpty || sending) return;
     setState(() => sending = true);
     controller.clear();
-    await ref.read(sessionProvider.notifier).sendChat(text.trim(), focus: widget.focus, quick: quick);
-    if (mounted) setState(() => sending = false);
+    try {
+      await ref.read(sessionProvider.notifier).sendChat(text.trim(), focus: widget.focus, quick: quick);
+    } finally { if (mounted) setState(() => sending = false); }
   }
 
   @override
@@ -37,14 +38,14 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     ];
     return Scaffold(
       appBar: AppBar(title: Text(widget.focus == null ? '提问' : '关于 ${widget.focus} 提问'), actions: [
-        IconButton(tooltip: '语音对话（待实现）', icon: const Icon(Icons.mic_none), onPressed: () => context.push('/voice')),
+        IconButton(tooltip: '语音对话', icon: const Icon(Icons.mic_none), onPressed: () => context.pushReplacement(widget.focus == null ? '/voice' : Uri(path: '/voice', queryParameters: {'focus': widget.focus!}).toString())),
       ]),
       body: Column(children: [
         const Padding(padding: EdgeInsets.fromLTRB(12, 8, 12, 0), child: TestRuleBanner()),
         Expanded(
           child: ListView(padding: const EdgeInsets.all(12), children: [
             if (s.messages.isEmpty) const Text('可以点下面的常用问题，或直接输入。', style: TextStyle(color: Colors.black54)),
-            for (final m in s.messages) _Bubble(m),
+            for (final m in s.messages) ChatBubble(m),
             if (sending) const Padding(padding: EdgeInsets.all(8), child: LinearProgressIndicator()),
           ]),
         ),
@@ -76,9 +77,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   }
 }
 
-class _Bubble extends StatelessWidget {
+class ChatBubble extends StatelessWidget {
   final ChatMessage m;
-  const _Bubble(this.m);
+  final bool allowSpeech;
+  const ChatBubble(this.m, {super.key, this.allowSpeech = true});
   @override
   Widget build(BuildContext context) {
     final user = m.role == 'user';
@@ -102,7 +104,7 @@ class _Bubble extends StatelessWidget {
           if (!user) ...[
             if (m.citations.isNotEmpty) CitationsBox(m.citations, textColor: Colors.black87),
             Row(mainAxisSize: MainAxisSize.min, children: [
-              ReadAloudButton(m.content),
+              if (allowSpeech) ReadAloudButton(m.content),
               if (m.usedFallback) Text('（使用经规则约束的标准说明）', style: Theme.of(context).textTheme.bodySmall),
             ]),
           ],

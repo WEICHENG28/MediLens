@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'dart:async';
+import '../core/speech.dart';
 
 import '../core/settings.dart';
 import '../core/theme.dart';
@@ -10,8 +11,13 @@ String citationLine(Map c) {
   final status = c['review_status'];
   final reviewed = status == 'reviewed' || status == '已审核';
   final version = (c['source_version'] ?? '').toString();
+  final uri = Uri.tryParse((c['source_url'] ?? '').toString());
+  final url = uri != null && uri.scheme == 'https' && uri.host.isNotEmpty ? uri.toString() : '';
+  final checked = (c['checked_at'] ?? '').toString();
   return '· ${c['title']}\n  出处：${c['source']}${version.isEmpty ? '' : '（$version）'}'
-      '${reviewed ? '' : ' · 未经医学审核'}';
+      '${reviewed ? '' : ' · 未经医学审核'}'
+      '${url.isEmpty ? '' : '\n  原始出处：$url'}'
+      '${checked.isEmpty ? '' : '\n  网页核对：$checked（不代表医学审核）'}';
 }
 
 /// 资料来源：默认收起，只显示一行「资料来源（n 条）」；点击后展开逐条出处。
@@ -38,7 +44,7 @@ class CitationsBox extends StatelessWidget {
         leading: Icon(Icons.menu_book_outlined, size: 18, color: textColor),
         title: Text('资料来源（${cites.length} 条）· 点击查看', style: small?.copyWith(fontWeight: FontWeight.bold)),
         children: [
-          for (final c in cites) Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(citationLine(c as Map), style: small)),
+          for (final c in cites) Padding(padding: const EdgeInsets.only(bottom: 6), child: SelectableText(citationLine(c as Map), style: small)),
         ],
         ),
       ),
@@ -100,45 +106,69 @@ class LevelChip extends ConsumerWidget {
   }
 }
 
-/// 朗读按钮：使用系统 TTS（离线可用，不访问境外服务）。高质量云端语音待实现。
-final ttsProvider = Provider<FlutterTts>((ref) {
-  final tts = FlutterTts();
-  tts.setLanguage('zh-CN');
-  return tts;
-});
-
+/// 所有页面共享一个系统朗读会话；离开当前按钮或进入后台时停止。
 class ReadAloudButton extends ConsumerStatefulWidget {
   final String text;
-  const ReadAloudButton(this.text, {super.key});
-  @override
-  ConsumerState<ReadAloudButton> createState() => _ReadAloudButtonState();
+  final bool autoRead;
+  const ReadAloudButton(this.text, {super.key, this.autoRead = false});
+  @override ConsumerState<ReadAloudButton> createState() => _ReadAloudButtonState();
 }
-
-class _ReadAloudButtonState extends ConsumerState<ReadAloudButton> {
-  bool speaking = false;
-  @override
-  Widget build(BuildContext context) => IconButton(
-        tooltip: speaking ? '停止朗读' : '朗读',
-        icon: Icon(speaking ? Icons.stop_circle_outlined : Icons.volume_up_outlined),
-        onPressed: () async {
-          final tts = ref.read(ttsProvider);
-          if (speaking) {
-            await tts.stop();
-            setState(() => speaking = false);
-            return;
-          }
-          await tts.setSpeechRate(ref.read(settingsProvider).speechRate);
-          tts.setCompletionHandler(() {
-            if (mounted) setState(() => speaking = false);
-          });
-          setState(() => speaking = true);
-          final r = await tts.speak(widget.text);
-          if (r != 1 && mounted) {
-            setState(() => speaking = false);
-            ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('本机没有可用的中文朗读引擎，请在系统设置中安装')));
-          }
-        },
-      );
+class _ReadAloudButtonState extends ConsumerState<ReadAloudButton> with WidgetsBindingObserver, RouteAware {
+  late SpeechNotifier speech;
+  late final String owner = 'read_${identityHashCode(this)}';
+  bool foreground = true;
+  String? spokenAuto, pendingAuto;
+  int autoGeneration = 0;
+  void cancelPending() { ++autoGeneration; pendingAuto = null; }
+  bool get visible => foreground && ModalRoute.of(context)?.isCurrent != false;
+  void scheduleAuto(bool enabled) {
+    if (!widget.autoRead || !enabled || !visible) return;
+    final text = widget.text.trim();
+    if (text.isEmpty || text == spokenAuto || text == pendingAuto) return;
+    final ticket = ++autoGeneration;
+    pendingAuto = text;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || ticket != autoGeneration) return;
+      pendingAuto = null;
+      if (!widget.autoRead || !visible || !ref.read(settingsProvider).autoRead || widget.text.trim() != text) return;
+      spokenAuto = text;
+      unawaited(speech.speak(text, owner));
+    });
+  }
+  @override void initState() { super.initState(); speech = ref.read(speechProvider.notifier); foreground = (WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed) == AppLifecycleState.resumed; WidgetsBinding.instance.addObserver(this); }
+  @override void didChangeDependencies() { super.didChangeDependencies(); final route = ModalRoute.of(context); if (route != null) speechRoutes.subscribe(this, route); }
+  @override void didPushNext() { cancelPending(); unawaited(Future.microtask(() => speech.stop(owner: owner))); }
+  @override void didPopNext() { if (mounted) setState(() {}); }
+  @override void didChangeAppLifecycleState(AppLifecycleState state) {
+    foreground = state == AppLifecycleState.resumed;
+    if (!foreground) { cancelPending(); unawaited(speech.stop(owner: owner)); }
+    else if (mounted) { setState(() {}); }
+  }
+  @override void dispose() { WidgetsBinding.instance.removeObserver(this); speechRoutes.unsubscribe(this); unawaited(Future.microtask(() => speech.stop(owner: owner))); super.dispose(); }
+  @override Widget build(BuildContext context) {
+    final enabled = ref.watch(settingsProvider.select((s) => s.autoRead));
+    ref.listen<bool>(settingsProvider.select((s) => s.autoRead), (previous, next) {
+      if (!next && widget.autoRead) {
+        cancelPending(); spokenAuto = null;
+        unawaited(Future.microtask(() => speech.stop(owner: owner)));
+      }
+    });
+    scheduleAuto(enabled);
+    ref.listen(speechProvider, (previous, next) {
+      if (next.owner == owner && next.message != null && next.message != previous?.message) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next.message!)));
+      }
+    });
+    final state = ref.watch(speechProvider);
+    final active = state.owner == owner && (state.speaking || state.loading);
+    return IconButton(tooltip: active ? '停止朗读' : '朗读',
+      icon: Icon(active ? Icons.stop_circle_outlined : Icons.volume_up_outlined),
+      onPressed: () async {
+        cancelPending(); spokenAuto = widget.text.trim();
+        if (active) { await speech.stop(owner: owner); return; }
+        await speech.speak(widget.text, owner);
+      });
+  }
 }
 
 /// 已确认但本轮待实现的功能页：保留入口与说明，不伪装为可用。

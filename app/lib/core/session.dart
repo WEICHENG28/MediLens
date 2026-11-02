@@ -20,8 +20,19 @@ class ChatMessage {
   final List<Map<String, dynamic>> citations;
   final String? safetyCategory;
   final bool usedFallback;
-  const ChatMessage(this.role, this.content, {this.citations = const [], this.safetyCategory, this.usedFallback = false});
-  Map<String, dynamic> toJson() => {'role': role, 'content': content, 'citations': citations, 'safety_category': safetyCategory};
+  const ChatMessage(
+    this.role,
+    this.content, {
+    this.citations = const [],
+    this.safetyCategory,
+    this.usedFallback = false,
+  });
+  Map<String, dynamic> toJson() => {
+    'role': role,
+    'content': content,
+    'citations': citations,
+    'safety_category': safetyCategory,
+  };
 }
 
 class ReportSession {
@@ -68,24 +79,24 @@ class ReportSession {
     Map<String, dynamic>? analysis,
     List<ChatMessage>? messages,
     bool? saved,
-  }) =>
-      ReportSession(
-        id: id,
-        source: source ?? this.source,
-        displayPng: displayPng ?? this.displayPng,
-        rotation: rotation ?? this.rotation,
-        qualityWarnings: qualityWarnings ?? this.qualityWarnings,
-        synthetic: synthetic ?? this.synthetic,
-        ocr: ocr ?? this.ocr,
-        report: report ?? this.report,
-        answers: answers ?? this.answers,
-        answerOrder: answerOrder ?? this.answerOrder,
-        analysis: analysis ?? this.analysis,
-        messages: messages ?? this.messages,
-        saved: saved ?? this.saved,
-      );
+  }) => ReportSession(
+    id: id,
+    source: source ?? this.source,
+    displayPng: displayPng ?? this.displayPng,
+    rotation: rotation ?? this.rotation,
+    qualityWarnings: qualityWarnings ?? this.qualityWarnings,
+    synthetic: synthetic ?? this.synthetic,
+    ocr: ocr ?? this.ocr,
+    report: report ?? this.report,
+    answers: answers ?? this.answers,
+    answerOrder: answerOrder ?? this.answerOrder,
+    analysis: analysis ?? this.analysis,
+    messages: messages ?? this.messages,
+    saved: saved ?? this.saved,
+  );
 
-  Map<String, dynamic>? get nextQuestion => analysis?['next_question'] as Map<String, dynamic>?;
+  Map<String, dynamic>? get nextQuestion =>
+      analysis?['next_question'] as Map<String, dynamic>?;
 }
 
 final ocrEngineProvider = Provider<OcrEngine>((ref) => OnnxOcrEngine());
@@ -94,11 +105,42 @@ class SessionNotifier extends Notifier<ReportSession> {
   @override
   ReportSession build() => ReportSession(id: const Uuid().v4());
 
-  void reset() => state = ReportSession(id: const Uuid().v4());
+  int _revision = 0, _analysisRequest = 0, _ocrRequest = 0;
+  void _invalidate() {
+    _revision++;
+    _analysisRequest++;
+    _ocrRequest++;
+    _lastBody = null;
+  }
+
+  bool _current(String id, int revision) =>
+      ref.mounted && state.id == id && _revision == revision;
+  ReportSession _facts(
+    ReportSession previous, {
+    ParsedReport? report,
+    OcrResult? ocr,
+    int? rotation,
+    Uint8List? displayPng,
+    bool? synthetic,
+  }) => ReportSession(
+    id: previous.id,
+    source: previous.source,
+    displayPng: displayPng ?? previous.displayPng,
+    rotation: rotation ?? previous.rotation,
+    qualityWarnings: previous.qualityWarnings,
+    synthetic: synthetic ?? previous.synthetic,
+    ocr: ocr ?? previous.ocr,
+    report: report,
+  );
+  void reset() {
+    _invalidate();
+    state = ReportSession(id: const Uuid().v4());
+  }
 
   /// 导入图像：做质量检查，等待用户确认/旋转后再识别。
   void setImage(img.Image image, {bool synthetic = false}) {
     final q = checkQuality(image);
+    _invalidate();
     state = ReportSession(
       id: const Uuid().v4(),
       source: image,
@@ -112,100 +154,193 @@ class SessionNotifier extends Notifier<ReportSession> {
     final src = state.source;
     if (src == null) return;
     final r = (state.rotation + 90) % 360;
-    state = state.copyWith(rotation: r, displayPng: img.encodePng(rotate(src, r)));
+    _invalidate();
+    state = _facts(
+      state,
+      rotation: r,
+      displayPng: img.encodePng(rotate(src, r)),
+    );
   }
 
-  Future<void> runOcr() async {
-    final src = state.source;
-    if (src == null) return;
-    final result = await ref.read(ocrEngineProvider).recognize(src, rotation: state.rotation);
-    state = state.copyWith(
+  Future<bool> runOcr() async {
+    final before = state;
+    final src = before.source;
+    if (src == null) return false;
+    final revision = _revision, request = ++_ocrRequest;
+    final result = await ref
+        .read(ocrEngineProvider)
+        .recognize(src, rotation: before.rotation);
+    if (!_current(before.id, revision) || request != _ocrRequest) return false;
+    _invalidate();
+    state = _facts(
+      before,
       ocr: result,
       rotation: result.rotation,
       displayPng: img.encodePng(result.image),
       report: parseReport(result.lines),
     );
+    return true;
   }
 
   /// 测试与离线演示：直接注入 OCR 文本行。
-  void setOcrLines(List<OcrLine> lines, {Uint8List? displayPng, bool synthetic = true}) {
-    state = state.copyWith(report: parseReport(lines), displayPng: displayPng, synthetic: synthetic);
+  void setOcrLines(
+    List<OcrLine> lines, {
+    Uint8List? displayPng,
+    bool synthetic = true,
+  }) {
+    _invalidate();
+    state = _facts(
+      state,
+      report: parseReport(lines),
+      displayPng: displayPng,
+      synthetic: synthetic,
+    );
   }
 
   /// 局部确认：选择候选值 / 手工更正 / 无法确认 / 排除。
-  void resolveItem(LabItem item, {String? value, ReviewStatus status = ReviewStatus.confirmed}) {
+  void resolveItem(
+    LabItem item, {
+    String? value,
+    ReviewStatus status = ReviewStatus.confirmed,
+  }) {
+    if (!(state.report?.items.any((current) => identical(current, item)) ??
+        false)) {
+      return;
+    }
     item.status = status;
     if (value != null) item.value = value;
-    state = state.copyWith(report: state.report);
+    _invalidate();
+    state = _facts(state, report: state.report);
   }
 
-  Future<List<HistoryBrief>> _history() async {
+  Future<List<HistoryBrief>> _history(String sessionId) async {
     final saved = await ref.read(localStoreProvider).listReports();
     return saved
-        .where((r) => r.id != state.id && r.testDate != null)
-        .map((r) => HistoryBrief(r.testDate!, r.items.map((i) => LabItem.fromJson(i).toApi()).toList()))
+        .where((r) => r.id != sessionId && r.testDate != null)
+        .map(
+          (r) => HistoryBrief(
+            r.testDate!,
+            r.items.map((i) => LabItem.fromJson(i).toApi()).toList(),
+          ),
+        )
         .toList();
   }
 
   Map<String, dynamic>? _lastBody;
-  Map<String, dynamic> get analysisBody => _lastBody ?? ApiClient.analysisBody(state.report!, state.answers, const []);
+  Map<String, dynamic> get analysisBody =>
+      _lastBody ??
+      ApiClient.analysisBody(state.report!, state.answers, const []);
 
-  Future<void> analyze() async {
-    final body = ApiClient.analysisBody(state.report!, state.answers, await _history());
-    final res = await ref.read(apiClientProvider).analyze(body);
+  Future<void> _analyzeWith(
+    Map<String, dynamic> answers,
+    List<String> order,
+  ) async {
+    final before = state, revision = _revision, request = ++_analysisRequest;
+    final client = ref.read(apiClientProvider);
+    final copied = {
+      for (final e in answers.entries)
+        e.key: e.value is List
+            ? List<dynamic>.unmodifiable(e.value as List)
+            : e.value,
+    };
+    final body = ApiClient.analysisBody(before.report!, copied, const []);
+    body['history'] = (await _history(before.id))
+        .map((h) => h.toJson())
+        .toList();
+    if (!_current(before.id, revision) || request != _analysisRequest) return;
+    final res = await client.analyze(body);
+    if (!_current(before.id, revision) || request != _analysisRequest) return;
+    _invalidate();
     _lastBody = body;
-    state = state.copyWith(analysis: res);
+    state = state.copyWith(
+      answers: Map.unmodifiable(copied),
+      answerOrder: List.unmodifiable(order),
+      analysis: res,
+      saved: false,
+    );
   }
 
-  /// 回答选择题后重新判读（服务端无状态）。特殊回答：__unknown__ / __decline__ / __skip__。
-  Future<void> answer(String questionId, dynamic value) async {
-    final answers = {...state.answers, questionId: value};
-    final order = [...state.answerOrder.where((q) => q != questionId), questionId];
-    state = state.copyWith(answers: answers, answerOrder: order);
-    await analyze();
-  }
+  Future<void> analyze() => _analyzeWith(state.answers, state.answerOrder);
 
-  /// 上一题：撤销最近一个回答（该题会重新出现，可修改答案）。
+  /// Commit answers and matching interpretation together only after a successful request.
+  Future<void> answer(String questionId, dynamic value) => _analyzeWith(
+    {...state.answers, questionId: value},
+    [...state.answerOrder.where((q) => q != questionId), questionId],
+  );
+
   Future<void> back() async {
     if (state.answerOrder.isEmpty) return;
     final last = state.answerOrder.last;
-    final answers = {...state.answers}..remove(last);
-    state = state.copyWith(answers: answers, answerOrder: state.answerOrder.sublist(0, state.answerOrder.length - 1));
-    await analyze();
+    await _analyzeWith(
+      {...state.answers}..remove(last),
+      state.answerOrder.sublist(0, state.answerOrder.length - 1),
+    );
   }
 
-  Future<void> sendChat(String text, {String? focus, String? quick}) async {
-    final history = state.messages.map((m) => {'role': m.role, 'content': m.content}).toList();
-    state = state.copyWith(messages: [...state.messages, ChatMessage('user', text)]);
+  Future<bool> sendChat(String text, {String? focus, String? quick, bool Function()? accept}) async {
+    final id = state.id, revision = _revision;
+    final history = state.messages
+        .map((m) => {'role': m.role, 'content': m.content})
+        .toList();
+    state = state.copyWith(
+      messages: [...state.messages, ChatMessage('user', text)],
+    );
     try {
-      final r = await ref.read(apiClientProvider).chat(analysisBody, text, focus: focus, quick: quick, history: history);
-      state = state.copyWith(messages: [
-        ...state.messages,
-        ChatMessage('assistant', r['answer'] as String,
-            citations: ((r['citations'] as List?) ?? const []).cast<Map<String, dynamic>>(),
+      final r = await ref
+          .read(apiClientProvider)
+          .chat(
+            analysisBody,
+            text,
+            focus: focus,
+            quick: quick,
+            history: history,
+          );
+      if (!_current(id, revision) || (accept != null && !accept())) return false;
+      state = state.copyWith(
+        messages: [
+          ...state.messages,
+          ChatMessage(
+            'assistant',
+            r['answer'] as String,
+            citations: ((r['citations'] as List?) ?? const [])
+                .cast<Map<String, dynamic>>(),
             safetyCategory: r['safety_category'] as String?,
-            usedFallback: r['used_fallback'] as bool? ?? false),
-      ]);
+            usedFallback: r['used_fallback'] as bool? ?? false,
+          ),
+        ],
+      );
+      return true;
     } on ApiException catch (e) {
-      state = state.copyWith(messages: [...state.messages, ChatMessage('assistant', e.message)]);
+      if (!_current(id, revision) || (accept != null && !accept())) return false;
+      state = state.copyWith(
+        messages: [...state.messages, ChatMessage('assistant', e.message)],
+      );
+      return false;
     }
   }
 
   Future<void> saveLocally() async {
-    final s = state;
-    await ref.read(localStoreProvider).saveReport(SavedReport(
-          id: s.id,
-          testDate: s.report?.testDate,
-          savedAt: DateTime.now(),
-          reportType: s.report?.reportType ?? 'unknown',
-          items: s.report?.items.map((i) => i.toJson()).toList() ?? const [],
-          answers: s.answers,
-          analysis: s.analysis,
-          messages: s.messages.map((m) => m.toJson()).toList(),
-        ));
+    final s = state, revision = _revision;
+    await ref
+        .read(localStoreProvider)
+        .saveReport(
+          SavedReport(
+            id: s.id,
+            testDate: s.report?.testDate,
+            savedAt: DateTime.now(),
+            reportType: s.report?.reportType ?? 'unknown',
+            items: s.report?.items.map((i) => i.toJson()).toList() ?? const [],
+            answers: s.answers,
+            analysis: s.analysis,
+            messages: s.messages.map((m) => m.toJson()).toList(),
+          ),
+        );
+    if (!ref.mounted) return;
     ref.invalidate(historyProvider);
-    state = s.copyWith(saved: true);
+    if (_current(s.id, revision)) state = state.copyWith(saved: true);
   }
 }
 
-final sessionProvider = NotifierProvider<SessionNotifier, ReportSession>(SessionNotifier.new);
+final sessionProvider = NotifierProvider<SessionNotifier, ReportSession>(
+  SessionNotifier.new,
+);
