@@ -196,6 +196,43 @@ def _aliases(item) -> list[str]:
     return [item.name, item.code.upper(), *_SHORT_NAMES.get(item.code.upper(), [])]
 
 
+def _mentioned_codes(text: str, res: AnalyzeResponse) -> list[str]:
+    up = text.upper()
+    return [i.code for i in res.items if i.code and any(a in up for a in _aliases(i))]
+
+
+# 追问的说法：用代词指回前文，或以「那/还有/为什么…」开头的省略句
+_REFER = re.compile(r"它|这个|那个|这项|那项|这一项|该指标|这指标|这种|那种|^那|^还有|^为什么|^怎么|^要不要|^会不会|^需要|^多久")
+
+
+def _user_turns(req: ChatRequest) -> list[str]:
+    return [to_simplified(t.content) for t in req.history if t.role == "user" and t.content.strip()]
+
+
+def _is_followup(req: ChatRequest, res: AnalyzeResponse) -> bool:
+    return bool(req.history) and not req.focus and not req.quick \
+        and not _mentioned_codes(req.message, res) and bool(_REFER.search(req.message))
+
+
+def _contextualize(req: ChatRequest, res: AnalyzeResponse) -> ChatRequest:
+    """多轮追问的指代补全（确定性，不调用大模型）：问题没有点名指标、又在指回前文时，
+    沿用最近一次提问里提到的指标，例如「尿蛋白是什么」之后问「那它要注意什么」。"""
+    if not _is_followup(req, res):
+        return req
+    for prev in reversed(_user_turns(req)):
+        codes = _mentioned_codes(prev, res)
+        if codes:
+            names = "、".join(i.name for i in res.items if i.code in codes)
+            return req.model_copy(update={"message": f"{names}：{req.message}"})
+    return req
+
+
+def _recent_dialogue(req: ChatRequest, turns: int = 4, limit: int = 120) -> str:
+    """最近几轮对话（截断），只供大模型理解指代，不作为医学依据。"""
+    lines = [f"{'用户' if t.role == 'user' else '助手'}：{to_simplified(t.content)[:limit]}" for t in req.history[-turns:] if t.content.strip()]
+    return "\n".join(lines)
+
+
 def _draft(req: ChatRequest, res: AnalyzeResponse) -> tuple[str, list[Citation]]:
     focus = (req.focus or "").upper()
     hit = next((h for h in res.hits if h.rule_id.upper() == focus), None)
@@ -300,14 +337,15 @@ INTENT_SYSTEM = (
 _INTENT_LABELS = ("medication", "diagnosis", "emergency")
 
 
-def llm_classify(message: str, res: AnalyzeResponse) -> str | None:
+def llm_classify(message: str, res: AnalyzeResponse, previous: str = "") -> str | None:
     """第二层：关键词未命中时，用大模型做语义意图判断。失败、超时或未配置时返回 None（继续正常流程，仍有输出校验）。"""
     provider = get_intent_provider()
     if provider is None:
         return None
     context = "报告中尿酮体阳性。" if any(i.code == "KET" and i.usable and i.positivity.value == "positive" for i in res.items) else ""
     try:
-        out = provider.complete(INTENT_SYSTEM, f"{context}患者提问：{message}").strip().lower()
+        prev = f"上一句提问（仅用于理解省略）：{previous[:120]}\n" if previous else ""
+        out = provider.complete(INTENT_SYSTEM, f"{context}{prev}患者提问：{message}").strip().lower()
     except LLMError:
         return None
     # 只认唯一明确的标签：输出里同时出现多个标签（如带解释的句子）时不采信，避免误判
@@ -332,12 +370,16 @@ def chat(req: ChatRequest) -> ChatResponse:
     def safety(cat: str) -> ChatResponse:
         return ChatResponse(answer=_supportive_fallback(req.message, _safety_answer(cat, res), cat), safety_category=cat, provider="safety-template", used_fallback=False)
 
-    # 第一层：关键词（快速、确定），命中即回安全模板，不调用大模型
+    previous = (_user_turns(req) or [""])[-1]
+    # 第一层：关键词（快速、确定），命中即回安全模板，不调用大模型。
+    # 追问时把上一句提到的药物一起考虑，例如「二甲双胍会影响尿糖吗」之后问「那要换一种吗」。
     category = classify(req.message, res)
+    if not category and _is_followup(req, res) and _DRUG.search(previous) and _DRUG_DECISION.search(req.message):
+        category = "medication"
     if category:
         return safety(category)
 
-    draft, cites = _draft(req, res)
+    draft, cites = _draft(_contextualize(req, res), res)
     if req.quick == "doctor":  # 复诊问题清单由规则直接生成，不需要大模型改写
         return ChatResponse(answer=draft, citations=cites, provider="template", used_fallback=False)
     facts = _facts_text(res, draft, cites) if draft else ""
@@ -346,7 +388,9 @@ def chat(req: ChatRequest) -> ChatResponse:
     def rewrite() -> tuple[str, bool]:
         """返回 (回答, 是否回退)。校验失败或服务不可用时回退到基于规则与知识的草稿。"""
         try:
-            raw = provider.complete(SYSTEM_PROMPT, f"报告事实：\n{facts}\n\n用户问题：{req.message}\n\n【草稿】{draft}")
+            dialogue = _recent_dialogue(req)
+            dialogue = f"最近对话（仅用于理解指代，不是医学依据）：\n{dialogue}\n\n" if dialogue else ""
+            raw = provider.complete(SYSTEM_PROMPT, f"报告事实：\n{facts}\n\n{dialogue}用户问题：{req.message}\n\n【草稿】{draft}")
             text = to_simplified(raw).strip() if raw else ""
             if text and guard.check(text, facts, urgent_allowed).ok:
                 if provider.name == "mock":
@@ -358,7 +402,7 @@ def chat(req: ChatRequest) -> ChatResponse:
 
     # 第二层：大模型语义判断与回答改写同时进行，用户只需等待较慢的一项（学校平台响应 1–28 秒波动）
     with ThreadPoolExecutor(2) as ex:
-        intent_f = ex.submit(llm_classify, req.message, res)
+        intent_f = ex.submit(llm_classify, req.message, res, previous)
         rewrite_f = ex.submit(rewrite) if draft else None
         category = intent_f.result()
         if category:

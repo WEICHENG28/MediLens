@@ -332,3 +332,50 @@ def test_llm_intent_label_must_be_unique(monkeypatch, out, expected):
     from app.analysis import analyze
     monkeypatch.setattr(chat_mod, "get_intent_provider", lambda: _IntentProvider(out))
     assert chat_mod.llm_classify("随便问问", analyze(ketone_case())) == expected
+
+
+def _turns(*pairs):
+    from app.chat import ChatTurn
+    return [ChatTurn(role=r, content=c) for r, c in pairs]
+
+
+def test_followup_pronoun_carries_previous_item():
+    hist = _turns(("user", "尿酮体是什么"), ("assistant", "尿酮体反映……"))
+    r = chat(creq("那它要注意什么", history=hist))
+    assert "酮体" in r.answer and r.citations and not r.safety_category
+    alone = chat(creq("那它要注意什么"))  # 没有前文时不会凭空指定指标
+    assert alone.answer != r.answer
+
+
+def test_followup_does_not_override_explicitly_named_item():
+    hist = _turns(("user", "尿酮体是什么"))
+    r = chat(creq("那尿糖呢，它是什么意思", history=hist))
+    assert "葡萄糖" in r.answer or "尿糖" in r.answer
+    assert "酮体" not in r.answer.split("。")[0]
+
+
+@pytest.mark.parametrize("prev, msg, expected", [
+    ("二甲双胍会影响尿糖吗", "那要换一种吗", "medication"),
+    ("尿糖为什么阳性", "那要换一种吗", None),                 # 前文没有药物：不按用药处理
+    ("二甲双胍会影响尿糖吗", "尿酮体要换个时间复查吗", None),  # 不是追问（点名了指标）
+])
+def test_followup_medication_decision_uses_previous_drug(prev, msg, expected):
+    r = chat(creq(msg, history=_turns(("user", prev))))
+    assert r.safety_category == expected
+
+
+def test_llm_sees_recent_dialogue_and_previous_question(monkeypatch):
+    seen = []
+
+    class Spy:
+        name = "compat"
+
+        def complete(self, system, user):
+            seen.append(user)
+            return "none" if "安全分类器" in system else "尿酮体反映脂肪分解。"
+
+    monkeypatch.setattr(chat_mod, "get_provider", lambda: Spy())
+    monkeypatch.setattr(chat_mod, "get_intent_provider", lambda: Spy())
+    chat(creq("那它要注意什么", history=_turns(("user", "尿酮体是什么"), ("assistant", "尿酮体反映……"))))
+    assert any("最近对话" in u and "尿酮体是什么" in u for u in seen)
+    assert any("上一句提问" in u and "尿酮体是什么" in u for u in seen)
