@@ -16,6 +16,7 @@ from . import guard, knowledge
 from .analysis import DISCLAIMER, AnalyzeResponse, analyze
 from .knowledge import Citation
 from .llm import LLMError, get_intent_provider, get_provider
+from .planner import adds_new_material, execute, make_plan
 from .schemas import AnalyzeRequest, Level
 
 _T2S = OpenCC("t2s")
@@ -69,6 +70,7 @@ class ChatResponse(BaseModel):
     provider: str
     used_fallback: bool
     no_evidence: bool = False
+    tools: list[str] = Field(default_factory=list)  # 检索规划选用的工具（空表示按规则路由）
     disclaimer: str = DISCLAIMER
 
 
@@ -242,6 +244,30 @@ def _recent_dialogue(req: ChatRequest, turns: int = 4, limit: int = 120) -> str:
     return "\n".join(lines)
 
 
+def _regex_signature(req: ChatRequest, res: AnalyzeResponse) -> set:
+    """规则路由（_draft）已经覆盖的资料，用与检索规划相同的表示，便于判断规划是否带来新资料。"""
+    focus = (req.focus or "").upper()
+    sig = set()
+    hit = next((h for h in res.hits if h.rule_id.upper() == focus), None)
+    if hit:
+        sig.add(("rule", (hit.rule_id,)))
+    if any(i.code == focus for i in res.items):
+        sig.add(("item", (focus,)))
+    if not focus:
+        codes = _mentioned_codes(req.message, res)
+        sig |= {("item", (c,)) for c in codes}
+        if codes and not _WHAT_IS.search(req.message):
+            h = next((h for h in res.hits if set(codes) <= set(h.related_items)), None) or                 next((h for h in res.hits if set(codes) & set(h.related_items)), None)
+            if h:
+                sig.add(("rule", (h.rule_id,)))
+        if not codes and _OVERALL.search(req.message):
+            sig.add(("overall", ()))
+        if not codes and _WHAT_IS.search(req.message):
+            sig |= {("item", (i.code,)) for i in res.items
+                    if i.code and (i.status.value == "abnormal" or any(i.code in h.related_items for h in res.hits))}
+    return sig
+
+
 def _draft(req: ChatRequest, res: AnalyzeResponse) -> tuple[str, list[Citation]]:
     focus = (req.focus or "").upper()
     hit = next((h for h in res.hits if h.rule_id.upper() == focus), None)
@@ -388,17 +414,22 @@ def chat(req: ChatRequest) -> ChatResponse:
     if category:
         return safety(category)
 
-    draft, cites = _draft(_contextualize(req, res), res)
+    ctx_req = _contextualize(req, res)
+    draft, cites = _draft(ctx_req, res)
     urgent_line = _urgent_line(res)
-    if draft and urgent_line and not _URGENT_WORDS.search(draft):
-        draft = f"{draft}\n{urgent_line}"  # 有紧急提示的报告：无论问哪一项，草稿都带上就医提示
+
+    def with_urgent(text: str) -> str:
+        # 有紧急提示的报告：无论问哪一项，都带上就医提示
+        return f"{text}\n{urgent_line}" if text and urgent_line and not _URGENT_WORDS.search(text) else text
+
+    draft = with_urgent(draft)
     if req.quick == "doctor":  # 复诊问题清单由规则直接生成，不需要大模型改写
         return ChatResponse(answer=draft, citations=cites, provider="template", used_fallback=False)
-    facts = _facts_text(res, draft, cites) if draft else ""
     urgent_allowed = res.urgent_alert.show or res.overall.level == Level.red
 
-    def rewrite() -> tuple[str, bool]:
+    def rewrite(draft: str, cites: list[Citation]) -> tuple[str, bool]:
         """返回 (回答, 是否回退)。校验失败或服务不可用时回退到基于规则与知识的草稿。"""
+        facts = _facts_text(res, draft, cites)
         try:
             dialogue = _recent_dialogue(req)
             dialogue = f"最近对话（仅用于理解指代，不是医学依据）：\n{dialogue}\n\n" if dialogue else ""
@@ -412,18 +443,30 @@ def chat(req: ChatRequest) -> ChatResponse:
             pass
         return _supportive_fallback(req.message, draft), True
 
-    # 第二层：大模型语义判断与回答改写同时进行，用户只需等待较慢的一项（学校平台响应 1–28 秒波动）
-    with ThreadPoolExecutor(2) as ex:
+    # 第二层：意图判断、检索规划与（按规则路由的）回答生成同时进行，用户只需等待较慢的一项。
+    # 规划结果只在它选到了规则路由没覆盖的资料时才采用，此时再生成一次回答。
+    use_planner = provider.name != "mock" and not req.quick
+    route: list[str] = []
+    with ThreadPoolExecutor(3) as ex:
         intent_f = ex.submit(llm_classify, req.message, res, previous)
-        rewrite_f = ex.submit(rewrite) if draft else None
+        plan_f = ex.submit(make_plan, provider, req.message, res, _recent_dialogue(req), req.focus) if use_planner else None
+        rewrite_f = ex.submit(rewrite, draft, cites) if draft else None
         category = intent_f.result()
         if category:
             return safety(category)  # 越界：丢弃改写结果，改用安全模板
-        if rewrite_f is None:
-            return ChatResponse(
-                answer=_supportive_fallback(req.message, "这个问题暂时没有可核验的资料，我无法据此回答。您可以告诉我具体的指标或报告提示，我们再逐项看；也可以把问题记下来，复诊时询问医生。" + (f"\n{urgent_line}" if urgent_line else "")),
-                provider="template", used_fallback=False, no_evidence=True)
-        answer, fell_back = rewrite_f.result()
-    if urgent_line and not _URGENT_WORDS.search(answer):
-        answer = f"{answer}\n{urgent_line}"  # 大模型省略了就医提示时，确定性补回
-    return ChatResponse(answer=answer, citations=cites, provider=provider.name, used_fallback=fell_back)
+        plan = plan_f.result() if plan_f else None
+        answer = None
+        if plan and (not draft or adds_new_material(plan, _regex_signature(ctx_req, res), res)):
+            p_draft, p_cites = execute(plan, req.analysis, res, req.message)
+            if p_draft:
+                draft, cites = with_urgent(p_draft), p_cites
+                answer, fell_back = rewrite(draft, cites)
+                route = plan.names()
+        if answer is None:
+            if rewrite_f is None:
+                return ChatResponse(
+                    answer=_supportive_fallback(req.message, "这个问题暂时没有可核验的资料，我无法据此回答。您可以告诉我具体的指标或报告提示，我们再逐项看；也可以把问题记下来，复诊时询问医生。" + (f"\n{urgent_line}" if urgent_line else "")),
+                    provider="template", used_fallback=False, no_evidence=True)
+            answer, fell_back = rewrite_f.result()
+    answer = with_urgent(answer)  # 大模型省略了就医提示时，确定性补回
+    return ChatResponse(answer=answer, citations=cites, provider=provider.name, used_fallback=fell_back, tools=route)
