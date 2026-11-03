@@ -182,7 +182,7 @@ def _safety_answer(category: str, res: AnalyzeResponse) -> str:
             + basis + "建议复诊时直接向医生提出这个问题。")
 
 
-_OVERALL = re.compile(r"整体|总体|总的来说|(报告|结果|检查|指标|这次|化验).*(怎么样|如何|严重|要紧|正常|问题|好不好)|"
+_OVERALL = re.compile(r"整体|总体|总的来说|(最|主要|重点|特别)?(需要|应该|要)注意(什么|哪些|啥)|重点是什么|有什么问题|哪里不对|(报告|结果|检查|指标|这次|化验).*(怎么样|如何|严重|要紧|正常|问题|好不好)|"
                       r"严重吗|严不严重|要紧吗|要不要紧|没事吧|有没有事|有事吗|(我|我的|我这|这种).{0,4}(情况|状况).{0,4}(怎么样|如何|好吗)")
 _WHAT_IS = re.compile(r"是什么|什么意思|指什么")
 _SHORT_NAMES = {
@@ -194,6 +194,17 @@ _SHORT_NAMES = {
 
 def _aliases(item) -> list[str]:
     return [item.name, item.code.upper(), *_SHORT_NAMES.get(item.code.upper(), [])]
+
+
+_URGENT_WORDS = re.compile(r"就医|就诊|急诊|120")
+
+
+def _urgent_line(res: AnalyzeResponse) -> str:
+    """报告有紧急提示（如尿糖+尿酮体同时阳性）时，每个回答都必须保留的就医提示。"""
+    if not res.urgent_alert.show:
+        return ""
+    why = "、".join(res.urgent_alert.reasons) or "报告中的紧急提示"
+    return f"提醒：{why}，建议尽快就医，由医生评估。{res.urgent_alert.message}"
 
 
 def _mentioned_codes(text: str, res: AnalyzeResponse) -> list[str]:
@@ -380,6 +391,9 @@ def chat(req: ChatRequest) -> ChatResponse:
         return safety(category)
 
     draft, cites = _draft(_contextualize(req, res), res)
+    urgent_line = _urgent_line(res)
+    if draft and urgent_line and not _URGENT_WORDS.search(draft):
+        draft = f"{draft}\n{urgent_line}"  # 有紧急提示的报告：无论问哪一项，草稿都带上就医提示
     if req.quick == "doctor":  # 复诊问题清单由规则直接生成，不需要大模型改写
         return ChatResponse(answer=draft, citations=cites, provider="template", used_fallback=False)
     facts = _facts_text(res, draft, cites) if draft else ""
@@ -409,7 +423,9 @@ def chat(req: ChatRequest) -> ChatResponse:
             return safety(category)  # 越界：丢弃改写结果，改用安全模板
         if rewrite_f is None:
             return ChatResponse(
-                answer=_supportive_fallback(req.message, "这个问题暂时没有可核验的资料，我无法据此回答。您可以告诉我具体的指标或报告提示，我们再逐项看；也可以把问题记下来，复诊时询问医生。"),
+                answer=_supportive_fallback(req.message, "这个问题暂时没有可核验的资料，我无法据此回答。您可以告诉我具体的指标或报告提示，我们再逐项看；也可以把问题记下来，复诊时询问医生。" + (f"\n{urgent_line}" if urgent_line else "")),
                 provider="template", used_fallback=False, no_evidence=True)
         answer, fell_back = rewrite_f.result()
+    if urgent_line and not _URGENT_WORDS.search(answer):
+        answer = f"{answer}\n{urgent_line}"  # 大模型省略了就医提示时，确定性补回
     return ChatResponse(answer=answer, citations=cites, provider=provider.name, used_fallback=fell_back)

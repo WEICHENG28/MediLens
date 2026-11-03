@@ -1,3 +1,4 @@
+import re
 """对话、详细了解、输出校验与待实现接口测试（合成数据）。"""
 import pytest
 from fastapi.testclient import TestClient
@@ -124,7 +125,7 @@ def test_legitimate_source_language_is_preserved(monkeypatch):
     answer = "尿酮体反映身体分解脂肪供能时产生的酮体，资料来源可在下方查看。"
     monkeypatch.setattr(chat_mod, "get_provider", lambda: _BadProvider(answer))
     result = chat(creq("这个指标是什么", focus="KET"))
-    assert result.answer == answer and not result.used_fallback
+    assert result.answer.startswith(answer) and not result.used_fallback  # 紧急报告会在后面补上就医提示
 
 
 def test_explain_rule_and_item():
@@ -379,3 +380,27 @@ def test_llm_sees_recent_dialogue_and_previous_question(monkeypatch):
     chat(creq("那它要注意什么", history=_turns(("user", "尿酮体是什么"), ("assistant", "尿酮体反映……"))))
     assert any("最近对话" in u and "尿酮体是什么" in u for u in seen)
     assert any("上一句提问" in u and "尿酮体是什么" in u for u in seen)
+
+
+@pytest.mark.parametrize("msg", ["这份报告我最需要注意什么？", "我需要注意哪些", "重点是什么"])
+def test_whole_report_questions_are_answered(msg):
+    r = chat(creq(msg))
+    assert not r.no_evidence and "酮" in r.answer
+
+
+@pytest.mark.parametrize("msg", ["尿糖是什么意思？", "复查前我要注意些什么？", "这份报告我最需要注意什么？", "比重是什么"])
+def test_urgent_report_always_keeps_seek_care_line(msg):
+    r = chat(creq(msg))
+    assert re.search("就医|急诊|120", r.answer)
+
+
+def test_llm_answer_missing_urgent_line_gets_it_back(monkeypatch):
+    monkeypatch.setattr(chat_mod, "get_provider", lambda: _BadProvider("尿糖就是尿里查出了糖。"))
+    r = chat(creq("尿糖是什么意思"))
+    assert r.answer.startswith("尿糖就是尿里查出了糖。") and "尽快就医" in r.answer and not r.used_fallback
+
+
+def test_normal_report_gets_no_urgent_line():
+    from tests.helpers import normal_urinalysis, req
+    r = chat(creq("尿糖是什么意思", analysis=req(normal_urinalysis())))
+    assert "尽快就医" not in r.answer
