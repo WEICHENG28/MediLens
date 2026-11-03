@@ -310,7 +310,9 @@ def llm_classify(message: str, res: AnalyzeResponse) -> str | None:
         out = provider.complete(INTENT_SYSTEM, f"{context}患者提问：{message}").strip().lower()
     except LLMError:
         return None
-    return next((label for label in _INTENT_LABELS if label in out), None)
+    # 只认唯一明确的标签：输出里同时出现多个标签（如带解释的句子）时不采信，避免误判
+    found = {label for label in (*_INTENT_LABELS, "none") if re.search(rf"\b{label}\b", out)}
+    return found.pop() if len(found) == 1 and found <= set(_INTENT_LABELS) else None
 
 
 def classify_intent(message: str, res: AnalyzeResponse) -> tuple[str | None, str]:

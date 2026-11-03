@@ -311,3 +311,24 @@ def test_false_reassurance_and_blame_fall_back(monkeypatch, bad):
     monkeypatch.setattr(chat_mod, "get_provider", lambda: _BadProvider(bad))
     result = chat(creq("尿酮体是什么", focus="KET"))
     assert result.used_fallback and result.answer != bad
+
+
+class _IntentProvider:
+    name = "compat"
+
+    def __init__(self, out):
+        self.out = out
+
+    def complete(self, system, user):
+        return self.out
+
+
+@pytest.mark.parametrize("out, expected", [
+    ("medication", "medication"), ("  Emergency。", "emergency"), ("none", None),
+    ("这个问题不是 medication，应为 none", None),          # 解释句里出现多个标签：不采信
+    ("diagnosis 或 medication", None), ("我不确定", None),
+])
+def test_llm_intent_label_must_be_unique(monkeypatch, out, expected):
+    from app.analysis import analyze
+    monkeypatch.setattr(chat_mod, "get_intent_provider", lambda: _IntentProvider(out))
+    assert chat_mod.llm_classify("随便问问", analyze(ketone_case())) == expected

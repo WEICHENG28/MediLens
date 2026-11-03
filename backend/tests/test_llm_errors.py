@@ -32,3 +32,26 @@ def test_http_error_is_private_safe(monkeypatch):
         provider().complete('synthetic', 'synthetic')
     assert e.value.reason == 'upstream_error'
     assert 'synthetic-secret' not in str(e.value)
+
+
+def _reply(monkeypatch, content):
+    monkeypatch.setattr(httpx, 'post', lambda *a, **kw: httpx.Response(
+        200, json={'choices': [{'message': {'content': content}}]}, request=httpx.Request('POST', 'https://synthetic.test')))
+
+
+@pytest.mark.parametrize('content, expected', [
+    ('<think>用户问的是 medication 吗？不是，应为 none。数值 9.9</think>\nnone', 'none'),
+    ('<THINK>多行\n思考</THINK>尿酮体反映脂肪分解。', '尿酮体反映脂肪分解。'),
+    ('前面的推理过程 emergency</think>none', 'none'),
+    ('普通回答，没有思考标签。', '普通回答，没有思考标签。'),
+])
+def test_thinking_is_removed_from_answer(monkeypatch, content, expected):
+    _reply(monkeypatch, content)
+    assert provider().complete('synthetic', 'synthetic') == expected
+
+
+@pytest.mark.parametrize('content', ['<think>只有思考，输出被截断', '<think>想完了</think>   '])
+def test_thinking_without_answer_counts_as_failure(monkeypatch, content):
+    _reply(monkeypatch, content)
+    with pytest.raises(LLMError):
+        provider().complete('synthetic', 'synthetic')

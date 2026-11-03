@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -72,7 +73,7 @@ class OpenAICompatProvider:
         try:
             r = httpx.post(url, json=payload, headers={"Authorization": f"Bearer {self.api_key}"}, timeout=self.timeout)
             r.raise_for_status()
-            content = r.json()["choices"][0]["message"]["content"]
+            content = strip_thinking(r.json()["choices"][0]["message"]["content"])
             if not isinstance(content, str) or not content.strip():
                 raise ValueError("empty or non-text model content")
             return content
@@ -81,6 +82,23 @@ class OpenAICompatProvider:
         except (httpx.HTTPError, KeyError, IndexError, ValueError, TypeError) as e:
             # 日志脱敏：不记录请求内容与密钥
             raise LLMError(f"{self.name} 调用失败：{type(e).__name__}") from e
+
+
+_THINK_BLOCK = re.compile(r"<think(?:ing)?>.*?</think(?:ing)?>", re.S | re.I)
+
+
+def strip_thinking(content):
+    """去掉推理模型放在正文里的思考过程（如 DeepSeek 的 <think>…</think>），只保留最终回答。
+    思考过程可能含有分类标签或额外数值，不去掉会导致意图误判或输出校验失败。
+    只有开头标签（输出被截断）时视为没有回答；只有结尾标签时取其后的文字。"""
+    if not isinstance(content, str):
+        return content
+    text = _THINK_BLOCK.sub("", content)
+    if re.search(r"<think(?:ing)?>", text, re.I):
+        return ""
+    if re.search(r"</think(?:ing)?>", text, re.I):
+        text = re.split(r"</think(?:ing)?>", text, flags=re.I)[-1]
+    return text.strip()
 
 
 def get_provider() -> LLMProvider:
