@@ -266,9 +266,9 @@ def test_model_can_answer_specific_question_from_grounded_evidence(monkeypatch):
     monkeypatch.setattr(chat_mod, "get_provider", lambda: QuestionProvider())
     result = chat(creq("酮体和饮食有什么关系？"))
     assert not result.used_fallback and result.citations
-    assert "直接回答用户的具体问题" in seen["system"]
-    assert "医学知识依据" in seen["system"]
-    assert "不得新增任何医学结论" in seen["system"]
+    assert "针对用户的具体问题直接回答" in seen["system"] and "不得自行推断病情" in seen["system"]
+    assert "只能使用其中已有的说法" in seen["system"]
+    assert "不得新增医学结论" in seen["system"]
     assert "酮体和饮食有什么关系" in seen["user"]
     assert "报告事实" in seen["user"] and "饥饿" in seen["user"]
 
