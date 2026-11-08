@@ -6,19 +6,19 @@
     android:padding="8dp" android:background="@drawable/desktop_pet_background">
     <TextView android:id="@+id/pet_avatar"
         android:layout_width="60dp" android:layout_height="match_parent"
-        android:gravity="center" android:text="🐰" android:textSize="38sp"
-        android:contentDescription="小兔，点击打开 MediLens" />
+        android:gravity="center" android:text="🐦" android:textSize="38sp"
+        android:contentDescription="珍珠鸟，点击打开 MediLens" />
     <LinearLayout android:layout_width="0dp" android:layout_weight="1"
         android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center">
         <TextView android:id="@+id/pet_caption"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:gravity="center" android:text="小兔一直陪着你"
+            android:gravity="center" android:text="珍珠鸟一直陪着你"
             android:textColor="#00584F" android:textSize="14sp" android:maxLines="3" />
         <TextView android:id="@+id/pet_greet_button"
             android:layout_width="match_parent" android:layout_height="48dp"
             android:gravity="center" android:text="打招呼"
             android:textColor="#00584F" android:textSize="14sp"
             android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="和小兔打招呼，只更新陪伴文字" />
+            android:contentDescription="和珍珠鸟打招呼，只更新陪伴文字" />
     </LinearLayout>
 </LinearLayout>

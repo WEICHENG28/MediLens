@@ -34,7 +34,7 @@ class MainActivity : FlutterActivity() {
                         }
                         else -> result.notImplemented()
                     }
-                } catch (_: Exception) { result.error("floating_unavailable", "悬浮小兔操作未完成，请检查系统权限后重试。", null) }
+                } catch (_: Exception) { result.error("floating_unavailable", "悬浮珍珠鸟操作未完成，请检查系统权限后重试。", null) }
             }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "cn.medilens.medilens/speech")
             .setMethodCallHandler { call, result ->

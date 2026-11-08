@@ -94,6 +94,7 @@ void main() {
     await t.tap(find.text('不是同一次，另记一次')); await t.pumpAndSettle();
     expect(await loadManualEvents(store), hasLength(1));
     expect(api.bodies.last['events'] as List, hasLength(2));
+    await t.drag(find.byType(ListView).first, const Offset(0, 3000)); await t.pumpAndSettle(); // 回到顶部看珍珠鸟卡片
     expect(find.textContaining('今天已经记下 2 条记录'), findsOneWidget);
     await t.pumpWidget(const SizedBox.shrink());
   });

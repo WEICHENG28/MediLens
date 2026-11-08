@@ -24,7 +24,7 @@ class PetPreferences extends Notifier<PetPreference> {
       final motion = await store.getSetting(storageKey) != 'false';
       if (ref.mounted) state = PetPreference(motion: motion, loaded: true);
     } catch (_) {
-      if (ref.mounted) state = const PetPreference(error: '小兔动画设置未能读取，暂以静态方式显示。');
+      if (ref.mounted) state = const PetPreference(error: '珍珠鸟动画设置未能读取，暂以静态方式显示。');
     }
   }
   Future<void> setMotion(bool enabled) async {

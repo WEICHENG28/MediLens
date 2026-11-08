@@ -35,7 +35,7 @@ class SettingsPage extends ConsumerWidget {
           value: s.elder,
           onChanged: (v) => n.update(s.copyWith(displayMode: v ? DisplayMode.elder : DisplayMode.normal)),
         ),
-        ListTile(leading: const Icon(Icons.pets_outlined), title: const Text('桌面小兔'), subtitle: const Text('把陪伴小兔添加到 Android 手机桌面'), onTap: () => context.push('/desktop-pet')),
+        ListTile(leading: const Icon(Icons.pets_outlined), title: const Text('桌面珍珠鸟'), subtitle: const Text('把陪伴珍珠鸟添加到 Android 手机桌面'), onTap: () => context.push('/desktop-pet')),
         head('报告识别'),
         const ListTile(
           leading: Icon(Icons.phone_android),

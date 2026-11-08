@@ -54,29 +54,29 @@ void main() {
     await reveal(t,find.byKey(const Key('floating_start')));await t.tap(find.byKey(const Key('floating_start')));await t.pumpAndSettle();
     await t.tap(find.text('取消'));await t.pumpAndSettle();expect(p.starts,0);
     await t.tap(find.byKey(const Key('floating_start')));await t.pumpAndSettle();await t.tap(find.text('确认开启'));await t.pumpAndSettle();
-    expect(p.starts,1);expect(find.text('悬浮小兔正在运行'),findsOneWidget);
+    expect(p.starts,1);expect(find.text('悬浮珍珠鸟正在运行'),findsOneWidget);
     await reveal(t,find.byKey(const Key('floating_stop')));await t.tap(find.byKey(const Key('floating_stop')));await t.pumpAndSettle();
-    expect(p.stops,1);expect(find.text('悬浮小兔未开启'),findsOneWidget);expect(t.widget<FilledButton>(find.byKey(const Key('floating_start'))).onPressed,isNotNull);
+    expect(p.stops,1);expect(find.text('悬浮珍珠鸟未开启'),findsOneWidget);expect(t.widget<FilledButton>(find.byKey(const Key('floating_start'))).onPressed,isNotNull);
     await t.pumpWidget(const SizedBox.shrink());
   });
   testWidgets('系统拒绝开启给出可重试提示，不显示内部错误或误报运行', (t) async {
     final p=FakeFloating()..overlay=true..notification=true..fail=true;await host(t,p);
     await reveal(t,find.byKey(const Key('floating_start')));await t.tap(find.byKey(const Key('floating_start')));await t.pumpAndSettle();
-    await t.tap(find.text('确认开启'));await t.pumpAndSettle();expect(find.textContaining('未能开启悬浮小兔'),findsOneWidget);
-    expect(find.textContaining('sensitive_native_error'),findsNothing);expect(find.text('悬浮小兔正在运行'),findsNothing);
+    await t.tap(find.text('确认开启'));await t.pumpAndSettle();expect(find.textContaining('未能开启悬浮珍珠鸟'),findsOneWidget);
+    expect(find.textContaining('sensitive_native_error'),findsNothing);expect(find.text('悬浮珍珠鸟正在运行'),findsNothing);
     await t.pumpWidget(const SizedBox.shrink());
   });
   testWidgets('不支持平台保留其他功能和关闭入口，大字无溢出', (t) async {
     await host(t,FakeFloating()..unsupported=true,large:true);expect(find.text('其他功能正常'),findsOneWidget);
-    expect(find.textContaining('暂时无法读取悬浮小兔状态'),findsOneWidget);expect(find.byKey(const Key('floating_stop')),findsOneWidget);expect(t.takeException(),isNull);
+    expect(find.textContaining('暂时无法读取悬浮珍珠鸟状态'),findsOneWidget);expect(find.byKey(const Key('floating_stop')),findsOneWidget);expect(t.takeException(),isNull);
     await t.pumpWidget(const SizedBox.shrink());
   });
   testWidgets('系统停止后回到APP刷新状态，不自动重启', (t) async {
     final p=FakeFloating()..overlay=true..notification=true..running=true;await host(t,p);
-    expect(find.text('悬浮小兔正在运行'),findsOneWidget);
+    expect(find.text('悬浮珍珠鸟正在运行'),findsOneWidget);
     t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);p.running=false;
     t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);await t.pumpAndSettle();
-    expect(find.text('悬浮小兔未开启'),findsOneWidget);expect(p.starts,0);
+    expect(find.text('悬浮珍珠鸟未开启'),findsOneWidget);expect(p.starts,0);
     await t.pumpWidget(const SizedBox.shrink());
   });
   test('平台通道只发送固定操作名和空参数，不传医疗记录', () async {
@@ -95,11 +95,11 @@ void main() {
       final old = Completer<FloatingPetStatus>(); p.nextRead = old;
       await reveal(t,find.text('刷新悬浮状态')); await t.tap(find.text('刷新悬浮状态')); await t.pump();
       await reveal(t,find.byKey(const Key('floating_start'))); await t.tap(find.byKey(const Key('floating_start'))); await t.pumpAndSettle();
-      await t.tap(find.text('确认开启')); await t.pumpAndSettle(); expect(find.text('悬浮小兔正在运行'),findsOneWidget);
+      await t.tap(find.text('确认开启')); await t.pumpAndSettle(); expect(find.text('悬浮珍珠鸟正在运行'),findsOneWidget);
       if (failed) { old.completeError(PlatformException(code:'synthetic')); }
       else { old.complete(const FloatingPetStatus(available:true,overlayAllowed:true,notificationsAllowed:true,running:false)); }
       await t.pumpAndSettle();
-      expect(find.text('悬浮小兔正在运行'),findsOneWidget);
+      expect(find.text('悬浮珍珠鸟正在运行'),findsOneWidget);
       expect(find.byKey(const Key('floating_message')),findsNothing);
       await t.pumpWidget(const SizedBox.shrink());
     });

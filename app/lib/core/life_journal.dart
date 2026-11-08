@@ -39,22 +39,54 @@ List<Map<String, dynamic>> effectiveLifeEvents(List<Map<String, dynamic>> manual
   return result;
 }
 
+/// 珍珠鸟的四种状态。只回应「有没有记录」，从不随血糖数值或漏药变化。
+enum BirdMood { normal, happy, low, recover }
+
+const birdMoodLabel = {BirdMood.normal: '日常陪伴', BirdMood.happy: '开心加油', BirdMood.low: '有点想你', BirdMood.recover: '正在恢复'};
+
 class CompanionSummary {
-  final int records;
-  const CompanionSummary(this.records);
+  final int records; // 今天的记录数
+  final int? daysSinceBefore; // 今天之前，距离最近一次记录的天数；null 表示以前没有记录
+  final bool justRecorded; // 刚完成一次打卡（页面内的即时反馈）
+  const CompanionSummary(this.records, {this.daysSinceBefore, this.justRecorded = false});
+
+  /// 隔了 2 天以上才回来，或者 2 天以上没有记录，才显示「恢复 / 想你」；关闭陪伴反馈时只显示日常与开心。
+  BirdMood mood({bool feedback = true}) {
+    if (justRecorded) return BirdMood.happy;
+    final away = (daysSinceBefore ?? 0) >= 2;
+    if (records > 0) return away && feedback ? BirdMood.recover : BirdMood.normal;
+    return away && feedback ? BirdMood.low : BirdMood.normal;
+  }
+
+  String messageFor(BirdMood m) => switch (m) {
+        BirdMood.happy => '记好啦！今天已经记下 $records 条记录，珍珠鸟为你开心。',
+        BirdMood.recover => '你回来啦！今天已经记下 $records 条记录，珍珠鸟又有精神了，我们一步一步来。',
+        BirdMood.low => '好一会儿没见到你啦。不用着急，想记的时候我们再慢慢开始。',
+        BirdMood.normal => message,
+      };
+
   String get message => records > 0
-      ? '今天已经记下 $records 条记录，谢谢你照顾自己。小兔会陪你一步一步来。'
-      : '还没有今天的记录也没关系，小兔在这里陪着你。想记的时候，我们再慢慢来。';
+      ? '今天已经记下 $records 条记录，谢谢你照顾自己。珍珠鸟会陪你一步一步来。'
+      : '还没有今天的记录也没关系，珍珠鸟在这里陪着你。想记的时候，我们再慢慢来。';
   String get energy => records > 0 ? '活泼' : '平静';
 }
 
-CompanionSummary companionSummary(List<Map<String, dynamic>> events, DateTime now) {
+CompanionSummary companionSummary(List<Map<String, dynamic>> events, DateTime now, {bool justRecorded = false}) {
   final day = now.toIso8601String().substring(0, 10);
-  return CompanionSummary(events.where((e) {
+  final today = DateTime(now.year, now.month, now.day);
+  var records = 0;
+  DateTime? lastBefore;
+  for (final e in events) {
     final time = DateTime.tryParse(e['time'] as String? ?? '');
-    return time != null && !time.isAfter(now) && (e['time'] as String).startsWith(day) &&
-        e['type'] != 'reminder';
-  }).length);
+    if (time == null || time.isAfter(now) || e['type'] == 'reminder') continue;
+    if ((e['time'] as String).startsWith(day)) {
+      records++;
+    } else if (time.isBefore(today) && (lastBefore == null || time.isAfter(lastBefore))) {
+      lastBefore = time;
+    }
+  }
+  final gap = lastBefore == null ? null : today.difference(DateTime(lastBefore.year, lastBefore.month, lastBefore.day)).inDays;
+  return CompanionSummary(records, daysSinceBefore: gap, justRecorded: justRecorded && records > 0);
 }
 
 Future<void> updateLocalCompanion(LocalStore store, DateTime now) async {

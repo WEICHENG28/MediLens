@@ -1,4 +1,4 @@
-// 生活打卡与小兔陪伴（原型）：记录用药/打针、吃饭、运动、睡眠、血糖 → 后端分析个人规律、宠物状态与提醒。
+// 生活打卡与珍珠鸟陪伴（原型）：记录用药/打针、吃饭、运动、睡眠、血糖 → 后端分析个人规律、宠物状态与提醒。
 // 记录保存在本机（加密数据库）；分析时只发送打卡记录（时间、类型、数值），不含身份信息。
 
 import 'dart:convert';
@@ -15,11 +15,13 @@ import '../core/local_reminders.dart';
 import '../core/task_receipts.dart';
 import '../core/life_journal.dart';
 import '../data/local_store.dart';
+import '../widgets/glucose_trend.dart';
 import '../widgets/interactive_bunny.dart';
 
 const _kEvents = 'life_events';
 const _kSchedule = 'life_schedule';
 const _kNegative = 'life_negative_feedback';
+const _kTarget = 'life_glucose_target';
 
 class LifePage extends ConsumerStatefulWidget {
   const LifePage({super.key});
@@ -38,6 +40,8 @@ class _LifePageState extends ConsumerState<LifePage> {
   Map<String, dynamic>? result;
   String? error;
   bool busy = false;
+  bool justRecorded = false; // 刚完成打卡：珍珠鸟开心一下
+  (double, double) target = (3.9, 10.0); // 个人血糖目标，默认 3.9–10.0 mmol/L，可改为医生给的目标
 
   LocalStore get store => ref.read(localStoreProvider);
 
@@ -54,6 +58,8 @@ class _LifePageState extends ConsumerState<LifePage> {
     companion = await store.getSetting('life_companion_enabled') != 'false';
     demo = await store.getSetting('life_demo_mode') == 'true';
     tasks = await loadTasks(store);
+    target = parseTarget(await store.getSetting(_kTarget));
+    justRecorded = false;
     if (mounted) await _analyze();
     } catch (_) {
       if (mounted) setState(() => error = '本机记录暂时无法读取，请重试；原记录没有删除。');
@@ -131,8 +137,16 @@ class _LifePageState extends ConsumerState<LifePage> {
       final next = [...events, {'id': const Uuid().v4(), 'time': _now(), ...e}];
       await store.putSetting(_kEvents, jsonEncode(next));
       events = next;
+      justRecorded = true;
       await _analyze();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已记录'), duration: Duration(seconds: 1)));
+      if (mounted) {
+        final canAddGlucose = {'meal', 'medication', 'insulin'}.contains(e['type']) && e['taken'] != false;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('已记录'),
+          duration: Duration(seconds: canAddGlucose ? 4 : 1),
+          action: canAddGlucose ? SnackBarAction(label: '顺便记血糖', onPressed: _askGlucose) : null,
+        ));
+      }
     } catch (_) {
       if (mounted) setState(() => error = '记录未能完成，请检查后重试。');
     } finally { adding = false; }
@@ -235,7 +249,7 @@ class _LifePageState extends ConsumerState<LifePage> {
     final r = result;
     final reminders = ref.watch(remindersProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('生活打卡 · 小兔陪伴'), actions: [
+      appBar: AppBar(title: const Text('生活打卡 · 珍珠鸟陪伴'), actions: [
         PopupMenuButton<String>(
           onSelected: (v) => v == 'demo' ? _loadDemo() : _clear(),
           itemBuilder: (_) => const [
@@ -249,24 +263,33 @@ class _LifePageState extends ConsumerState<LifePage> {
         if (error != null) Card(child: Padding(padding: const EdgeInsets.all(12), child: Text(error!))),
         if (reminders.error != null) Card(child: Padding(padding: const EdgeInsets.all(12), child: Text(reminders.error!))),
         if (demo) const Text('合成演示数据：不合并个人任务记录。请先清空演示，再记录自己的生活。', style: TextStyle(color: Colors.deepOrange)),
-        if (companion) _PetCard(summary: companionSummary(projected, ref.read(taskClockProvider)())),
+        _Greeting(now: ref.read(taskClockProvider)()),
+        if (companion) _BirdCard(summary: companionSummary(projected, ref.read(taskClockProvider)(), justRecorded: justRecorded)),
         if (r != null)
           for (final a in (r['alerts'] as List)) _AlertCard(a as Map<String, dynamic>),
         if (r?['pet']?['safety_note'] != null) _AlertCard({'level': 'yellow', 'title': '已记录的用药疑问', 'text': r!['pet']['safety_note']}),
         const SizedBox(height: 12),
-        Text('打卡', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 6),
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          _chip(Icons.vaccines, '打了胰岛素', () => _add({'type': 'insulin', 'insulin_kind': 'rapid', 'taken': true})),
-          _chip(Icons.warning_amber, '忘了打针', () => _add({'type': 'insulin', 'insulin_kind': 'rapid', 'taken': false})),
-          _chip(Icons.medication, '吃了药', () => _add({'type': 'medication', 'taken': true})),
-          _chip(Icons.warning_amber, '忘了吃药', () => _add({'type': 'medication', 'taken': false})),
-          _chip(Icons.restaurant, '吃饭', () => _add({'type': 'meal', 'meal_size': 'normal'})),
-          _chip(Icons.directions_walk, '运动', _askExercise),
-          _chip(Icons.bedtime, '睡觉', () => _add({'type': 'sleep'})),
-          _chip(Icons.wb_sunny_outlined, '起床', () => _add({'type': 'wake'})),
-          _chip(Icons.bloodtype_outlined, '记血糖', _askGlucose),
+        _GlucoseOverview(events: projected, schedule: schedule, target: target, now: ref.read(taskClockProvider)(),
+            onTrend: _openTrend, onEditTarget: _editTarget),
+        const SizedBox(height: 16),
+        Row(children: [
+          Text('今天想记录什么？', style: Theme.of(context).textTheme.titleMedium),
+          const Spacer(),
+          Text('点击后自动记录当前时间', style: Theme.of(context).textTheme.bodySmall),
         ]),
+        const SizedBox(height: 8),
+        GridView.count(
+          crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 2.3,
+          children: [
+            _tile('吃饭', Icons.restaurant, '打卡吃饭', '记录吃饭时间', const Color(0xFFFFE4E1), () => _add({'type': 'meal', 'meal_size': 'normal'})),
+            _tile('吃了药', Icons.medication, '打卡吃药', _planText('medication'), const Color(0xFFE3F4EA), () => _add({'type': 'medication', 'taken': true})),
+            _tile('打了胰岛素', Icons.vaccines, '打卡打针', _planText('insulin'), const Color(0xFFECE8FB), () => _add({'type': 'insulin', 'insulin_kind': 'rapid', 'taken': true})),
+            _tile('日常记录', Icons.edit_note, '日常记录', '运动、睡眠、补记', const Color(0xFFFFF1D6), _openDaily),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(height: 64, child: _tile('血糖变化', Icons.show_chart, '血糖变化', '记血糖、看一天 / 一周 / 一个月的变化', const Color(0xFFE2F0FB), _openTrend)),
         if (r != null) ..._results(context, r),
         if (tasks.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -311,8 +334,8 @@ class _LifePageState extends ConsumerState<LifePage> {
           subtitle: Text(reminders.enabled ? '已开启；点击检查权限和测试送达' : '默认关闭；添加时间不会自动发送通知'),
           onTap: () async { await context.push('/reminder'); if (mounted) _load(); }),
         SwitchListTile(
-          title: const Text('小兔陪伴反馈'),
-          subtitle: const Text('只鼓励确认过的记录，不扣健康分，也不把未记录当作漏药。小兔状态不代表真实病情。'),
+          title: const Text('珍珠鸟陪伴反馈'),
+          subtitle: const Text('只鼓励确认过的记录，不扣健康分，也不把未记录当作漏药。珍珠鸟状态不代表真实病情。'),
           value: companion,
           onChanged: (v) async {
             setState(() => companion = v);
@@ -329,6 +352,96 @@ class _LifePageState extends ConsumerState<LifePage> {
 
   Widget _chip(IconData icon, String label, VoidCallback onTap) =>
       ActionChip(key: Key('life_$label'), avatar: Icon(icon, size: 18), label: Text(label), onPressed: busy || demo ? null : onTap);
+
+  Widget _tile(String key, IconData icon, String title, String subtitle, Color tint, VoidCallback onTap) => Material(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          key: Key('life_$key'),
+          borderRadius: BorderRadius.circular(16),
+          onTap: busy || demo ? null : onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFF0E6DD))),
+            child: Row(children: [
+              Container(width: 40, height: 40, decoration: BoxDecoration(color: tint, borderRadius: BorderRadius.circular(12)),
+                  child: Icon(icon, size: 22, color: Colors.black54)),
+              const SizedBox(width: 10),
+              Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(subtitle, style: Theme.of(context).textTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ])),
+            ]),
+          ),
+        ),
+      );
+
+  /// 打卡瓷砖上显示今天下一次按医嘱的时间。
+  String _planText(String task) {
+    final times = [for (final s in schedule) if (s['task'] == task) s['time'] as String]..sort();
+    if (times.isEmpty) return '记录当前时间';
+    final now = ref.read(taskClockProvider)();
+    final hm = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    return '医嘱时间 ${times.firstWhere((t) => t.compareTo(hm) >= 0, orElse: () => times.first)}';
+  }
+
+  Future<void> _openDaily() => showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (c) => SafeArea(child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('日常记录', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text('也可以补记忘了的用药；记下来是为了复诊时说得清楚，不会扣分。', style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 12),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              _chip(Icons.directions_walk, '运动', () { Navigator.pop(c); _askExercise(); }),
+              _chip(Icons.bedtime, '睡觉', () { Navigator.pop(c); _add({'type': 'sleep'}); }),
+              _chip(Icons.wb_sunny_outlined, '起床', () { Navigator.pop(c); _add({'type': 'wake'}); }),
+              _chip(Icons.bloodtype_outlined, '记血糖', () { Navigator.pop(c); _askGlucose(); }),
+              _chip(Icons.warning_amber, '忘了吃药', () { Navigator.pop(c); _add({'type': 'medication', 'taken': false}); }),
+              _chip(Icons.warning_amber, '忘了打针', () { Navigator.pop(c); _add({'type': 'insulin', 'insulin_kind': 'rapid', 'taken': false}); }),
+            ]),
+          ]),
+        )),
+      );
+
+  Future<void> _openTrend() => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (c) => GlucoseTrendSheet(
+          events: projected, target: target, now: ref.read(taskClockProvider)(),
+          onAdd: busy || demo ? null : () { Navigator.pop(c); _askGlucose(); },
+        ),
+      );
+
+  Future<void> _editTarget() async {
+    final lo = TextEditingController(text: target.$1.toString()), hi = TextEditingController(text: target.$2.toString());
+    final ok = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
+      title: const Text('我的血糖目标范围'),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Text('请填写医生给您的个人目标（mmol/L）。只用于把记录标成「范围内 / 高于 / 低于」，珍珠鸟不会因此变化。'),
+        Row(children: [
+          Expanded(child: TextField(key: const Key('target_low'), controller: lo, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: '下限'))),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(key: const Key('target_high'), controller: hi, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: '上限'))),
+        ]),
+      ]),
+      actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('保存'))],
+    ));
+    if (ok != true) return;
+    final l = double.tryParse(lo.text.trim()), h = double.tryParse(hi.text.trim());
+    if (l == null || h == null || l < 2 || h > 30 || l >= h) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请检查：下限要小于上限，范围在 2–30 mmol/L 之间')));
+      return;
+    }
+    await store.putSetting(_kTarget, '$l-$h');
+    if (mounted) setState(() => target = (l, h));
+  }
+
 
   List<Widget> _results(BuildContext context, Map<String, dynamic> r) {
     final m = r['metrics'] as Map<String, dynamic>;
@@ -390,18 +503,132 @@ class _LifePageState extends ConsumerState<LifePage> {
       ]);
 }
 
-class _PetCard extends StatelessWidget {
-  final CompanionSummary summary;
-  const _PetCard({required this.summary});
+class _Greeting extends StatelessWidget {
+  final DateTime now;
+  const _Greeting({required this.now});
   @override
-  Widget build(BuildContext context) => Card(child: Padding(
-    padding: const EdgeInsets.all(16), child: Column(children: [
-      const InteractiveBunny(),
-      const SizedBox(height: 8),
-      Text(summary.message, key: const Key('pet_message'), textAlign: TextAlign.center),
-      const SizedBox(height: 8),
-      const Text('未记录不代表未完成；小兔的样子不代表您的健康状况。'),
-    ])));
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('${now.year} · ${now.month}月${now.day}日 · 生活打卡',
+              style: const TextStyle(color: Color(0xFFB07A55), fontWeight: FontWeight.w600, fontSize: 13)),
+          const SizedBox(height: 4),
+          Text('今天也一起加油！', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 2),
+          Text('慢慢记录每一步，珍珠鸟会一直陪着你。', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black54)),
+        ]),
+      );
+}
+
+class _BirdCard extends ConsumerWidget {
+  final CompanionSummary summary;
+  const _BirdCard({required this.summary});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mood = summary.mood();
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(colors: [Color(0xFFFFE6D6), Color(0xFFFFF4EA), Color(0xFFEFF3E6)],
+            begin: Alignment.topLeft, end: Alignment.bottomRight),
+      ),
+      child: Row(children: [
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(20)),
+            child: Text(birdMoodLabel[mood]!, key: const Key('bird_mood_label'),
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5E7D4F))),
+          ),
+          const SizedBox(height: 10),
+          Text(summary.messageFor(mood), key: const Key('pet_message'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.4, color: Color(0xFF4A3A30))),
+          const SizedBox(height: 8),
+          const Text('珍珠鸟只回应有没有记录，不代表您的健康状况。',
+              style: TextStyle(fontSize: 12, color: Colors.black45)),
+        ])),
+        InteractiveBunny(size: 78, mood: mood),
+      ]),
+    );
+  }
+}
+
+class _GlucoseOverview extends StatelessWidget {
+  final List<Map<String, dynamic>> events;
+  final List<Map<String, dynamic>> schedule;
+  final (double, double) target;
+  final DateTime now;
+  final VoidCallback onTrend;
+  final VoidCallback onEditTarget;
+  const _GlucoseOverview({required this.events, required this.schedule, required this.target, required this.now,
+      required this.onTrend, required this.onEditTarget});
+
+  @override
+  Widget build(BuildContext context) {
+    final day = now.toIso8601String().substring(0, 10);
+    final glucose = [for (final e in events) if (e['type'] == 'glucose' && e['glucose'] is num) e];
+    final last = glucose.isEmpty ? null : glucose.last;
+    final todayRecords = events.where((e) => (e['time'] as String? ?? '').startsWith(day) && e['type'] != 'reminder').length;
+    final planned = schedule.length;
+    final done = events.where((e) => (e['time'] as String? ?? '').startsWith(day) &&
+        {'medication', 'insulin'}.contains(e['type']) && e['taken'] == true).length.clamp(0, planned);
+    final small = Theme.of(context).textTheme.bodySmall;
+    Widget box(String label, Widget value, String hint, {VoidCallback? onTap}) => Expanded(child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: const Color(0xFFFFF8F2), borderRadius: BorderRadius.circular(14)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(label, style: small),
+              const SizedBox(height: 4),
+              value,
+              const SizedBox(height: 2),
+              Text(hint, style: small, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ]),
+          ),
+        ));
+    String fmt(double v) => v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toString();
+    return Card(
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Color(0xFFF0E6DD))),
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.bar_chart, size: 20, color: Color(0xFF8C6A55)),
+            const SizedBox(width: 6),
+            Text('今日血糖概览', style: Theme.of(context).textTheme.titleMedium),
+            const Spacer(),
+            TextButton(key: const Key('open_trend'), onPressed: onTrend, child: const Text('查看变化 ›')),
+          ]),
+          Row(children: [
+            box('最近一次记录',
+                Text.rich(TextSpan(children: [
+                  TextSpan(text: last == null ? '—' : fmt((last['glucose'] as num).toDouble()),
+                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                  const TextSpan(text: ' mmol/L', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                ]), key: const Key('last_glucose')),
+                last == null ? '还没有血糖记录' : '${(last['time'] as String).substring(11, 16)} · ${rangeLabel((last['glucose'] as num).toDouble(), target).replaceAll('目标', '').replaceAll('在', '')}'),
+            const SizedBox(width: 10),
+            box('我的目标范围',
+                Text('${fmt(target.$1)}–${fmt(target.$2)}', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                'mmol/L · 点这里修改', onTap: onEditTarget),
+          ]),
+          const SizedBox(height: 12),
+          if (planned > 0) ...[
+            ClipRRect(borderRadius: BorderRadius.circular(6), child: LinearProgressIndicator(
+              value: done / planned, minHeight: 6, backgroundColor: const Color(0xFFF3ECE6), color: const Color(0xFF9DB98A))),
+            const SizedBox(height: 6),
+            Text('今天已完成 $done/$planned 项用药打卡 · 共 $todayRecords 条记录', style: small),
+          ] else
+            Text('今天共 $todayRecords 条记录。在下方添加医嘱的用药时间后，可以看到完成进度。', style: small),
+        ]),
+      ),
+    );
+  }
 }
 
 class _AlertCard extends StatelessWidget {

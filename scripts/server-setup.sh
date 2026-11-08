@@ -77,8 +77,14 @@ try:
 except Exception as e:
     print(f"GitHub 不可用（{type(e).__name__}），改用 jsDelivr")
     lower = repo.lower()
-    listing = json.loads(get(f"https://data.jsdelivr.com/v1/packages/gh/{lower}@{ref}?structure=flat"))
-    files = [f["name"].lstrip("/") for f in listing["files"] if f["name"].lstrip("/").startswith(NEED)]
+    try:
+        # 优先使用仓库里的部署清单（按指定提交下载，内容固定、不受 jsDelivr 列表缓存影响）
+        files = get(f"https://cdn.jsdelivr.net/gh/{lower}@{ref}/scripts/server-files.txt").decode().split()
+        print(f"使用部署清单：{len(files)} 个文件")
+    except Exception:
+        # 旧版本没有清单：退回 jsDelivr 的文件列表（注意：分支列表可能有缓存、提交编号可能不支持）
+        listing = json.loads(get(f"https://data.jsdelivr.com/v1/packages/gh/{lower}@{ref}?structure=flat"))
+        files = [f["name"].lstrip("/") for f in listing["files"] if f["name"].lstrip("/").startswith(NEED)]
 
     def fetch(rel):
         t = dest / rel

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/life_journal.dart';
 import '../core/pet_interaction.dart';
+import 'pearl_bird.dart';
 
 class InteractiveBunny extends ConsumerStatefulWidget {
   final double size;
-  const InteractiveBunny({super.key, this.size = 64});
+  final BirdMood mood;
+  const InteractiveBunny({super.key, this.size = 64, this.mood = BirdMood.normal});
   @override ConsumerState<InteractiveBunny> createState() => _InteractiveBunnyState();
 }
 class _InteractiveBunnyState extends ConsumerState<InteractiveBunny> with SingleTickerProviderStateMixin, WidgetsBindingObserver, RouteAware {
@@ -38,9 +41,9 @@ class _InteractiveBunnyState extends ConsumerState<InteractiveBunny> with Single
     ref.watch(petPreferencesProvider);
     return Column(mainAxisSize: MainAxisSize.min, children: [
       TextButton(key: const Key('bunny_greet'), onPressed: greet,
-        child: Semantics(label: '和小兔打个招呼', child: ExcludeSemantics(child: ScaleTransition(key: const Key('bunny_scale'), scale: bounce,
-          child: Text('🐰', key: const Key('pet_avatar'), style: TextStyle(fontSize: widget.size)))))),
-      Semantics(liveRegion: true, child: Text(greeting < 0 ? '点小兔，打个招呼' : petGreetings[greeting], key: const Key('bunny_greeting'), textAlign: TextAlign.center)),
+        child: Semantics(label: '和珍珠鸟打个招呼', child: ExcludeSemantics(child: ScaleTransition(key: const Key('bunny_scale'), scale: bounce,
+          child: KeyedSubtree(key: const Key('pet_avatar'), child: PearlBird(mood: widget.mood, size: widget.size * 1.8)))))),
+      Semantics(liveRegion: true, child: Text(greeting < 0 ? '点珍珠鸟，打个招呼' : petGreetings[greeting], key: const Key('bunny_greeting'), textAlign: TextAlign.center)),
     ]);
   }
 }
@@ -51,8 +54,8 @@ class PetMotionSwitch extends ConsumerWidget {
     final settings = ref.watch(petPreferencesProvider);
     final reduced = MediaQuery.disableAnimationsOf(context);
     return Column(children: [
-      SwitchListTile(key: const Key('pet_motion_switch'), title: const Text('小兔点击动画'),
-        subtitle: Text(reduced ? '系统已要求减少动态效果，点击只显示文字。' : '只在点小兔时轻轻动一下；关闭后仍可看到问候。'),
+      SwitchListTile(key: const Key('pet_motion_switch'), title: const Text('珍珠鸟动画'),
+        subtitle: Text(reduced ? '系统已要求减少动态效果，珍珠鸟显示静态图，点击只显示文字。' : '开启后珍珠鸟会动起来，点它会轻轻跳一下；关闭后显示静态图，仍可看到问候。'),
         value: settings.motion, onChanged: settings.loaded && !settings.busy ? ref.read(petPreferencesProvider.notifier).setMotion : null),
       if (settings.error != null) Text(settings.error!),
       if (!settings.loaded && !settings.busy) TextButton(onPressed: ref.read(petPreferencesProvider.notifier).load, child: const Text('重试读取动画设置')),

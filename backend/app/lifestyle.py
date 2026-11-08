@@ -345,21 +345,21 @@ def pet_state(ev, schedule, days: list[date], now: datetime, negative: bool, met
     overdue = [t for t in (tasks or []) if not t.done and t.due is not None and t.due <= days[-1]]
     celebrate = tir_now is not None and tir_before is not None and tir_now - tir_before >= 0.05  # 只奖励不惩罚
     if prev_h == "生病了":
-        mood, msg = "担心", "小兔连着几次没按时用药或打针，生病躺下了……按医嘱用药，我们一起慢慢好起来！"
+        mood, msg = "担心", "珍珠鸟连着几次没按时用药或打针，生病躺下了……按医嘱用药，我们一起慢慢好起来！"
     elif missed_today and negative:
-        mood, msg = "担心", "今天漏了用药或打针，小兔也觉得不舒服了。记得按医嘱按时用药哦！"
+        mood, msg = "担心", "今天漏了用药或打针，珍珠鸟也觉得不舒服了。记得按医嘱按时用药哦！"
     elif overdue:
         mood, msg = "普通", f"有 {len(overdue)} 项复查事项到期了：{overdue[0].title}。记得向医生确认时间哦！"
     elif prev_h == "有点不舒服" and negative:
-        mood, msg = "普通", "小兔前几天漏了药，还有点不舒服；接下来按时用药，很快就能恢复精神！"
+        mood, msg = "普通", "珍珠鸟前几天漏了药，还有点不舒服；接下来按时用药，很快就能恢复精神！"
     elif not negative and missed_today:
-        mood, msg = "普通", "小兔在等你一起按时用药～"
+        mood, msg = "普通", "珍珠鸟在等你一起按时用药～"
     elif celebrate:
-        mood, msg = "开心", "这一周血糖在目标范围的时间变多了，小兔开心得转圈圈！"
+        mood, msg = "开心", "这一周血糖在目标范围的时间变多了，珍珠鸟开心得转圈圈！"
     elif streak >= 3:
-        mood, msg = "开心", f"已经连续 {streak} 天按时用药，小兔精神满满！"
+        mood, msg = "开心", f"已经连续 {streak} 天按时用药，珍珠鸟精神满满！"
     elif prev_e == "困倦":
-        mood, msg = "普通", "小兔有点没精神，饭后一起去散散步吧？"
+        mood, msg = "普通", "珍珠鸟有点没精神，饭后一起去散散步吧？"
     else:
         mood, msg = "普通", "今天也一起照顾好自己吧！"
     note = None

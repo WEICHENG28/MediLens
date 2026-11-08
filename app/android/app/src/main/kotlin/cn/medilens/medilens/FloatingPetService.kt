@@ -45,9 +45,9 @@ class FloatingPetService : Service() {
             val openIntent = PendingIntent.getActivity(this, 4912, Intent(this, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             val builder = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, CHANNEL) else Notification.Builder(this)
             val notification = builder.setSmallIcon(R.drawable.ic_reminder)
-                .setContentTitle("MediLens 悬浮小兔已开启").setContentText("可拖动小兔；点击关闭或通知中的停止即可结束。")
+                .setContentTitle("MediLens 悬浮珍珠鸟已开启").setContentText("可拖动珍珠鸟；点击关闭或通知中的停止即可结束。")
                 .setContentIntent(openIntent).setOngoing(true).setVisibility(Notification.VISIBILITY_PUBLIC)
-                .addAction(Notification.Action.Builder(null, "停止悬浮小兔", closeIntent).build()).build()
+                .addAction(Notification.Action.Builder(null, "停止悬浮珍珠鸟", closeIntent).build()).build()
             if (Build.VERSION.SDK_INT >= 34) startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
             else startForeground(NOTIFICATION_ID, notification)
             if (!requested || token != session) { finishPet(); return START_NOT_STICKY }
@@ -59,7 +59,7 @@ class FloatingPetService : Service() {
             running = true
             lastError = null
         } catch (_: Exception) {
-            lastError = "悬浮小兔未能开启，请检查悬浮和通知权限后重试。"
+            lastError = "悬浮珍珠鸟未能开启，请检查悬浮和通知权限后重试。"
             finishPet()
         }
         return START_NOT_STICKY
@@ -73,19 +73,19 @@ class FloatingPetService : Service() {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(4), dp(4), dp(4), dp(4))
             setBackgroundResource(R.drawable.desktop_pet_background)
-            contentDescription = "MediLens 悬浮小兔"
+            contentDescription = "MediLens 悬浮珍珠鸟"
         }
         val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        val pet = TextView(this).apply { text = "🐰"; textSize = 34f; gravity = Gravity.CENTER; contentDescription = "小兔，拖动移动，点一下打招呼" }
+        val pet = TextView(this).apply { text = "🐦"; textSize = 34f; gravity = Gravity.CENTER; contentDescription = "珍珠鸟，拖动移动，点一下打招呼" }
         val close = TextView(this).apply {
             text = "×"; textSize = 26f; gravity = Gravity.CENTER; setTextColor(Color.rgb(0, 88, 79))
-            contentDescription = "关闭悬浮小兔"; setOnClickListener { finishPet() }
+            contentDescription = "关闭悬浮珍珠鸟"; setOnClickListener { finishPet() }
         }
         row.addView(pet, LinearLayout.LayoutParams(0, dp(56), 1f))
         row.addView(close, LinearLayout.LayoutParams(dp(48), dp(56)))
         val caption = TextView(this).apply {
-            text = "点小兔，打个招呼"; textSize = 12f; gravity = Gravity.CENTER; maxLines = 2
-            setTextColor(Color.rgb(0, 88, 79)); contentDescription = "小兔陪伴文字，点一下换一句问候"
+            text = "点珍珠鸟，打个招呼"; textSize = 12f; gravity = Gravity.CENTER; maxLines = 2
+            setTextColor(Color.rgb(0, 88, 79)); contentDescription = "珍珠鸟陪伴文字，点一下换一句问候"
         }
         val greetings = arrayOf("你好呀，我在这里。", "慢慢来，也很好。", "可以按自己的节奏来。")
         val hello = View.OnClickListener { caption.text = greetings[greeting++ % greetings.size] }
@@ -167,7 +167,7 @@ class FloatingPetService : Service() {
         private var lastError: String? = null
         fun ensureChannel(context: Context) {
             if (Build.VERSION.SDK_INT >= 26) {
-                val channel = NotificationChannel(CHANNEL, "悬浮小兔运行提示", NotificationManager.IMPORTANCE_LOW).apply { setSound(null, null); enableVibration(false) }
+                val channel = NotificationChannel(CHANNEL, "悬浮珍珠鸟运行提示", NotificationManager.IMPORTANCE_LOW).apply { setSound(null, null); enableVibration(false) }
                 context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
             }
         }
@@ -188,7 +188,7 @@ class FloatingPetService : Service() {
                 session++; requested = true; lastError = null
                 val intent = Intent(activity, FloatingPetService::class.java).setAction(START).putExtra("session", session)
                 try { if (Build.VERSION.SDK_INT >= 26) activity.startForegroundService(intent) else activity.startService(intent) }
-                catch (_: Exception) { requested = false; lastError = "系统未允许开启悬浮小兔，请回到APP重试。" }
+                catch (_: Exception) { requested = false; lastError = "系统未允许开启悬浮珍珠鸟，请回到APP重试。" }
             }
             return status(activity)
         }

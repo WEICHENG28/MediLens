@@ -96,11 +96,11 @@ class OverviewPage extends ConsumerWidget {
           OutlinedButton.icon(
             key: const Key('add_tasks'),
             icon: const Icon(Icons.pets),
-            label: const Text('把复查建议加入小兔任务'),
+            label: const Text('把复查建议加入珍珠鸟任务'),
             onPressed: () async {
               final n = await addTasks(ref.read(localStoreProvider), candidatesFromHits(hits, ref.read(sessionProvider).report?.testDate));
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(n > 0 ? '已加入 $n 项，可在「生活打卡 · 小兔陪伴」查看' : '这些事项已经在小兔任务里了')));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(n > 0 ? '已加入 $n 项，可在「生活打卡 · 珍珠鸟陪伴」查看' : '这些事项已经在珍珠鸟任务里了')));
               }
             },
           ),

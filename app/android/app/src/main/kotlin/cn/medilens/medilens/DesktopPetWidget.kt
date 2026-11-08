@@ -27,8 +27,8 @@ class DesktopPetWidget : AppWidgetProvider() {
         val mood = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString("mood", "calm")
         val moodCaption = when (mood) {
             "active" -> "今天也充满活力"
-            "rest" -> "小兔休息一会儿"
-            else -> "小兔一直陪着你"
+            "rest" -> "珍珠鸟休息一会儿"
+            else -> "珍珠鸟一直陪着你"
         }
         val greeting = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getInt("greeting", 0)
         val caption = when (greeting) {
@@ -40,7 +40,7 @@ class DesktopPetWidget : AppWidgetProvider() {
         for (id in ids) {
             val views = RemoteViews(context.packageName, R.layout.desktop_pet_widget)
             views.setTextViewText(R.id.pet_caption, caption)
-            views.setTextViewText(R.id.pet_avatar, if (mood == "rest") "🐰💤" else "🐰")
+            views.setTextViewText(R.id.pet_avatar, if (mood == "rest") "🐦💤" else "🐦")
             val open = Intent(context, MainActivity::class.java).apply {
                 action = Intent.ACTION_MAIN
                 addCategory(Intent.CATEGORY_LAUNCHER)
