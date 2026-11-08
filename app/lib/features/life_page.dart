@@ -561,25 +561,9 @@ class _LifePageState extends ConsumerState<LifePage> {
       const SizedBox(height: 12),
       Text('我的规律', style: Theme.of(context).textTheme.titleMedium),
       if (insights.isEmpty) const Padding(padding: EdgeInsets.all(8), child: Text('记录还不够多，暂时没有发现明显规律（建议连续记录 2–4 周）。')),
-      for (final i in insights.cast<Map<String, dynamic>>())
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Expanded(child: Text(i['title'] as String, style: const TextStyle(fontWeight: FontWeight.bold))),
-                Text(i['confidence'] == '较明确' ? '较明确' : '初步', style: Theme.of(context).textTheme.bodySmall),
-              ]),
-              const SizedBox(height: 4),
-              Text(i['finding'] as String),
-              for (final g in (i['groups'] as List).cast<Map<String, dynamic>>())
-                Text('· ${g['label']}：${g['n']} 次，中位数 ${g['median']} mmol/L', style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 4),
-              Text('复诊可以问：${i['doctor_question']}', style: Theme.of(context).textTheme.bodySmall),
-            ]),
-          ),
-        ),
-      Text(r['disclaimer'] as String, style: Theme.of(context).textTheme.bodySmall),
+      for (final i in insights.cast<Map<String, dynamic>>()) _InsightCard(i),
+      Text('这些是从你的记录看出的规律，不是用药建议；要怎么调整，请问医生。', key: const Key('insight_note'),
+          style: Theme.of(context).textTheme.bodySmall),
       const SizedBox(height: 12),
       Text('提醒', style: Theme.of(context).textTheme.titleMedium),
       for (final x in reminders.cast<Map<String, dynamic>>())
@@ -720,6 +704,51 @@ class _GlucoseOverview extends StatelessWidget {
           ] else
             Text('今天共 $todayRecords 条记录。在下方添加医嘱的用药时间后，可以看到完成进度。', style: small),
         ]),
+      ),
+    );
+  }
+}
+
+/// 我的规律：第一层只说一句白话（不放数字），点「看详细」才显示次数、中位数和复诊可以问的问题。
+class _InsightCard extends StatelessWidget {
+  final Map<String, dynamic> i;
+  const _InsightCard(this.i);
+  @override
+  Widget build(BuildContext context) {
+    final small = Theme.of(context).textTheme.bodySmall;
+    final sure = i['confidence'] == '较明确';
+    final headline = (i['headline'] as String?)?.isNotEmpty == true ? i['headline'] as String : i['finding'] as String;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: Key('insight_${i['id']}'),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          title: Text(headline, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, height: 1.35)),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(color: sure ? const Color(0xFFE3F4EA) : const Color(0xFFFFF1D6), borderRadius: BorderRadius.circular(10)),
+                child: Text(sure ? '比较明显' : '还要多观察', style: small),
+              ),
+              const SizedBox(width: 8),
+              Text(i['title'] as String, style: small),
+            ]),
+          ),
+          trailing: Text('看详细', style: small?.copyWith(color: Theme.of(context).colorScheme.primary)),
+          children: [
+            Text(i['finding'] as String),
+            for (final g in (i['groups'] as List).cast<Map<String, dynamic>>())
+              Text('· ${g['label']}：${g['n']} 次，中位数 ${g['median']} mmol/L', style: small),
+            const SizedBox(height: 6),
+            Text('复诊可以问：${i['doctor_question']}', style: small),
+          ],
+        ),
       ),
     );
   }

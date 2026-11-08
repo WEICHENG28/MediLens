@@ -115,3 +115,12 @@ def test_rules_carry_followup_tasks_but_urgent_rule_has_none():
     assert rules["R-01"].get("urgent") and "followup_task" not in rules["R-01"]  # 紧急事项不进宠物任务
     assert rules["R-04"]["followup_task"]["days"] == 90 and "UACR" in rules["R-04"]["followup_task"]["title"]
     assert all(r["followup_task"]["title"] for r in rules.values() if "followup_task" in r)
+
+
+def test_insights_have_plain_headline_without_numbers():
+    import re
+    r = run(simulate(28, seed=1))
+    assert r.insights
+    for i in r.insights:
+        assert i.headline and len(i.headline) <= 24
+        assert not re.search(r"\d|中位数|mmol|p 值|置换", i.headline)

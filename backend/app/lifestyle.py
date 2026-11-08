@@ -72,6 +72,7 @@ class Insight(BaseModel):
     p_value: float | None
     confidence: Literal["初步", "较明确"]
     doctor_question: str
+    headline: str = ""  # 一句白话结论（不含数字），APP 第一层只显示这一句，细节点开才看
 
 
 class Alert(BaseModel):
@@ -133,6 +134,16 @@ def _perm_p(a: list[float], b: list[float], rng: random.Random, n_perm: int = 20
     return (hits + 1) / (n_perm + 1)
 
 
+# 一句白话：只说方向，不放数字与统计用语；d>0 表示前一组血糖较高
+HEADLINES = {
+    "insulin_timing": lambda d: "饭后才打针的那几次，饭后血糖比较高" if d > 0 else "饭后才打针的那几次，饭后血糖反而比较低",
+    "post_meal_walk": lambda d: "饭后走一走，血糖比较低" if d < 0 else "饭后活动的那几次，血糖反而比较高",
+    "sleep_fasting": lambda d: "睡得少的隔天，早上血糖比较高" if d > 0 else "睡得少的隔天，早上血糖反而比较低",
+    "evening_exercise_night_low": lambda d: "晚上运动过，夜里血糖比较低" if d < 0 else "晚上运动过，夜里血糖反而比较高",
+    "missed_dose_high": lambda d: "漏了药的那天，血糖比较高" if d > 0 else "漏了药的那天，血糖反而没有更高",
+}
+
+
 def _compare(id_, title, a_label, a, b_label, b, rng, min_n=4, min_diff=1.0, finding=None, question=""):
     """比较两组血糖；样本不足或差异太小时不输出。"""
     if len(a) < min_n or len(b) < min_n:
@@ -148,7 +159,8 @@ def _compare(id_, title, a_label, a, b_label, b, rng, min_n=4, min_diff=1.0, fin
         id=id_, title=title,
         finding=finding(d) if finding else f"{a_label}时，血糖中位数比{b_label}{'高' if d > 0 else '低'} {abs(d):.1f} mmol/L。",
         groups=[Group(label=a_label, n=len(a), median=round(median(a), 1)), Group(label=b_label, n=len(b), median=round(median(b), 1))],
-        difference=round(d, 1), p_value=round(p, 3), confidence=conf, doctor_question=question)
+        difference=round(d, 1), p_value=round(p, 3), confidence=conf, doctor_question=question,
+        headline=HEADLINES.get(id_, lambda d: f"{a_label}，血糖比较{'高' if d > 0 else '低'}")(d))
 
 
 # ---------- 事件整理 ----------
