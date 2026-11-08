@@ -717,7 +717,7 @@ class _InsightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final small = Theme.of(context).textTheme.bodySmall;
     final sure = i['confidence'] == '较明确';
-    final headline = (i['headline'] as String?)?.isNotEmpty == true ? i['headline'] as String : i['finding'] as String;
+    final headline = (i['headline'] as String?)?.isNotEmpty == true ? i['headline'] as String : i['title'] as String; // 旧版服务器没有白话句时，先显示简短标题
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Theme(
