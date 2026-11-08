@@ -1,4 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medilens/core/api_client.dart';
+import 'package:medilens/core/task_receipts.dart';
+import 'package:medilens/data/local_store.dart';
+import 'package:medilens/features/life_page.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:medilens/core/life_journal.dart';
 import 'package:medilens/widgets/glucose_trend.dart';
@@ -6,25 +13,35 @@ import 'package:medilens/widgets/glucose_trend.dart';
 Map<String, dynamic> ev(String time, [String type = 'meal', Map<String, dynamic> extra = const {}]) =>
     {'id': time, 'time': time, 'type': type, ...extra};
 
+class OfflineApi extends ApiClient {
+  OfflineApi() : super('https://unused.invalid');
+  @override
+  Future<Map<String, dynamic>> lifestyle(Map<String, dynamic> body) async => throw ApiException('合成测试：离线');
+}
+
 void main() {
   final now = DateTime(2026, 11, 8, 20, 0);
 
-  test('珍珠鸟只回应有没有记录：刚打卡开心、隔两天以上想你/恢复，关闭反馈只显示日常', () {
-    expect(companionSummary([], now).mood(), BirdMood.normal); // 从没记录过：日常
-    expect(companionSummary([ev('2026-11-07T09:00:00')], now).mood(), BirdMood.normal); // 昨天记过
-    expect(companionSummary([ev('2026-11-05T09:00:00')], now).mood(), BirdMood.low); // 隔了 3 天
-    expect(companionSummary([ev('2026-11-05T09:00:00')], now).mood(feedback: false), BirdMood.normal);
-    final back = [ev('2026-11-05T09:00:00'), ev('2026-11-08T08:00:00')];
-    expect(companionSummary(back, now).mood(), BirdMood.recover);
-    expect(companionSummary(back, now, justRecorded: true).mood(), BirdMood.happy);
-    expect(companionSummary([], now, justRecorded: true).mood(), BirdMood.normal); // 没有今天的记录不会开心
+  test('珍珠鸟反应：超过 3 小时进来想你，打卡后打起精神；之后打卡开心', () {
+    var b = birdReact(BirdMood.normal, BirdEvent.enterAfterIdle);
+    expect(b.mood, BirdMood.low);
+    b = birdReact(b.mood, BirdEvent.checkIn);
+    expect(b.mood, BirdMood.recover);
+    expect(birdReact(BirdMood.normal, BirdEvent.checkIn).mood, BirdMood.happy);
+    expect(birdReact(BirdMood.normal, BirdEvent.enterRecent).mood, BirdMood.normal);
+    expect(birdReact(BirdMood.normal, BirdEvent.enterAfterIdle, feedback: false).mood, BirdMood.normal);
   });
 
-  test('血糖数值高低不影响珍珠鸟', () {
-    final high = [ev('2026-11-08T08:00:00', 'glucose', {'glucose': 18.0})];
-    final normal = [ev('2026-11-08T08:00:00', 'glucose', {'glucose': 6.0})];
-    expect(companionSummary(high, now).mood(), companionSummary(normal, now).mood());
-    expect(companionSummary(high, now).messageFor(BirdMood.normal), companionSummary(normal, now).messageFor(BirdMood.normal));
+  test('血糖在目标范围内开心跳跃；超出范围给予关心，不显示低落', () {
+    expect(birdReact(BirdMood.normal, BirdEvent.glucoseInRange).mood, BirdMood.happy);
+    final out = birdReact(BirdMood.normal, BirdEvent.glucoseOutOfRange);
+    expect(out.mood, isNot(BirdMood.low));
+    expect(out.message, contains('记下来就很重要'));
+    expect(out.message, isNot(contains('不好')));
+  });
+
+  test('今日记录数', () {
+    expect(companionSummary([ev('2026-11-08T08:00:00'), ev('2026-11-07T08:00:00')], now).records, 1);
   });
 
   test('目标范围解析与中性标注', () {
@@ -57,5 +74,28 @@ void main() {
     expect(find.textContaining('共 1 次记录'), findsOneWidget);
     await t.pumpWidget(MaterialApp(home: Scaffold(body: GlucoseTrendSheet(events: const [], target: (3.9, 10.0), now: now))));
     expect(find.text('这段时间还没有血糖记录'), findsOneWidget);
+  });
+
+  testWidgets('首次进入：欢迎与初始血糖 → 设置目标 → 小鸟按目标范围反应，资料保存在本机', (t) async {
+    final store = MemoryStore();
+    t.view.physicalSize = const Size(1080, 2400); t.view.devicePixelRatio = 2.75; addTearDown(t.view.reset);
+    await t.pumpWidget(ProviderScope(overrides: [localStoreProvider.overrideWithValue(store),
+      apiClientProvider.overrideWithValue(OfflineApi()), taskClockProvider.overrideWithValue(() => now)],
+      child: const MaterialApp(home: LifePage())));
+    await t.pumpAndSettle();
+    expect(find.text('欢迎来到生活打卡！'), findsOneWidget);
+    await t.enterText(find.byKey(const Key('setup_glucose')), '6.5');
+    await t.tap(find.byKey(const Key('setup_next'))); await t.pumpAndSettle();
+    await t.enterText(find.byKey(const Key('setup_low')), '4.4');
+    await t.enterText(find.byKey(const Key('setup_high')), '7');
+    await t.ensureVisible(find.byKey(const Key('setup_done')));
+    await t.tap(find.byKey(const Key('setup_done'))); await t.pumpAndSettle();
+    expect(find.text('开心加油'), findsOneWidget); // 6.5 在 4.4–7 内
+    expect(await store.getSetting('life_onboarded'), 'true');
+    expect(await store.getSetting('life_glucose_target'), '4.4-7.0');
+    expect(jsonDecode(await store.getSetting('life_meal_times') ?? '[]'), ['07:30', '12:00', '18:00']);
+    final events = jsonDecode(await store.getSetting('life_events') ?? '[]') as List;
+    expect(events.single['glucose'], 6.5);
+    await t.pumpWidget(const SizedBox.shrink());
   });
 }

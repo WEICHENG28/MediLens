@@ -16,12 +16,16 @@ import '../core/task_receipts.dart';
 import '../core/life_journal.dart';
 import '../data/local_store.dart';
 import '../widgets/glucose_trend.dart';
+import 'life_setup_page.dart';
 import '../widgets/interactive_bunny.dart';
 
 const _kEvents = 'life_events';
 const _kSchedule = 'life_schedule';
 const _kNegative = 'life_negative_feedback';
 const _kTarget = 'life_glucose_target';
+const _kMeals = 'life_meal_times';
+const _kLastVisit = 'life_last_visit';
+const _kOnboarded = 'life_onboarded';
 
 class LifePage extends ConsumerStatefulWidget {
   const LifePage({super.key});
@@ -40,7 +44,9 @@ class _LifePageState extends ConsumerState<LifePage> {
   Map<String, dynamic>? result;
   String? error;
   bool busy = false;
-  bool justRecorded = false; // 刚完成打卡：珍珠鸟开心一下
+  BirdState bird = birdReact(BirdMood.normal, BirdEvent.enterRecent); // 珍珠鸟当前的状态与话语
+  bool? onboarded; // 是否已完成首次设置；null 表示还在读取
+  List<String> mealTimes = []; // 吃饭目标时间（只用于显示，不发送通知）
   (double, double) target = (3.9, 10.0); // 个人血糖目标，默认 3.9–10.0 mmol/L，可改为医生给的目标
 
   LocalStore get store => ref.read(localStoreProvider);
@@ -59,7 +65,12 @@ class _LifePageState extends ConsumerState<LifePage> {
     demo = await store.getSetting('life_demo_mode') == 'true';
     tasks = await loadTasks(store);
     target = parseTarget(await store.getSetting(_kTarget));
-    justRecorded = false;
+    mealTimes = List<String>.from(jsonDecode(await store.getSetting(_kMeals) ?? '[]') as List);
+    onboarded = await store.getSetting(_kOnboarded) == 'true' || events.isNotEmpty || schedule.isNotEmpty;
+    final now = ref.read(taskClockProvider)();
+    final last = DateTime.tryParse(await store.getSetting(_kLastVisit) ?? '');
+    bird = birdReact(bird.mood, last != null && now.difference(last) > birdIdle ? BirdEvent.enterAfterIdle : BirdEvent.enterRecent, feedback: companion);
+    await store.putSetting(_kLastVisit, now.toIso8601String());
     if (mounted) await _analyze();
     } catch (_) {
       if (mounted) setState(() => error = '本机记录暂时无法读取，请重试；原记录没有删除。');
@@ -137,15 +148,16 @@ class _LifePageState extends ConsumerState<LifePage> {
       final next = [...events, {'id': const Uuid().v4(), 'time': _now(), ...e}];
       await store.putSetting(_kEvents, jsonEncode(next));
       events = next;
-      justRecorded = true;
+      final g = e['glucose'];
+      bird = birdReact(bird.mood, g is num ? (g >= target.$1 && g <= target.$2 ? BirdEvent.glucoseInRange : BirdEvent.glucoseOutOfRange) : BirdEvent.checkIn, feedback: companion);
+      await store.putSetting(_kLastVisit, ref.read(taskClockProvider)().toIso8601String());
       await _analyze();
-      if (mounted) {
-        final canAddGlucose = {'meal', 'medication', 'insulin'}.contains(e['type']) && e['taken'] != false;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text('已记录'),
-          duration: Duration(seconds: canAddGlucose ? 4 : 1),
-          action: canAddGlucose ? SnackBarAction(label: '顺便记血糖', onPressed: _askGlucose) : null,
-        ));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已记录'), duration: Duration(seconds: 1)));
+      // 组员设计：打卡吃饭/吃药/打针后，接着询问这次的血糖（没测可以跳过）
+      if ({'meal', 'medication', 'insulin'}.contains(e['type']) && e['taken'] != false) {
+        adding = false;
+        await _askGlucose(afterCheckIn: true);
       }
     } catch (_) {
       if (mounted) setState(() => error = '记录未能完成，请检查后重试。');
@@ -202,15 +214,16 @@ class _LifePageState extends ConsumerState<LifePage> {
     if (m != null) await _add({'type': 'exercise', 'minutes': m});
   }
 
-  Future<void> _askGlucose() async {
+  Future<void> _askGlucose({bool afterCheckIn = false}) async {
     final c = TextEditingController();
     final v = await showDialog<double>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('血糖（mmol/L）'),
-        content: TextField(controller: c, keyboardType: const TextInputType.numberWithOptions(decimal: true), autofocus: true),
+        title: Text(afterCheckIn ? '这次测了血糖吗？' : '记录血糖'),
+        content: TextField(key: const Key('glucose_input'), controller: c, keyboardType: const TextInputType.numberWithOptions(decimal: true), autofocus: true,
+            decoration: InputDecoration(suffixText: 'mmol/L', helperText: '会和你设定的目标 ${target.$1}–${target.$2} 对照')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(key: const Key('glucose_skip'), onPressed: () => Navigator.pop(ctx), child: Text(afterCheckIn ? '没测，跳过' : '取消')),
           FilledButton(onPressed: () => Navigator.pop(ctx, double.tryParse(c.text.trim())), child: const Text('记录')),
         ],
       ),
@@ -246,13 +259,20 @@ class _LifePageState extends ConsumerState<LifePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (onboarded == false) {
+      return LifeSetupPage(now: ref.read(taskClockProvider)(), target: target, mealTimes: mealTimes,
+          medTimes: [for (final s in schedule) if (s['task'] == 'medication') s['time'] as String],
+          insulinTimes: [for (final s in schedule) if (s['task'] == 'insulin') s['time'] as String],
+          onDone: _finishSetup);
+    }
     final r = result;
     final reminders = ref.watch(remindersProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('生活打卡 · 珍珠鸟陪伴'), actions: [
         PopupMenuButton<String>(
-          onSelected: (v) => v == 'demo' ? _loadDemo() : _clear(),
+          onSelected: (v) => v == 'demo' ? _loadDemo() : v == 'setup' ? setState(() => onboarded = false) : _clear(),
           itemBuilder: (_) => const [
+            PopupMenuItem(value: 'setup', child: Text('重新设置目标时间与血糖')),
             PopupMenuItem(value: 'demo', child: Text('载入两周示例记录（演示用）')),
             PopupMenuItem(value: 'clear', child: Text('清空生活与任务记录')),
           ],
@@ -264,7 +284,7 @@ class _LifePageState extends ConsumerState<LifePage> {
         if (reminders.error != null) Card(child: Padding(padding: const EdgeInsets.all(12), child: Text(reminders.error!))),
         if (demo) const Text('合成演示数据：不合并个人任务记录。请先清空演示，再记录自己的生活。', style: TextStyle(color: Colors.deepOrange)),
         _Greeting(now: ref.read(taskClockProvider)()),
-        if (companion) _BirdCard(summary: companionSummary(projected, ref.read(taskClockProvider)(), justRecorded: justRecorded)),
+        if (companion) _BirdCard(state: bird, summary: companionSummary(projected, ref.read(taskClockProvider)())),
         if (r != null)
           for (final a in (r['alerts'] as List)) _AlertCard(a as Map<String, dynamic>),
         if (r?['pet']?['safety_note'] != null) _AlertCard({'level': 'yellow', 'title': '已记录的用药疑问', 'text': r!['pet']['safety_note']}),
@@ -282,7 +302,7 @@ class _LifePageState extends ConsumerState<LifePage> {
           crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 2.3,
           children: [
-            _tile('吃饭', Icons.restaurant, '打卡吃饭', '记录吃饭时间', const Color(0xFFFFE4E1), () => _add({'type': 'meal', 'meal_size': 'normal'})),
+            _tile('吃饭', Icons.restaurant, '打卡吃饭', _nextTime(mealTimes, '记录吃饭时间', '目标'), const Color(0xFFFFE4E1), () => _add({'type': 'meal', 'meal_size': 'normal'})),
             _tile('吃了药', Icons.medication, '打卡吃药', _planText('medication'), const Color(0xFFE3F4EA), () => _add({'type': 'medication', 'taken': true})),
             _tile('打了胰岛素', Icons.vaccines, '打卡打针', _planText('insulin'), const Color(0xFFECE8FB), () => _add({'type': 'insulin', 'insulin_kind': 'rapid', 'taken': true})),
             _tile('日常记录', Icons.edit_note, '日常记录', '运动、睡眠、补记', const Color(0xFFFFF1D6), _openDaily),
@@ -377,12 +397,41 @@ class _LifePageState extends ConsumerState<LifePage> {
       );
 
   /// 打卡瓷砖上显示今天下一次按医嘱的时间。
-  String _planText(String task) {
-    final times = [for (final s in schedule) if (s['task'] == task) s['time'] as String]..sort();
-    if (times.isEmpty) return '记录当前时间';
+  String _planText(String task) =>
+      _nextTime([for (final s in schedule) if (s['task'] == task) s['time'] as String], '记录当前时间', '医嘱时间');
+
+  String _nextTime(List<String> raw, String empty, String prefix) {
+    final times = [...raw]..sort();
+    if (times.isEmpty) return empty;
     final now = ref.read(taskClockProvider)();
     final hm = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    return '医嘱时间 ${times.firstWhere((t) => t.compareTo(hm) >= 0, orElse: () => times.first)}';
+    return '$prefix ${times.firstWhere((t) => t.compareTo(hm) >= 0, orElse: () => times.first)}';
+  }
+
+  /// 首次设置完成：保存初始血糖、目标时间与目标血糖范围。
+  Future<void> _finishSetup(SetupResult r) async {
+    if (r.glucose != null) {
+      events = [...events, {'id': const Uuid().v4(), 'time': r.time.toIso8601String().substring(0, 19), 'type': 'glucose', 'glucose': r.glucose}];
+      await store.putSetting(_kEvents, jsonEncode(events));
+    }
+    for (final (task, times) in [('medication', r.medTimes), ('insulin', r.insulinTimes)]) {
+      for (final t in times) {
+        if (!schedule.any((s) => s['task'] == task && s['time'] == t)) {
+          schedule.add({'id': const Uuid().v4(), 'task': task, 'time': t, 'label': '按医嘱'});
+        }
+      }
+    }
+    mealTimes = r.mealTimes;
+    target = r.target;
+    await store.putSetting(_kMeals, jsonEncode(mealTimes));
+    await store.putSetting(_kTarget, '${target.$1}-${target.$2}');
+    await store.putSetting(_kOnboarded, 'true');
+    await _save();
+    final g = r.glucose;
+    bird = g == null ? birdReact(bird.mood, BirdEvent.enterRecent)
+        : birdReact(bird.mood, g >= target.$1 && g <= target.$2 ? BirdEvent.glucoseInRange : BirdEvent.glucoseOutOfRange, feedback: companion);
+    setState(() => onboarded = true);
+    await _analyze();
   }
 
   Future<void> _openDaily() => showModalBottomSheet<void>(
@@ -520,38 +569,36 @@ class _Greeting extends StatelessWidget {
       );
 }
 
-class _BirdCard extends ConsumerWidget {
+class _BirdCard extends StatelessWidget {
+  final BirdState state;
   final CompanionSummary summary;
-  const _BirdCard({required this.summary});
+  const _BirdCard({required this.state, required this.summary});
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mood = summary.mood();
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(colors: [Color(0xFFFFE6D6), Color(0xFFFFF4EA), Color(0xFFEFF3E6)],
-            begin: Alignment.topLeft, end: Alignment.bottomRight),
-      ),
-      child: Row(children: [
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(20)),
-            child: Text(birdMoodLabel[mood]!, key: const Key('bird_mood_label'),
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5E7D4F))),
-          ),
-          const SizedBox(height: 10),
-          Text(summary.messageFor(mood), key: const Key('pet_message'),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.4, color: Color(0xFF4A3A30))),
-          const SizedBox(height: 8),
-          const Text('珍珠鸟只回应有没有记录，不代表您的健康状况。',
-              style: TextStyle(fontSize: 12, color: Colors.black45)),
-        ])),
-        InteractiveBunny(size: 78, mood: mood),
-      ]),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: const LinearGradient(colors: [Color(0xFFFFE6D6), Color(0xFFFFF4EA), Color(0xFFEFF3E6)],
+              begin: Alignment.topLeft, end: Alignment.bottomRight),
+        ),
+        child: Row(children: [
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(20)),
+              child: Text(birdMoodLabel[state.mood]!, key: const Key('bird_mood_label'),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5E7D4F))),
+            ),
+            const SizedBox(height: 10),
+            Text(state.message, key: const Key('pet_message'),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.4, color: Color(0xFF4A3A30))),
+            const SizedBox(height: 8),
+            Text(summary.records > 0 ? '今天已经记下 ${summary.records} 条记录' : '还没有今天的记录也没关系',
+                key: const Key('today_records'), style: const TextStyle(fontSize: 12, color: Colors.black54)),
+          ])),
+          InteractiveBunny(size: 78, mood: state.mood),
+        ]),
+      );
 }
 
 class _GlucoseOverview extends StatelessWidget {

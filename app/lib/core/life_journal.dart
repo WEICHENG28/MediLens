@@ -39,54 +39,55 @@ List<Map<String, dynamic>> effectiveLifeEvents(List<Map<String, dynamic>> manual
   return result;
 }
 
-/// 珍珠鸟的四种状态。只回应「有没有记录」，从不随血糖数值或漏药变化。
+/// 珍珠鸟的四种状态（组员绘制：图3 日常、图4 开心跳跃、图2 低落、图1 恢复精神）。
 enum BirdMood { normal, happy, low, recover }
 
-const birdMoodLabel = {BirdMood.normal: '日常陪伴', BirdMood.happy: '开心加油', BirdMood.low: '有点想你', BirdMood.recover: '正在恢复'};
+const birdMoodLabel = {BirdMood.normal: '日常陪伴', BirdMood.happy: '开心加油', BirdMood.low: '有点想你', BirdMood.recover: '打起精神'};
+
+/// 多久没打开生活打卡，再进来时小鸟显示「有点想你」（组员设计：3 小时）。
+const birdIdle = Duration(hours: 3);
+
+enum BirdEvent { enterRecent, enterAfterIdle, checkIn, glucoseInRange, glucoseOutOfRange }
+
+/// 小鸟对用户行为的反应（组员设计，两处调整见 assets/pet/SOURCE.md）：
+/// - 超过 3 小时再进来 → 有点想你；开始打卡后 → 打起精神。
+/// - 打卡、记录的血糖在自己设定的范围内 → 开心跳跃。
+/// - 血糖超出范围 → 打起精神并给予关心，而不是低落：不让患者因数值自责，也避免为了让小鸟开心而少记高值。
+/// - 关闭「陪伴反馈」时，不显示「有点想你」。
+class BirdState {
+  final BirdMood mood;
+  final String message;
+  const BirdState(this.mood, this.message);
+}
+
+BirdState birdReact(BirdMood current, BirdEvent event, {bool feedback = true}) => switch (event) {
+      BirdEvent.enterAfterIdle when feedback =>
+        const BirdState(BirdMood.low, '好一会儿没见到你啦，珍珠鸟有点想你。不用着急，我们慢慢开始。'),
+      BirdEvent.enterAfterIdle || BirdEvent.enterRecent =>
+        const BirdState(BirdMood.normal, '珍珠鸟在这里陪着你。想记的时候，点下面的按钮就好。'),
+      BirdEvent.checkIn when current == BirdMood.low =>
+        const BirdState(BirdMood.recover, '你回来啦！珍珠鸟又有精神了，我们一步一步来。'),
+      BirdEvent.checkIn => const BirdState(BirdMood.happy, '记好啦！谢谢你照顾自己，珍珠鸟为你开心。'),
+      BirdEvent.glucoseInRange => const BirdState(BirdMood.happy, '耶！这次记录在你的目标范围内，珍珠鸟为你开心～'),
+      BirdEvent.glucoseOutOfRange => const BirdState(BirdMood.recover,
+          '这次在目标范围外。愿意记下来就很重要，珍珠鸟陪你继续按计划来；如果身体不舒服，请及时联系医生。'),
+    };
 
 class CompanionSummary {
   final int records; // 今天的记录数
-  final int? daysSinceBefore; // 今天之前，距离最近一次记录的天数；null 表示以前没有记录
-  final bool justRecorded; // 刚完成一次打卡（页面内的即时反馈）
-  const CompanionSummary(this.records, {this.daysSinceBefore, this.justRecorded = false});
-
-  /// 隔了 2 天以上才回来，或者 2 天以上没有记录，才显示「恢复 / 想你」；关闭陪伴反馈时只显示日常与开心。
-  BirdMood mood({bool feedback = true}) {
-    if (justRecorded) return BirdMood.happy;
-    final away = (daysSinceBefore ?? 0) >= 2;
-    if (records > 0) return away && feedback ? BirdMood.recover : BirdMood.normal;
-    return away && feedback ? BirdMood.low : BirdMood.normal;
-  }
-
-  String messageFor(BirdMood m) => switch (m) {
-        BirdMood.happy => '记好啦！今天已经记下 $records 条记录，珍珠鸟为你开心。',
-        BirdMood.recover => '你回来啦！今天已经记下 $records 条记录，珍珠鸟又有精神了，我们一步一步来。',
-        BirdMood.low => '好一会儿没见到你啦。不用着急，想记的时候我们再慢慢开始。',
-        BirdMood.normal => message,
-      };
-
+  const CompanionSummary(this.records);
   String get message => records > 0
       ? '今天已经记下 $records 条记录，谢谢你照顾自己。珍珠鸟会陪你一步一步来。'
       : '还没有今天的记录也没关系，珍珠鸟在这里陪着你。想记的时候，我们再慢慢来。';
   String get energy => records > 0 ? '活泼' : '平静';
 }
 
-CompanionSummary companionSummary(List<Map<String, dynamic>> events, DateTime now, {bool justRecorded = false}) {
+CompanionSummary companionSummary(List<Map<String, dynamic>> events, DateTime now) {
   final day = now.toIso8601String().substring(0, 10);
-  final today = DateTime(now.year, now.month, now.day);
-  var records = 0;
-  DateTime? lastBefore;
-  for (final e in events) {
+  return CompanionSummary(events.where((e) {
     final time = DateTime.tryParse(e['time'] as String? ?? '');
-    if (time == null || time.isAfter(now) || e['type'] == 'reminder') continue;
-    if ((e['time'] as String).startsWith(day)) {
-      records++;
-    } else if (time.isBefore(today) && (lastBefore == null || time.isAfter(lastBefore))) {
-      lastBefore = time;
-    }
-  }
-  final gap = lastBefore == null ? null : today.difference(DateTime(lastBefore.year, lastBefore.month, lastBefore.day)).inDays;
-  return CompanionSummary(records, daysSinceBefore: gap, justRecorded: justRecorded && records > 0);
+    return time != null && !time.isAfter(now) && (e['time'] as String).startsWith(day) && e['type'] != 'reminder';
+  }).length);
 }
 
 Future<void> updateLocalCompanion(LocalStore store, DateTime now) async {

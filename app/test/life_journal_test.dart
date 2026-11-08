@@ -77,6 +77,7 @@ void main() {
   testWidgets('离线也显示温和反馈，任务后手动打卡要明确选择是否同一次', (t) async {
     await container.read(taskReceiptsProvider.notifier).record(task('one'), now);
     final api = OfflineApi();
+    await store.putSetting('life_onboarded', 'true'); // 已完成首次设置的用户
     t.view.physicalSize = const Size(1080, 2400); t.view.devicePixelRatio = 2.75; addTearDown(t.view.reset);
     await t.pumpWidget(ProviderScope(overrides: [localStoreProvider.overrideWithValue(store),
       apiClientProvider.overrideWithValue(api), taskClockProvider.overrideWithValue(() => now)],
@@ -92,6 +93,7 @@ void main() {
     expect(await store.getSetting('life_events'), isNull);
     await t.tap(find.byKey(const Key('life_吃了药'))); await t.pumpAndSettle();
     await t.tap(find.text('不是同一次，另记一次')); await t.pumpAndSettle();
+    await t.tap(find.byKey(const Key('glucose_skip'))); await t.pumpAndSettle(); // 打卡后询问血糖：这次没测
     expect(await loadManualEvents(store), hasLength(1));
     expect(api.bodies.last['events'] as List, hasLength(2));
     await t.drag(find.byType(ListView).first, const Offset(0, 3000)); await t.pumpAndSettle(); // 回到顶部看珍珠鸟卡片
