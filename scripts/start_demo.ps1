@@ -71,8 +71,33 @@ if (-not $backendOk) {
 Write-Host "后端正常" -ForegroundColor Green
 }
 
-# 2. 模拟器
-Step "2/4 检查 Android 模拟器"
+# 2. 先构建 APK（需要时），再开模拟器：两件重活不同时进行
+Step "2/4 准备 APP"
+$built = if (Test-Path $Marker) { (Get-Content $Marker -Raw).Trim() } else { "" }
+if ($Rebuild -or -not (Test-Path $Apk) -or $built -ne $Target) {
+    # 构建非常占用内存与 CPU：与模拟器同时运行时，模拟器程序会崩溃（看起来像 APP 闪退），所以先关模拟器、构建完再打开
+    if ((adb devices) -match "emulator-\d+\s+device") {
+        Write-Host "构建期间先关闭模拟器（同时运行会让模拟器崩溃），构建完会自动重新打开..." -ForegroundColor Yellow
+        adb emu kill 2>&1 | Out-Null
+        for ($i = 0; $i -lt 20 -and ((adb devices) -match "emulator-\d+"); $i++) { Start-Sleep 2 }
+    }
+    Write-Host "构建 APK（连接：$Target，约 2–5 分钟）..."
+    $defines = @()
+    if ($UseServer) { $defines = @("--dart-define=API_BASE_URL=$Server", "--dart-define=API_TOKEN=$Token") }
+    Push-Location (Join-Path $Root "app")
+    flutter build apk --debug --split-per-abi --target-platform android-x64 @defines
+    Pop-Location
+    $buildFailed = $LASTEXITCODE -ne 0
+    # 构建结束后关闭留在背景的 Gradle/Kotlin 程序（约占 1–2 GB 内存）；内存不足时模拟器会整个重启，看起来像 APP 闪退
+    Get-CimInstance Win32_Process -Filter "Name='java.exe'" | Where-Object { $_.CommandLine -match "GradleDaemon|KotlinCompileDaemon" } |
+        ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    if ($buildFailed) { Write-Host "构建失败" -ForegroundColor Red; exit 1 }
+    Set-Content -Path $Marker -Value $Target -Encoding UTF8
+}
+Write-Host "APP 已准备好" -ForegroundColor Green
+
+# 3. 模拟器
+Step "3/4 启动模拟器并安装 APP"
 $devices = (adb devices) -match "emulator-\d+\s+device"
 if (-not $devices) {
     Write-Host "启动模拟器 MediLens_API35（首次约 1 分钟）..."
@@ -91,23 +116,6 @@ Start-Sleep 3
 & (Join-Path $PSScriptRoot "fit_emulator_window.ps1")
 Write-Host "模拟器已就绪" -ForegroundColor Green
 
-# 3. APK
-Step "3/4 安装 APP"
-$built = if (Test-Path $Marker) { (Get-Content $Marker -Raw).Trim() } else { "" }
-if ($Rebuild -or -not (Test-Path $Apk) -or $built -ne $Target) {
-    Write-Host "构建 APK（连接：$Target，约 2–5 分钟）..."
-    $defines = @()
-    if ($UseServer) { $defines = @("--dart-define=API_BASE_URL=$Server", "--dart-define=API_TOKEN=$Token") }
-    Push-Location (Join-Path $Root "app")
-    flutter build apk --debug --split-per-abi --target-platform android-x64 @defines
-    Pop-Location
-    $buildFailed = $LASTEXITCODE -ne 0
-    # 构建结束后关闭留在背景的 Gradle/Kotlin 程序（约占 1–2 GB 内存）；内存不足时模拟器会整个重启，看起来像 APP 闪退
-    Get-CimInstance Win32_Process -Filter "Name='java.exe'" | Where-Object { $_.CommandLine -match "GradleDaemon|KotlinCompileDaemon" } |
-        ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-    if ($buildFailed) { Write-Host "构建失败" -ForegroundColor Red; exit 1 }
-    Set-Content -Path $Marker -Value $Target -Encoding UTF8
-}
 # -d 允许版本回退（模拟器上可能装过版本号较大的单架构版 APK）；仍失败则卸载重装
 $out = (adb install -r -d $Apk 2>&1) -join " "
 if ($out -notmatch "Success") {

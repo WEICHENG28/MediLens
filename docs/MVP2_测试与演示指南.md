@@ -7,10 +7,16 @@
 在仓库根目录 `D:\MediLens` 打开 PowerShell，执行：
 
 ```powershell
+# 平常测试 / 演示（约 1 分钟）
+powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1
+
+# 刚从 GitHub 拉了新代码、或改过 APP 代码时才加 -Rebuild（多 2–5 分钟）
 powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1 -Rebuild
 ```
 
-脚本会依次：**确认学校服务器**（http://101.6.162.67:8000，需在校园网内）→ 启动模拟器 → 安装 APP → 打开 MediLens。看到「已在模拟器中打开 MediLens」即可。
+脚本会依次：**确认学校服务器**（http://101.6.162.67:8000，需在校园网内）→（需要时）构建 APK → 启动模拟器 → 安装 APP → 打开 MediLens。看到「已在模拟器中打开 MediLens」即可。
+
+> **为什么不要每次都加 `-Rebuild`**：构建 APK 非常占用内存与 CPU，过去和模拟器同时运行时，模拟器程序会整个崩溃（看起来像 APP 闪退）。现在脚本会在构建前先关闭模拟器、构建完再打开，但构建仍要多等几分钟，没改代码时不需要。
 
 - **默认连学校服务器**（读取本机 `.env` 里的 `MEDILENS_SERVER` / `MEDILENS_TOKEN`），不需要在电脑上开后端。
 - **连不上服务器时自动改用本机后端**（背景运行，记录写入 `backend\backend.log`），并自动重新打包连本机的 APK；结束后执行脚本最后显示的 `taskkill` 指令关闭后端。
