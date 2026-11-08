@@ -7,7 +7,7 @@
 在仓库根目录 `D:\MediLens` 打开 PowerShell，执行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1
+powershell -ExecutionPolicy Bypass -File scripts\start_demo.ps1 -Rebuild
 ```
 
 脚本会依次：**确认学校服务器**（http://101.6.162.67:8000，需在校园网内）→ 启动模拟器 → 安装 APP → 打开 MediLens。看到「已在模拟器中打开 MediLens」即可。

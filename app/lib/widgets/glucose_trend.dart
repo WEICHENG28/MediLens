@@ -12,16 +12,36 @@ String rangeLabel(double v, (double, double) target) =>
     v < target.$1 ? '低于目标范围' : v > target.$2 ? '高于目标范围' : '在目标范围内';
 
 /// 指定时间窗内的血糖记录（按时间排序）。
-List<(DateTime, double)> glucosePoints(List<Map<String, dynamic>> events, DateTime from, DateTime to) {
-  final out = <(DateTime, double)>[];
+List<(DateTime, double)> glucosePoints(List<Map<String, dynamic>> events, DateTime from, DateTime to) =>
+    [for (final r in glucoseRecords(events, from, to)) (r.time, r.value)];
+
+const _afterName = {'meal': '吃饭后', 'medication': '吃药后', 'insulin': '打针后', 'setup': '初始血糖'};
+
+class GlucoseRecord {
+  final DateTime time;
+  final double value;
+  final String label; // 吃饭后 / 吃药后 / 打针后 / 初始血糖 / 血糖
+  const GlucoseRecord(this.time, this.value, this.label);
+}
+
+List<GlucoseRecord> glucoseRecords(List<Map<String, dynamic>> events, DateTime from, DateTime to) {
+  final out = <GlucoseRecord>[];
   for (final e in events) {
     if (e['type'] != 'glucose' || e['glucose'] is! num) continue;
     final t = DateTime.tryParse(e['time'] as String? ?? '');
     if (t == null || t.isBefore(from) || t.isAfter(to)) continue;
-    out.add((t, (e['glucose'] as num).toDouble()));
+    out.add(GlucoseRecord(t, (e['glucose'] as num).toDouble(), _afterName[e['after']] ?? '血糖'));
   }
-  out.sort((a, b) => a.$1.compareTo(b.$1));
+  out.sort((a, b) => a.time.compareTo(b.time));
   return out;
+}
+
+/// 最高 / 平均 / 最低（只用已记录的数值，保留一位小数）。
+(double, double, double)? glucoseStats(List<GlucoseRecord> rs) {
+  if (rs.isEmpty) return null;
+  final v = rs.map((r) => r.value).toList();
+  double r1(double x) => (x * 10).roundToDouble() / 10;
+  return (r1(v.reduce((a, b) => a > b ? a : b)), r1(v.reduce((a, b) => a + b) / v.length), r1(v.reduce((a, b) => a < b ? a : b)));
 }
 
 class GlucoseTrendSheet extends StatefulWidget {
@@ -40,10 +60,12 @@ class _GlucoseTrendSheetState extends State<GlucoseTrendSheet> {
   @override
   Widget build(BuildContext context) {
     final from = widget.now.subtract(Duration(days: days));
-    final pts = glucosePoints(widget.events, from, widget.now);
+    final records = glucoseRecords(widget.events, from, widget.now);
+    final pts = [for (final r in records) (r.time, r.value)];
+    final stats = glucoseStats(records);
     final inRange = pts.where((p) => p.$2 >= widget.target.$1 && p.$2 <= widget.target.$2).length;
     final small = Theme.of(context).textTheme.bodySmall;
-    return SafeArea(child: Padding(
+    return SafeArea(child: SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -76,6 +98,38 @@ class _GlucoseTrendSheetState extends State<GlucoseTrendSheet> {
         const SizedBox(height: 4),
         Text(pts.isEmpty ? '图表只显示已录入的数据。' : '共 ${pts.length} 次记录，其中 $inRange 次在目标范围内。图表只显示已录入的数据，变化的意义请与医生讨论。',
             key: const Key('trend_summary'), style: small),
+        if (stats != null) ...[
+          const SizedBox(height: 12),
+          Row(children: [
+            for (final (label, v) in [('最高', stats.$1), ('平均', stats.$2), ('最低', stats.$3)])
+              Expanded(child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(color: const Color(0xFFFFF8F2), borderRadius: BorderRadius.circular(12)),
+                child: Column(children: [
+                  Text('$v', key: Key('stat_$label'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('$label · mmol/L', style: small),
+                ]),
+              )),
+          ]),
+          const SizedBox(height: 12),
+          Text('本期间记录', style: Theme.of(context).textTheme.titleSmall),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 220),
+            child: ListView(shrinkWrap: true, children: [
+              for (final r in records.reversed)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(switch (r.label) { '吃饭后' => Icons.restaurant, '吃药后' => Icons.medication,
+                      '打针后' => Icons.vaccines, _ => Icons.bloodtype_outlined }, color: Colors.black45),
+                  title: Text(r.label),
+                  subtitle: Text('${r.time.month}月${r.time.day}日 ${r.time.hour.toString().padLeft(2, '0')}:${r.time.minute.toString().padLeft(2, '0')}'),
+                  trailing: Text('${r.value} mmol/L', style: const TextStyle(fontWeight: FontWeight.w600)),
+                ),
+            ]),
+          ),
+        ],
       ]),
     ));
   }

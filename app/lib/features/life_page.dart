@@ -18,6 +18,7 @@ import '../data/local_store.dart';
 import '../widgets/glucose_trend.dart';
 import 'life_setup_page.dart';
 import '../widgets/interactive_bunny.dart';
+import '../widgets/voice_note_field.dart';
 
 const _kEvents = 'life_events';
 const _kSchedule = 'life_schedule';
@@ -102,7 +103,7 @@ class _LifePageState extends ConsumerState<LifePage> {
       if (!mounted) return;
       if (projected.isEmpty && tasks.isEmpty) { setState(() { result = null; error = null; }); return; }
       final r = await ref.read(apiClientProvider).lifestyle({
-        'events': (projected.length > 3000 ? projected.sublist(projected.length - 3000) : projected).map((e) => {
+        'events': [for (final e in projected) if (e['type'] != 'note') e].reversed.take(3000).toList().reversed.map((e) => {
           for (final key in ['type', 'time', 'taken', 'insulin_kind', 'meal_size', 'minutes', 'glucose', 'task', 'slot'])
             if (e.containsKey(key)) key: e[key],
         }).toList(),
@@ -157,7 +158,7 @@ class _LifePageState extends ConsumerState<LifePage> {
       // 组员设计：打卡吃饭/吃药/打针后，接着询问这次的血糖（没测可以跳过）
       if ({'meal', 'medication', 'insulin'}.contains(e['type']) && e['taken'] != false) {
         adding = false;
-        await _askGlucose(afterCheckIn: true);
+        await _askGlucose(after: e['type'] as String);
       }
     } catch (_) {
       if (mounted) setState(() => error = '记录未能完成，请检查后重试。');
@@ -214,21 +215,36 @@ class _LifePageState extends ConsumerState<LifePage> {
     if (m != null) await _add({'type': 'exercise', 'minutes': m});
   }
 
-  Future<void> _askGlucose({bool afterCheckIn = false}) async {
+  static const _checkInName = {'meal': '打卡吃饭', 'medication': '打卡吃药', 'insulin': '打卡打针'};
+
+  /// after：刚完成的打卡类型（吃饭/吃药/打针），血糖会标注「X 后」，并在弹窗上显示打卡时间。
+  Future<void> _askGlucose({String? after}) async {
+    final afterCheckIn = after != null;
     final c = TextEditingController();
+    final at = ref.read(taskClockProvider)();
+    final hm = '${at.month}月${at.day}日 ${at.hour.toString().padLeft(2, '0')}:${at.minute.toString().padLeft(2, '0')}';
     final v = await showDialog<double>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(afterCheckIn ? '这次测了血糖吗？' : '记录血糖'),
-        content: TextField(key: const Key('glucose_input'), controller: c, keyboardType: const TextInputType.numberWithOptions(decimal: true), autofocus: true,
-            decoration: InputDecoration(suffixText: 'mmol/L', helperText: '会和你设定的目标 ${target.$1}–${target.$2} 对照')),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (afterCheckIn) Container(
+            key: const Key('checkin_time'),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(color: const Color(0xFFE3F4EA), borderRadius: BorderRadius.circular(8)),
+            child: Text('已记录${_checkInName[after]} · $hm'),
+          ),
+          TextField(key: const Key('glucose_input'), controller: c, keyboardType: const TextInputType.numberWithOptions(decimal: true), autofocus: true,
+              decoration: InputDecoration(labelText: '本次血糖', suffixText: 'mmol/L', helperText: '会和你设定的目标 ${target.$1}–${target.$2} 对照')),
+        ]),
         actions: [
           TextButton(key: const Key('glucose_skip'), onPressed: () => Navigator.pop(ctx), child: Text(afterCheckIn ? '没测，跳过' : '取消')),
           FilledButton(onPressed: () => Navigator.pop(ctx, double.tryParse(c.text.trim())), child: const Text('记录')),
         ],
       ),
     );
-    if (v != null && v > 0 && v < 40) await _add({'type': 'glucose', 'glucose': v});
+    if (v != null && v > 0 && v < 40) await _add({'type': 'glucose', 'glucose': v, 'after': ?after});
   }
 
   Future<void> _addSchedule() async {
@@ -411,7 +427,7 @@ class _LifePageState extends ConsumerState<LifePage> {
   /// 首次设置完成：保存初始血糖、目标时间与目标血糖范围。
   Future<void> _finishSetup(SetupResult r) async {
     if (r.glucose != null) {
-      events = [...events, {'id': const Uuid().v4(), 'time': r.time.toIso8601String().substring(0, 19), 'type': 'glucose', 'glucose': r.glucose}];
+      events = [...events, {'id': const Uuid().v4(), 'time': r.time.toIso8601String().substring(0, 19), 'type': 'glucose', 'glucose': r.glucose, 'after': 'setup'}];
       await store.putSetting(_kEvents, jsonEncode(events));
     }
     for (final (task, times) in [('medication', r.medTimes), ('insulin', r.insulinTimes)]) {
@@ -434,16 +450,45 @@ class _LifePageState extends ConsumerState<LifePage> {
     await _analyze();
   }
 
-  Future<void> _openDaily() => showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        builder: (c) => SafeArea(child: Padding(
+  Future<void> _openDaily() {
+    final note = TextEditingController();
+    final recent = [for (final e in events.reversed) if (e['type'] == 'note') e].take(3).toList();
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (c) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(c).bottom),
+        child: SafeArea(child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('日常记录', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
-            Text('也可以补记忘了的用药；记下来是为了复诊时说得清楚，不会扣分。', style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 12),
+            Text('可以打字，也可以点麦克风用说的。日记只保存在这台手机上，不会上传。', style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 10),
+            VoiceNoteField(controller: note),
+            Align(alignment: Alignment.centerRight, child: FilledButton.icon(
+              key: const Key('note_save'),
+              icon: const Icon(Icons.check, size: 18),
+              label: const Text('保存日记'),
+              onPressed: busy || demo ? null : () {
+                final text = note.text.trim();
+                if (text.isEmpty) return;
+                Navigator.pop(c);
+                _add({'type': 'note', 'text': text});
+              },
+            )),
+            if (recent.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('最近的日记', style: Theme.of(context).textTheme.titleSmall),
+              for (final e in recent)
+                Padding(padding: const EdgeInsets.only(top: 4), child: Text(
+                    '${(e['time'] as String).substring(5, 16).replaceFirst('T', ' ')}  ${e['text']}',
+                    maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall)),
+            ],
+            const Divider(height: 24),
+            Text('其他记录', style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 8),
             Wrap(spacing: 8, runSpacing: 8, children: [
               _chip(Icons.directions_walk, '运动', () { Navigator.pop(c); _askExercise(); }),
               _chip(Icons.bedtime, '睡觉', () { Navigator.pop(c); _add({'type': 'sleep'}); }),
@@ -454,7 +499,9 @@ class _LifePageState extends ConsumerState<LifePage> {
             ]),
           ]),
         )),
-      );
+      ),
+    );
+  }
 
   Future<void> _openTrend() => showModalBottomSheet<void>(
         context: context,
@@ -586,7 +633,7 @@ class _BirdCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(20)),
-              child: Text(birdMoodLabel[state.mood]!, key: const Key('bird_mood_label'),
+              child: Text(state.label, key: const Key('bird_mood_label'),
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF5E7D4F))),
             ),
             const SizedBox(height: 10),

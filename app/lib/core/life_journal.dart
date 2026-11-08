@@ -42,35 +42,37 @@ List<Map<String, dynamic>> effectiveLifeEvents(List<Map<String, dynamic>> manual
 /// 珍珠鸟的四种状态（组员绘制：图3 日常、图4 开心跳跃、图2 低落、图1 恢复精神）。
 enum BirdMood { normal, happy, low, recover }
 
-const birdMoodLabel = {BirdMood.normal: '日常陪伴', BirdMood.happy: '开心加油', BirdMood.low: '有点想你', BirdMood.recover: '打起精神'};
+const birdMoodLabel = {BirdMood.normal: '日常陪伴', BirdMood.happy: '开心加油', BirdMood.low: '有点担心', BirdMood.recover: '打起精神'};
 
 /// 多久没打开生活打卡，再进来时小鸟显示「有点想你」（组员设计：3 小时）。
 const birdIdle = Duration(hours: 3);
 
 enum BirdEvent { enterRecent, enterAfterIdle, checkIn, glucoseInRange, glucoseOutOfRange }
 
-/// 小鸟对用户行为的反应（组员设计，两处调整见 assets/pet/SOURCE.md）：
-/// - 超过 3 小时再进来 → 有点想你；开始打卡后 → 打起精神。
-/// - 打卡、记录的血糖在自己设定的范围内 → 开心跳跃。
-/// - 血糖超出范围 → 打起精神并给予关心，而不是低落：不让患者因数值自责，也避免为了让小鸟开心而少记高值。
+/// 小鸟对用户行为的反应（组员设计）：
+/// - 超过 3 小时再进来 → 有点想你（图2）；开始打卡后 → 打起精神（图1）。
+/// - 打卡、记录的血糖在自己设定的范围内 → 开心跳跃（图4）。
+/// - 血糖超出范围 → 闷闷不乐（图2），话语只表达关心、不责备，并提醒不舒服时联系医生。
 /// - 关闭「陪伴反馈」时，不显示「有点想你」。
 class BirdState {
   final BirdMood mood;
   final String message;
-  const BirdState(this.mood, this.message);
+  final String? tag; // 卡片上的状态小标签；为空时按状态显示默认文字
+  const BirdState(this.mood, this.message, {this.tag});
+  String get label => tag ?? birdMoodLabel[mood]!;
 }
 
 BirdState birdReact(BirdMood current, BirdEvent event, {bool feedback = true}) => switch (event) {
       BirdEvent.enterAfterIdle when feedback =>
-        const BirdState(BirdMood.low, '好一会儿没见到你啦，珍珠鸟有点想你。不用着急，我们慢慢开始。'),
+        const BirdState(BirdMood.low, '好一会儿没见到你啦，珍珠鸟有点想你。不用着急，我们慢慢开始。', tag: '有点想你'),
       BirdEvent.enterAfterIdle || BirdEvent.enterRecent =>
         const BirdState(BirdMood.normal, '珍珠鸟在这里陪着你。想记的时候，点下面的按钮就好。'),
       BirdEvent.checkIn when current == BirdMood.low =>
         const BirdState(BirdMood.recover, '你回来啦！珍珠鸟又有精神了，我们一步一步来。'),
       BirdEvent.checkIn => const BirdState(BirdMood.happy, '记好啦！谢谢你照顾自己，珍珠鸟为你开心。'),
       BirdEvent.glucoseInRange => const BirdState(BirdMood.happy, '耶！这次记录在你的目标范围内，珍珠鸟为你开心～'),
-      BirdEvent.glucoseOutOfRange => const BirdState(BirdMood.recover,
-          '这次在目标范围外。愿意记下来就很重要，珍珠鸟陪你继续按计划来；如果身体不舒服，请及时联系医生。'),
+      BirdEvent.glucoseOutOfRange => const BirdState(BirdMood.low,
+          '这次血糖不在你的目标范围内，珍珠鸟有点担心你。记下来就很好，多留意身体；如果不舒服，请及时联系医生。'),
     };
 
 class CompanionSummary {

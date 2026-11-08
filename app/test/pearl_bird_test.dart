@@ -14,9 +14,10 @@ Map<String, dynamic> ev(String time, [String type = 'meal', Map<String, dynamic>
     {'id': time, 'time': time, 'type': type, ...extra};
 
 class OfflineApi extends ApiClient {
+  final bodies = <Map<String, dynamic>>[];
   OfflineApi() : super('https://unused.invalid');
   @override
-  Future<Map<String, dynamic>> lifestyle(Map<String, dynamic> body) async => throw ApiException('合成测试：离线');
+  Future<Map<String, dynamic>> lifestyle(Map<String, dynamic> body) async { bodies.add(body); throw ApiException('合成测试：离线'); }
 }
 
 void main() {
@@ -32,12 +33,12 @@ void main() {
     expect(birdReact(BirdMood.normal, BirdEvent.enterAfterIdle, feedback: false).mood, BirdMood.normal);
   });
 
-  test('血糖在目标范围内开心跳跃；超出范围给予关心，不显示低落', () {
+  test('血糖在目标范围内开心跳跃；超出范围闷闷不乐，但话语不责备', () {
     expect(birdReact(BirdMood.normal, BirdEvent.glucoseInRange).mood, BirdMood.happy);
     final out = birdReact(BirdMood.normal, BirdEvent.glucoseOutOfRange);
-    expect(out.mood, isNot(BirdMood.low));
-    expect(out.message, contains('记下来就很重要'));
-    expect(out.message, isNot(contains('不好')));
+    expect(out.mood, BirdMood.low);
+    expect(out.message, contains('联系医生'));
+    for (final w in ['不好', '失败', '没控制', '怪']) { expect(out.message, isNot(contains(w))); }
   });
 
   test('今日记录数', () {
@@ -65,11 +66,26 @@ void main() {
     expect(glucosePoints(events, now.subtract(const Duration(days: 1)), now), hasLength(1));
   });
 
+  test('血糖记录标注打卡来源，并算出最高/平均/最低', () {
+    final events = [
+      ev('2026-11-08T07:00:00', 'glucose', {'glucose': 6.1, 'after': 'setup'}),
+      ev('2026-11-08T12:10:00', 'glucose', {'glucose': 7.0, 'after': 'medication'}),
+      ev('2026-11-08T18:30:00', 'glucose', {'glucose': 6.5, 'after': 'insulin'}),
+      ev('2026-11-08T19:00:00', 'glucose', {'glucose': 5.0}),
+    ];
+    final rs = glucoseRecords(events, now.subtract(const Duration(days: 1)), now);
+    expect(rs.map((r) => r.label), ['初始血糖', '吃药后', '打针后', '血糖']);
+    expect(glucoseStats(rs), (7.0, 6.2, 5.0));
+    expect(glucoseStats([]), isNull);
+  });
+
   testWidgets('血糖变化面板：可切换一天/一周/一月，没有记录时说明', (t) async {
     final events = [ev('2026-11-08T07:00:00', 'glucose', {'glucose': 12.0}), ev('2026-11-06T07:00:00', 'glucose', {'glucose': 6.0})];
     await t.pumpWidget(MaterialApp(home: Scaffold(body: GlucoseTrendSheet(events: events, target: (3.9, 10.0), now: now))));
     expect(find.byKey(const Key('trend_chart')), findsOneWidget);
     expect(find.textContaining('共 2 次记录，其中 1 次在目标范围内'), findsOneWidget);
+    expect(find.byKey(const Key('stat_最高')), findsOneWidget);
+    expect(find.text('本期间记录'), findsOneWidget);
     await t.tap(find.text('一天')); await t.pumpAndSettle();
     expect(find.textContaining('共 1 次记录'), findsOneWidget);
     await t.pumpWidget(MaterialApp(home: Scaffold(body: GlucoseTrendSheet(events: const [], target: (3.9, 10.0), now: now))));
@@ -96,6 +112,28 @@ void main() {
     expect(jsonDecode(await store.getSetting('life_meal_times') ?? '[]'), ['07:30', '12:00', '18:00']);
     final events = jsonDecode(await store.getSetting('life_events') ?? '[]') as List;
     expect(events.single['glucose'], 6.5);
+    await t.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('日常记录：文字日记只存在本机，不发送到服务器', (t) async {
+    final store = MemoryStore();
+    await store.putSetting('life_onboarded', 'true');
+    final api = OfflineApi();
+    t.view.physicalSize = const Size(1080, 2400); t.view.devicePixelRatio = 2.75; addTearDown(t.view.reset);
+    await t.pumpWidget(ProviderScope(overrides: [localStoreProvider.overrideWithValue(store),
+      apiClientProvider.overrideWithValue(api), taskClockProvider.overrideWithValue(() => now)],
+      child: const MaterialApp(home: LifePage())));
+    await t.pumpAndSettle();
+    await t.ensureVisible(find.byKey(const Key('life_日常记录')));
+    await t.tap(find.byKey(const Key('life_日常记录'))); await t.pumpAndSettle();
+    expect(find.byKey(const Key('voice_note_mic')), findsOneWidget);
+    await t.enterText(find.byKey(const Key('voice_note_text')), '今天有点累，脚有点麻');
+    await t.tap(find.byKey(const Key('note_save'))); await t.pumpAndSettle();
+    final events = jsonDecode(await store.getSetting('life_events') ?? '[]') as List;
+    expect(events.single['type'], 'note');
+    expect(events.single['text'], '今天有点累，脚有点麻');
+    expect(api.bodies.last['events'] as List, isEmpty);
+    expect(jsonEncode(api.bodies), isNot(contains('脚有点麻')));
     await t.pumpWidget(const SizedBox.shrink());
   });
 }

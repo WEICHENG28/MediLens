@@ -93,6 +93,7 @@ void main() {
     expect(await store.getSetting('life_events'), isNull);
     await t.tap(find.byKey(const Key('life_吃了药'))); await t.pumpAndSettle();
     await t.tap(find.text('不是同一次，另记一次')); await t.pumpAndSettle();
+    expect(find.textContaining('已记录打卡吃药'), findsOneWidget); // 弹窗显示这次打卡的时间
     await t.tap(find.byKey(const Key('glucose_skip'))); await t.pumpAndSettle(); // 打卡后询问血糖：这次没测
     expect(await loadManualEvents(store), hasLength(1));
     expect(api.bodies.last['events'] as List, hasLength(2));

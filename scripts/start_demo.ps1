@@ -99,7 +99,11 @@ if ($Rebuild -or -not (Test-Path $Apk) -or $built -ne $Target) {
     Push-Location (Join-Path $Root "app")
     flutter build apk --debug --split-per-abi --target-platform android-x64 @defines
     Pop-Location
-    if ($LASTEXITCODE -ne 0) { Write-Host "构建失败" -ForegroundColor Red; exit 1 }
+    $buildFailed = $LASTEXITCODE -ne 0
+    # 构建结束后关闭留在背景的 Gradle/Kotlin 程序（约占 1–2 GB 内存）；内存不足时模拟器会整个重启，看起来像 APP 闪退
+    Get-CimInstance Win32_Process -Filter "Name='java.exe'" | Where-Object { $_.CommandLine -match "GradleDaemon|KotlinCompileDaemon" } |
+        ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    if ($buildFailed) { Write-Host "构建失败" -ForegroundColor Red; exit 1 }
     Set-Content -Path $Marker -Value $Target -Encoding UTF8
 }
 # -d 允许版本回退（模拟器上可能装过版本号较大的单架构版 APK）；仍失败则卸载重装
