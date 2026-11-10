@@ -49,16 +49,6 @@ def cloud_ocr(_: CloudOcrConsent | None = None):
     return _pending("云端 OCR（仅注册用户，需单独授权后上传原图）", ["百度智能云 OCR", "腾讯云 OCR"])
 
 
-@router.post("/auth/register")
-def register():
-    return _pending("注册", [], "注册方式（手机号/邮箱）待产品确认")
-
-
-@router.post("/auth/login")
-def login():
-    return _pending("登录", [])
-
-
 @router.post("/backup/upload")
 def backup_upload():
     return _pending("可选云端备份（按类别：报告/结构化指标/对话）", ["阿里云 OSS", "腾讯云 COS"],

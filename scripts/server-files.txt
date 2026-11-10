@@ -1,6 +1,7 @@
 .env.example
 backend/Dockerfile
 backend/app/__init__.py
+backend/app/accounts.py
 backend/app/analysis.py
 backend/app/chat.py
 backend/app/config.py
@@ -28,6 +29,7 @@ backend/requirements.txt
 backend/tests/__init__.py
 backend/tests/conftest.py
 backend/tests/helpers.py
+backend/tests/test_accounts.py
 backend/tests/test_api.py
 backend/tests/test_chat.py
 backend/tests/test_knowledge.py

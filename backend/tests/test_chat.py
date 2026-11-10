@@ -146,7 +146,7 @@ def test_chat_api_and_pending_endpoints():
     r = client.post("/api/v1/chat", json=body)
     assert r.status_code == 200 and r.json()["provider"] == "mock"
     for path in ["/api/v1/voice/session", "/api/v1/medication/recognize", "/api/v1/ocr/cloud",
-                 "/api/v1/auth/register", "/api/v1/backup/upload"]:
+                 "/api/v1/backup/upload"]:
         resp = client.post(path)
         assert resp.status_code == 501 and "待实现" in resp.json()["message"]
     assert "interrupted" in client.get("/api/v1/voice/states").json()["states"]

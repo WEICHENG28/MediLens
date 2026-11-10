@@ -18,11 +18,13 @@ from .chat import ChatRequest, ChatResponse, ExplainRequest, ExplainResponse, ch
 from .followup import validate_answer
 from .llm import get_provider
 from .pending import router as pending_router
+from .accounts import router as accounts_router
 from .lifestyle import LifestyleRequest, LifestyleResponse, analyze_lifestyle
 from .schemas import AnalyzeRequest
 from .ocr_review import OcrReviewRequest, OcrReviewResponse, review as review_ocr
 
 app = FastAPI(title="MediLens API", version="0.2.0", docs_url="/docs", redoc_url=None)
+app.include_router(accounts_router)  # 用户名+密码账户与个人资料存储
 app.include_router(pending_router)
 
 

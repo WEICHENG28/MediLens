@@ -47,3 +47,4 @@ docs/screenshots/audit/
 docs/MediLens_report*.pdf
 backend/*.log
 node_modules/
+backend/data/
