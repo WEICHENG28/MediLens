@@ -6,6 +6,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
+import 'http_client.dart';
+
 import 'models.dart';
 import 'settings.dart';
 
@@ -29,7 +31,7 @@ class ApiClient {
   final String token; // 访问口令，空字符串表示不带
   final http.Client _http;
   ApiClient(this.baseUrl, [http.Client? client, this.token = ''])
-    : _http = client ?? http.Client();
+    : _http = client ?? createHttpClient();
 
   static Map<String, dynamic> analysisBody(
     ParsedReport report,

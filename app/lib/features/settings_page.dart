@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/auth.dart';
 import '../core/settings.dart';
 import '../core/medication_records.dart';
 import '../core/life_journal.dart';
@@ -25,7 +26,13 @@ class SettingsPage extends ConsumerWidget {
       appBar: AppBar(title: const Text('设置')),
       body: ListView(children: [
         head('账号'),
-        ListTile(leading: const Icon(Icons.person_outline), title: const Text('当前：游客'), subtitle: const Text('注册/登录（待实现）'), onTap: () => context.push('/auth')),
+        Builder(builder: (_) {
+          final auth = ref.watch(authProvider);
+          return ListTile(key: const Key('account_tile'), leading: Icon(auth.loggedIn ? Icons.account_circle : Icons.person_outline),
+              title: Text(auth.loggedIn ? '已登入：${auth.username}' : '当前：游客（记录不会保留）'),
+              subtitle: Text(auth.loggedIn ? '记录保存在你的账户；点这里修改密码、登出或删除账户' : '注册或登入后，记录会保存在你的账户'),
+              onTap: () => context.push('/auth'));
+        }),
         head('显示'),
         SwitchListTile(
           key: const Key('elder_switch'),

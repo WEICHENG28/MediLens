@@ -1,9 +1,12 @@
-// 设置中心的数据（统一管理常规偏好）。持久化在本地加密数据库中。
+// 设置中心的数据（统一管理常规偏好）。只存在这台设备（DeviceStore），不随账户上传。
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/device_store.dart';
 import '../data/local_store.dart';
 import 'theme.dart';
 
@@ -81,14 +84,29 @@ class SettingsNotifier extends Notifier<AppSettings> {
   @override
   AppSettings build() => const AppSettings();
 
+  /// 设置只存在这台设备（连接哪个服务器、显示模式等），不随账户上传；旧版存在本机数据库的会自动搬过来。
   Future<void> load() async {
-    final raw = await ref.read(localStoreProvider).getSetting('app_settings');
-    if (raw != null) state = AppSettings.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    try {
+      final device = ref.read(deviceStoreProvider);
+      var raw = await device.read('app_settings');
+      if (raw == null && !kIsWeb) {
+        final legacy = SqlCipherStore();
+        if (await legacy.exists()) {
+          raw = await legacy.getSetting('app_settings');
+          if (raw != null) await device.write('app_settings', raw);
+        }
+      }
+      if (raw != null) state = AppSettings.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      // 读不到时用默认设置
+    }
   }
 
   Future<void> update(AppSettings s) async {
     state = s;
-    await ref.read(localStoreProvider).putSetting('app_settings', jsonEncode(s.toJson()));
+    try {
+      await ref.read(deviceStoreProvider).write('app_settings', jsonEncode(s.toJson()));
+    } catch (_) {}
   }
 }
 

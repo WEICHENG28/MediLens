@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +9,7 @@ import 'core/pet_interaction.dart';
 import 'core/theme.dart';
 import 'features/life_page.dart';
 import 'features/reminder_page.dart';
+import 'features/auth_page.dart';
 import 'features/checkup_page.dart';
 import 'features/desktop_pet_page.dart';
 import 'features/chat_page.dart';
@@ -28,7 +29,6 @@ import 'features/speech_page.dart';
 import 'features/medication_page.dart';
 import 'features/medication_records_page.dart';
 import 'features/welcome_page.dart';
-import 'widgets/common.dart';
 
 GoRouter buildRouter(bool onboarded) => GoRouter(
       initialLocation: onboarded ? '/home' : '/welcome',
@@ -55,14 +55,7 @@ GoRouter buildRouter(bool onboarded) => GoRouter(
         GoRoute(path: '/voice', builder: (_, s) => VoicePage(focus: s.uri.queryParameters['focus'], initialDraft: s.extra is String ? s.extra as String : null)),
         GoRoute(path: '/medications-saved', builder: (_, _) => const MedicationRecordsPage()),
         GoRoute(path: '/medication', builder: (_, _) => const MedicationPage()),
-        GoRoute(
-          path: '/auth',
-          builder: (_, _) => const PendingFeaturePage(
-            title: '注册 / 登录',
-            description: '注册用于长期记录管理，推荐但不强制。注册不等于上传报告：默认仍只保存在本机，可在设置中按类别选择云端备份。游客升级注册时是否迁移本机历史由您选择，不会静默上传。',
-            plan: ['注册方式（手机号/邮箱）待产品确认', '可选云端 OCR（单独授权后才上传原图）', '可选云端备份/恢复（不等于多设备实时同步）'],
-          ),
-        ),
+        GoRoute(path: '/auth', builder: (_, _) => const AuthPage()),
         GoRoute(
           path: '/reminder',
           builder: (_, _) => const ReminderPage(),

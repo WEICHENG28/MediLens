@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pdfx/pdfx.dart';
 
+import '../core/auth.dart';
 import '../core/session.dart';
 import '../ocr/ocr_engine.dart';
 import '../widgets/common.dart';
@@ -112,6 +113,18 @@ class HomePage extends ConsumerWidget {
         IconButton(tooltip: '设置', icon: const Icon(Icons.settings_outlined), onPressed: () => context.push('/settings')),
       ]),
       body: ListView(padding: const EdgeInsets.all(20), children: [
+        if (!ref.watch(authProvider).loggedIn)
+          Card(
+            key: const Key('guest_banner'),
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            child: ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: const Text('现在是游客模式'),
+              subtitle: const Text('记录只在这次使用期间保留。注册或登入后，记录会保存在你的账户。'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/auth'),
+            ),
+          ),
         Text('上传尿常规或 UACR 报告', style: t.titleLarge),
         const SizedBox(height: 4),
         Text('图片只在本机识别，不会上传', style: t.bodyMedium),

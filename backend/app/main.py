@@ -32,10 +32,23 @@ app.include_router(pending_router)
 async def require_token(request: Request, call_next):
     """设置了 API_TOKEN（部署到共享网络时）就要求请求带上访问口令；健康检查除外。本机开发不设即不检查。"""
     token = os.environ.get("API_TOKEN", "")
-    if token and request.url.path.startswith("/api/") and request.url.path != "/api/v1/health":
+    if token and request.url.path.startswith("/api/") and request.url.path not in ("/api/v1/health", "/api/v1/tls-cert"):
         if not hmac.compare_digest(request.headers.get("X-MediLens-Token", ""), token):
             return JSONResponse(status_code=401, content={"message": "访问口令不正确"})
     return await call_next(request)
+
+
+@app.get("/api/v1/tls-cert")
+def tls_cert() -> dict[str, Any]:
+    """服务器加密连接的公开证书与指纹（公开资料，用于核对 APP 内置的指纹）。没有证书时返回空。"""
+    import hashlib
+    import ssl
+    from pathlib import Path
+    cert = Path(__file__).resolve().parents[2] / "tls" / "cert.pem"
+    if not cert.is_file():
+        return {"available": False}
+    pem = cert.read_text(encoding="ascii")
+    return {"available": True, "sha256": hashlib.sha256(ssl.PEM_cert_to_DER_cert(pem)).hexdigest(), "pem": pem}
 
 
 @app.get("/api/v1/health")

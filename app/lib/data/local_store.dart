@@ -1,11 +1,15 @@
-// 本地加密存储（SQLCipher）。密钥随机生成并保存在系统安全存储（Android Keystore / iOS Keychain）。
-// 只保存用户选择「保存到本机」的报告；原始报告图片本轮不持久保存（是否保存原图待产品确认）。
+// 个人资料存储接口。登入后存服务器（RemoteStore）；游客模式只在内存（MemoryStore）。
+// SqlCipherStore 是旧版的本机加密数据库：只用来把登入前留下的记录搬到账户，搬完即删除。
+// 原始报告图片从不保存、不上传。
 
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../core/auth.dart';
+import 'remote_store.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
@@ -111,6 +115,22 @@ class SqlCipherStore implements LocalStore {
     return _db!;
   }
 
+  /// 本机已有的全部设置（登入后把旧记录搬到账户用）。
+  Future<Map<String, String>> allSettings() async {
+    final rows = await (await _database).query('settings');
+    return {for (final r in rows) r['key'] as String: r['value'] as String};
+  }
+
+  /// 搬到账户后彻底删除本机数据库文件与密钥（之后资料只存在服务器）。
+  Future<void> wipe() async {
+    await close();
+    await deleteDatabase(p.join(await getDatabasesPath(), _fileName));
+    await const FlutterSecureStorage().delete(key: _keyName);
+  }
+
+  /// 本机是否有旧数据库（不会因为检查而新建）。
+  Future<bool> exists() async => databaseExists(p.join(await getDatabasesPath(), _fileName));
+
   @override
   Future<void> saveReport(SavedReport r) async => (await _database).insert(
     'reports',
@@ -177,7 +197,16 @@ class MemoryStore implements LocalStore {
       settings[key] = value;
 }
 
-final localStoreProvider = Provider<LocalStore>((ref) => SqlCipherStore());
+/// 游客模式：资料只在内存，关闭 APP 即消失。
+final guestStoreProvider = Provider<LocalStore>((ref) => MemoryStore());
+
+/// 个人资料存储：登入后存服务器（按账户分开），未登入为游客模式（不在本机留下任何资料）。
+final localStoreProvider = Provider<LocalStore>((ref) {
+  final token = ref.watch(authProvider.select((a) => a.token));
+  return token == null
+      ? ref.watch(guestStoreProvider)
+      : RemoteStore(ref.watch(accountApiProvider), onExpired: () => ref.read(authProvider.notifier).expired());
+});
 
 /// 历史列表（保存/删除后需 invalidate）。
 final historyProvider = FutureProvider<List<SavedReport>>(

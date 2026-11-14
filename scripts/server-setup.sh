@@ -155,6 +155,19 @@ EOF
   echo "已生成 .env"
 fi
 
+say "4b/6 加密连接（HTTPS）证书：只在第一次生成，之后保留"
+TLS_DIR="$DIR/tls"
+IP_NOW=$(hostname -I | awk '{print $1}')
+if [ ! -f "$TLS_DIR/cert.pem" ]; then
+  mkdir -p "$TLS_DIR" && chmod 700 "$TLS_DIR"
+  openssl req -x509 -newkey rsa:2048 -nodes -days 825 -keyout "$TLS_DIR/key.pem" -out "$TLS_DIR/cert.pem"     -subj "/CN=MediLens" -addext "subjectAltName=IP:$IP_NOW" >/dev/null 2>&1 || fail "生成证书失败（需要 openssl）"
+  chmod 600 "$TLS_DIR/key.pem"
+  echo "已生成证书（$IP_NOW，有效 825 天）"
+fi
+# 账户与个人资料只接受 HTTPS
+grep -q '^ACCOUNTS_REQUIRE_TLS=' "$ENV_FILE" || echo "ACCOUNTS_REQUIRE_TLS=true" >> "$ENV_FILE"
+TLS_PIN=$(openssl x509 -in "$TLS_DIR/cert.pem" -outform der | sha256sum | cut -d' ' -f1)
+
 say "5/6 设定开机自动启动"
 RUN="bash $DIR/scripts/server-run.sh"
 ( crontab -l 2>/dev/null | grep -v 'scripts/server-run.sh'; echo "@reboot sleep 20 && $RUN" ) | crontab - && echo "已加入开机自动启动（crontab）"
@@ -167,7 +180,8 @@ KEY_SET=$(grep -q '^COMPAT_API_KEY=.\+' "$ENV_FILE" && echo 已填写 || echo �
 cat <<EOF
 
 ================ 部署完成 ================
-APP「设置 → 解读服务地址」：http://$(hostname -I | awk '{print $1}'):$PORT
+APP「设置 → 解读服务地址」：http://$(hostname -I | awk '{print $1}'):$PORT（加密：https://$IP_NOW:8443）
+加密证书指纹（与 APP 内置的比对，前 8 位即可）：$TLS_PIN
 APP「设置 → 访问口令」：$TOKEN_NOW
 大模型密钥：$KEY_SET
 $( [ "$KEY_SET" = 未填写 ] && echo "→ 请本人执行：nano $ENV_FILE 填写 COMPAT_API_KEY，存档后执行：bash $DIR/scripts/server-run.sh" )

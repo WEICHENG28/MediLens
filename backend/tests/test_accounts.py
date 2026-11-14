@@ -99,3 +99,10 @@ def test_accounts_reject_plain_http_when_tls_required(client, monkeypatch):
 def test_size_limit(client):
     h = signup(client)
     assert client.put("/api/v1/store/settings/big", json={"value": "x" * 2_000_001}, headers=h).status_code == 413
+
+
+def test_tls_cert_endpoint_is_public_and_safe_when_missing(client, monkeypatch):
+    monkeypatch.setenv("API_TOKEN", "synthetic-code")
+    r = client.get("/api/v1/tls-cert")  # 不需要访问口令
+    assert r.status_code == 200 and "available" in r.json()
+    assert "key" not in r.text.lower() or "private" not in r.text.lower()  # 只会给公开证书，不会给私钥
