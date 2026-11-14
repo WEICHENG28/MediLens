@@ -7,6 +7,8 @@ $env:ANDROID_SDK_ROOT = $env:ANDROID_HOME
 $env:ANDROID_AVD_HOME = "$T\avd"
 # Gradle 缓存放在 D 盘工具链目录，避免占用 C 盘（约 6GB）
 $env:GRADLE_USER_HOME = "$T\gradle"
+# Dart / Flutter 套件缓存也放 D 盘（默认在 C:\Users\<用户>\AppData\Local\Pub\Cache，约 0.7GB）
+$env:PUB_CACHE = "$T\pub-cache"
 # 国内镜像（仅开发环境下载依赖用，与 APP 运行时网络无关）
 $env:PUB_HOSTED_URL = "https://pub.flutter-io.cn"
 $env:FLUTTER_STORAGE_BASE_URL = "https://storage.flutter-io.cn"
