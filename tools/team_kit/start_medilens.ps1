@@ -2,7 +2,8 @@
 # 只用 Windows 自带的 PowerShell，不需要安装 Python、Flutter 或后端。
 # 安全：只操作模拟器（不碰实体手机）；覆盖安装、不清除记录；安装前核对 APK 完整性；不读取或保存任何口令。
 param([switch]$CheckOnly)
-$ErrorActionPreference = 'Stop'
+# adb 会把一般提示（例如 daemon starting）写到错误输出；Windows PowerShell 在 Stop 模式下会把它当成错误而中止，所以用 Continue，真正的错误由下面各步自行判断
+$ErrorActionPreference = 'Continue'
 $Kit = Split-Path -Parent $MyInvocation.MyCommand.Path
 $AppId = 'cn.medilens.medilens'
 $Server = 'http://101.6.162.67:8000'
