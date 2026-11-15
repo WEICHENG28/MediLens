@@ -11,12 +11,14 @@ import 'package:uuid/uuid.dart';
 
 import '../core/api_client.dart';
 import '../core/life_tasks.dart';
+import '../core/meal_nutrition.dart';
 import '../core/local_reminders.dart';
 import '../core/task_receipts.dart';
 import '../core/life_journal.dart';
 import '../data/local_store.dart';
 import '../widgets/glucose_trend.dart';
 import 'life_setup_page.dart';
+import 'meal_photo_page.dart';
 import '../widgets/interactive_bunny.dart';
 import '../widgets/voice_note_field.dart';
 
@@ -45,6 +47,7 @@ class _LifePageState extends ConsumerState<LifePage> {
   Map<String, dynamic>? result;
   String? error;
   bool busy = false;
+  int analysisGeneration = 0;
   BirdState bird = birdReact(BirdMood.normal, BirdEvent.enterRecent); // 珍珠鸟当前的状态与话语
   bool? onboarded; // 是否已完成首次设置；null 表示还在读取
   List<String> mealTimes = []; // 吃饭目标时间（只用于显示，不发送通知）
@@ -93,12 +96,16 @@ class _LifePageState extends ConsumerState<LifePage> {
   String _now() => ref.read(taskClockProvider)().toIso8601String().substring(0, 19);
   String _today() => taskDay(ref.read(taskClockProvider)());
 
-  Future<void> _analyze() async {
-    setState(() => busy = true);
+  Future<void> _analyze({bool background = false}) async {
+    final generation = ++analysisGeneration;
+    setState(() => busy = !background);
     try {
       final receipts = ref.read(taskReceiptsProvider.notifier);
       await receipts.load();
-      projected = effectiveLifeEvents(events, demo ? {} : ref.read(taskReceiptsProvider), demo ? {} : receipts.manualLinks);
+      if (!mounted || generation != analysisGeneration) return;
+      setState(() {
+        projected = effectiveLifeEvents(events, demo ? {} : ref.read(taskReceiptsProvider), demo ? {} : receipts.manualLinks);
+      });
       unawaited(updateLocalCompanion(store, ref.read(taskClockProvider)()).catchError((Object _) {}));
       if (!mounted) return;
       if (projected.isEmpty && tasks.isEmpty) { setState(() { result = null; error = null; }); return; }
@@ -112,16 +119,16 @@ class _LifePageState extends ConsumerState<LifePage> {
         'today': _today(),
         'negative_feedback': false,
       });
-      if (!mounted) return;
+      if (!mounted || generation != analysisGeneration) return;
       setState(() {
         result = r;
         error = null;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || generation != analysisGeneration) return;
       setState(() => error = e.toString());
     } finally {
-      if (mounted) setState(() => busy = false);
+      if (mounted && generation == analysisGeneration) setState(() => busy = false);
     }
   }
 
@@ -152,8 +159,8 @@ class _LifePageState extends ConsumerState<LifePage> {
       final g = e['glucose'];
       bird = birdReact(bird.mood, g is num ? (g >= target.$1 && g <= target.$2 ? BirdEvent.glucoseInRange : BirdEvent.glucoseOutOfRange) : BirdEvent.checkIn, feedback: companion);
       await store.putSetting(_kLastVisit, ref.read(taskClockProvider)().toIso8601String());
-      await _analyze();
       if (!mounted) return;
+      unawaited(_analyze(background: true));
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已记录'), duration: Duration(seconds: 1)));
       // 组员设计：打卡吃饭/吃药/打针后，接着询问这次的血糖（没测可以跳过）
       if ({'meal', 'medication', 'insulin'}.contains(e['type']) && e['taken'] != false) {
@@ -203,6 +210,13 @@ class _LifePageState extends ConsumerState<LifePage> {
     demo = false;
     await _save();
     await _analyze();
+  }
+
+  Future<void> _openMealPhoto() async {
+    final meal = await Navigator.of(context).push<MealNutrition>(
+      MaterialPageRoute(builder: (_) => const MealPhotoPage()),
+    );
+    if (meal != null && mounted) await _add(meal.toEvent());
   }
 
   Future<void> _askExercise() async {
@@ -323,6 +337,13 @@ class _LifePageState extends ConsumerState<LifePage> {
             _tile('打了胰岛素', Icons.vaccines, '打卡打针', _planText('insulin'), const Color(0xFFECE8FB), () => _add({'type': 'insulin', 'insulin_kind': 'rapid', 'taken': true})),
             _tile('日常记录', Icons.edit_note, '日常记录', '运动、睡眠、补记', const Color(0xFFFFF1D6), _openDaily),
           ],
+        ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          key: const Key('life_meal_photo'),
+          onPressed: busy || demo ? null : _openMealPhoto,
+          icon: const Icon(Icons.add_a_photo_outlined),
+          label: const Text('拍餐饮 · 估算糖与碳水'),
         ),
         const SizedBox(height: 10),
         SizedBox(height: 64, child: _tile('血糖变化', Icons.show_chart, '血糖变化', '记血糖、看一天 / 一周 / 一个月的变化', const Color(0xFFE2F0FB), _openTrend)),

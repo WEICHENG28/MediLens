@@ -1,0 +1,220 @@
+[
+  {
+    "fdc_id": 2708408,
+    "name": "白米饭（熟，无添加油脂）",
+    "source_name": "Rice, white, cooked, no added fat",
+    "carbs_per_100g": 28.0,
+    "sugars_per_100g": 0.05,
+    "labels": []
+  },
+  {
+    "fdc_id": 2708951,
+    "name": "素炒饭",
+    "source_name": "Rice, fried, meatless",
+    "carbs_per_100g": 32.5,
+    "sugars_per_100g": 0.62,
+    "labels": [
+      "fried_rice"
+    ]
+  },
+  {
+    "fdc_id": 2708953,
+    "name": "鸡肉炒饭",
+    "source_name": "Rice, fried, with chicken",
+    "carbs_per_100g": 27.6,
+    "sugars_per_100g": 0.53,
+    "labels": [
+      "fried_rice"
+    ]
+  },
+  {
+    "fdc_id": 2708344,
+    "name": "素饺子",
+    "source_name": "Dumpling, no meat",
+    "carbs_per_100g": 20.5,
+    "sugars_per_100g": 1.23,
+    "labels": [
+      "dumplings"
+    ]
+  },
+  {
+    "fdc_id": 2709224,
+    "name": "香蕉（生）",
+    "source_name": "Banana, raw",
+    "carbs_per_100g": 22.7,
+    "sugars_per_100g": 15.8,
+    "labels": []
+  },
+  {
+    "fdc_id": 2709215,
+    "name": "苹果（生）",
+    "source_name": "Apple, raw",
+    "carbs_per_100g": 14.8,
+    "sugars_per_100g": 12.1,
+    "labels": []
+  },
+  {
+    "fdc_id": 2709187,
+    "name": "鲜榨 100% 橙汁",
+    "source_name": "Orange juice, 100%,  freshly squeezed",
+    "carbs_per_100g": 10.0,
+    "sugars_per_100g": 8.08,
+    "labels": []
+  },
+  {
+    "fdc_id": 2705418,
+    "name": "全脂原味酸奶",
+    "source_name": "Yogurt, whole milk, plain",
+    "carbs_per_100g": 5.57,
+    "sugars_per_100g": 4.09,
+    "labels": []
+  },
+  {
+    "fdc_id": 2707154,
+    "name": "水煮蛋或水波蛋",
+    "source_name": "Egg, whole, boiled or poached",
+    "carbs_per_100g": 0.96,
+    "sugars_per_100g": 0.2,
+    "labels": []
+  },
+  {
+    "fdc_id": 2707598,
+    "name": "白面包",
+    "source_name": "Bread, white",
+    "carbs_per_100g": 49.2,
+    "sugars_per_100g": 5.34,
+    "labels": []
+  },
+  {
+    "fdc_id": 2709456,
+    "name": "薯条",
+    "source_name": "Potato, french fries, NFS",
+    "carbs_per_100g": 23.2,
+    "sugars_per_100g": 0.34,
+    "labels": [
+      "french_fries"
+    ]
+  },
+  {
+    "fdc_id": 2708614,
+    "name": "奶酪披萨（餐馆）",
+    "source_name": "Pizza, cheese, from restaurant or fast food, NS as to type of crust",
+    "carbs_per_100g": 33.3,
+    "sugars_per_100g": 3.58,
+    "labels": [
+      "pizza"
+    ]
+  },
+  {
+    "fdc_id": 2708638,
+    "name": "意式辣香肠披萨（餐馆）",
+    "source_name": "Pizza with pepperoni, from restaurant or fast food, NS as to type of crust",
+    "carbs_per_100g": 32.0,
+    "sugars_per_100g": 3.26,
+    "labels": [
+      "pizza"
+    ]
+  },
+  {
+    "fdc_id": 2706920,
+    "name": "汉堡",
+    "source_name": "Hamburger, NFS",
+    "carbs_per_100g": 20.7,
+    "sugars_per_100g": 3.0,
+    "labels": [
+      "hamburger"
+    ]
+  },
+  {
+    "fdc_id": 2708959,
+    "name": "寿司",
+    "source_name": "Sushi, NFS",
+    "carbs_per_100g": 18.4,
+    "sugars_per_100g": 2.13,
+    "labels": [
+      "sushi"
+    ]
+  },
+  {
+    "fdc_id": 2708830,
+    "name": "番茄酱意面（餐馆）",
+    "source_name": "Pasta with tomato-based sauce, restaurant",
+    "carbs_per_100g": 18.4,
+    "sugars_per_100g": 2.72,
+    "labels": [
+      "spaghetti_marinara"
+    ]
+  },
+  {
+    "fdc_id": 2708299,
+    "name": "原味松饼（餐馆）",
+    "source_name": "Pancakes, plain, fast food / restaurant",
+    "carbs_per_100g": 34.1,
+    "sugars_per_100g": 6.81,
+    "labels": [
+      "pancakes"
+    ]
+  },
+  {
+    "fdc_id": 2705801,
+    "name": "烤奶酪三明治",
+    "source_name": "Grilled cheese sandwich, NFS",
+    "carbs_per_100g": 28.1,
+    "sugars_per_100g": 4.51,
+    "labels": [
+      "grilled_cheese_sandwich"
+    ]
+  },
+  {
+    "fdc_id": 2707861,
+    "name": "原味芝士蛋糕",
+    "source_name": "Cheesecake, plain",
+    "carbs_per_100g": 34.8,
+    "sugars_per_100g": 26.6,
+    "labels": [
+      "cheesecake"
+    ]
+  },
+  {
+    "fdc_id": 2705630,
+    "name": "香草冰淇淋",
+    "source_name": "Ice cream, vanilla",
+    "carbs_per_100g": 23.6,
+    "sugars_per_100g": 21.2,
+    "labels": [
+      "ice_cream"
+    ]
+  },
+  {
+    "fdc_id": 2710541,
+    "name": "普通可乐",
+    "source_name": "Soft drink, cola",
+    "carbs_per_100g": 10.4,
+    "sugars_per_100g": 9.94,
+    "labels": []
+  },
+  {
+    "fdc_id": 2710542,
+    "name": "低热量可乐",
+    "source_name": "Soft drink, cola, diet",
+    "carbs_per_100g": 0.29,
+    "sugars_per_100g": 0.0,
+    "labels": []
+  },
+  {
+    "fdc_id": 2710493,
+    "name": "无糖冰红茶（即冲）",
+    "source_name": "Tea, iced, instant, black, unsweetened",
+    "carbs_per_100g": 0.23,
+    "sugars_per_100g": 0.01,
+    "labels": []
+  },
+  {
+    "fdc_id": 2710494,
+    "name": "加糖冰红茶（即冲）",
+    "source_name": "Tea, iced, instant, black, pre-sweetened with sugar",
+    "carbs_per_100g": 7.31,
+    "sugars_per_100g": 7.07,
+    "labels": []
+  }
+]

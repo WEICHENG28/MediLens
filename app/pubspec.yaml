@@ -78,6 +78,7 @@ flutter:
     - assets/medications/
     - assets/asr/
     - assets/pet/
+    - assets/nutrition/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
