@@ -13,6 +13,7 @@ class SavedReport {
   final String id;
   final String? testDate;
   final DateTime savedAt;
+  final bool synthetic;
   final String reportType;
   final List<Map<String, dynamic>> items; // LabItem.toJson()
   final Map<String, dynamic> answers;
@@ -24,6 +25,7 @@ class SavedReport {
     required this.testDate,
     required this.savedAt,
     required this.reportType,
+    this.synthetic = false,
     required this.items,
     required this.answers,
     this.analysis,
@@ -39,6 +41,7 @@ class SavedReport {
     'saved_at': savedAt.toIso8601String(),
     'report_type': reportType,
     'payload': jsonEncode({
+      'synthetic': synthetic,
       'items': items,
       'answers': answers,
       'analysis': analysis,
@@ -53,6 +56,7 @@ class SavedReport {
       testDate: r['test_date'] as String?,
       savedAt: DateTime.parse(r['saved_at'] as String),
       reportType: r['report_type'] as String,
+      synthetic: payload['synthetic'] == true,
       items: (payload['items'] as List).cast<Map<String, dynamic>>(),
       answers: (payload['answers'] as Map).cast<String, dynamic>(),
       analysis: (payload['analysis'] as Map?)?.cast<String, dynamic>(),

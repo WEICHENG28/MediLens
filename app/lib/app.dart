@@ -42,7 +42,7 @@ GoRouter buildRouter(bool onboarded) => GoRouter(
         GoRoute(path: '/followup', builder: (_, _) => const FollowupPage()),
         GoRoute(path: '/chat', builder: (_, s) => ChatPage(focus: s.uri.queryParameters['focus'])),
         GoRoute(path: '/save', builder: (_, _) => const SavePage()),
-        GoRoute(path: '/history', builder: (_, _) => const HistoryPage()),
+        GoRoute(path: '/history', builder: (_, s) => HistoryPage(forVoice: s.extra == true)),
         GoRoute(path: '/trends', builder: (_, _) => const HistoryTrendsPage()),
         GoRoute(path: '/doctor', builder: (_, _) => const DoctorPage()),
         GoRoute(path: '/checkup-reminders', builder: (_, _) => const CheckupPage()),

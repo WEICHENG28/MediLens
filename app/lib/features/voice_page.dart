@@ -265,7 +265,11 @@ class _VoicePageState extends ConsumerState<VoicePage>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('请先导入报告并完成解读，再就报告进行语音提问。'),
+                    const Text('可选择已保存的报告，或导入新报告并完成解读。'),
+                    FilledButton(
+                      onPressed: () => context.push('/history', extra: true),
+                      child: const Text('选择已保存的报告'),
+                    ),
                     TextButton(
                       onPressed: () => context.go('/home'),
                       child: const Text('去导入报告'),

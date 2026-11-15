@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/session.dart';
 import '../core/settings.dart';
 import '../data/local_store.dart';
 import '../ocr/report_parser.dart';
@@ -12,7 +13,8 @@ import '../widgets/common.dart';
 String _typeName(String t) => const {'urinalysis': '尿常规', 'uacr': 'UACR', 'urinalysis+uacr': '尿常规 + UACR'}[t] ?? t;
 
 class HistoryPage extends ConsumerWidget {
-  const HistoryPage({super.key});
+  final bool forVoice;
+  const HistoryPage({super.key, this.forVoice = false});
 
   Future<bool> _confirm(BuildContext context, String msg) async =>
       await showDialog<bool>(
@@ -29,7 +31,7 @@ class HistoryPage extends ConsumerWidget {
     final h = ref.watch(historyProvider);
     final elder = ref.watch(settingsProvider).elder;
     return Scaffold(
-      appBar: AppBar(title: const Text('历史记录'), actions: [
+      appBar: AppBar(title: Text(forVoice ? '选择语音提问报告' : '历史记录'), actions: [
         IconButton(
           tooltip: '删除全部',
           icon: const Icon(Icons.delete_sweep_outlined),
@@ -67,6 +69,28 @@ class HistoryPage extends ConsumerWidget {
                       trailing: Text('${i['raw_value'] ?? '—'} ${i['unit'] ?? ''}', style: Theme.of(context).textTheme.bodyLarge),
                       subtitle: Text(i['review_status'] == 'unknown' ? '无法确认' : ''),
                     ),
+                  if (r.analysis != null && r.items.isNotEmpty)
+                    TextButton.icon(
+                      icon: const Icon(Icons.mic_none),
+                      label: const Text('用这份报告语音提问'),
+                      onPressed: () {
+                        try {
+                          ref.read(sessionProvider.notifier).openSavedReport(r);
+                        } on TypeError {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            content: Text('这份记录无法恢复，请重新导入并解读。'),
+                          ));
+                          return;
+                        }
+                        if (forVoice && context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.push('/voice');
+                        }
+                      },
+                    )
+                  else
+                    const ListTile(title: Text('这份记录缺少解读，请重新导入并解读。')),
                   TextButton.icon(
                     icon: const Icon(Icons.delete_outline),
                     label: const Text('删除这条记录'),

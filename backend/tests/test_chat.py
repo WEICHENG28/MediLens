@@ -311,3 +311,59 @@ def test_false_reassurance_and_blame_fall_back(monkeypatch, bad):
     monkeypatch.setattr(chat_mod, "get_provider", lambda: _BadProvider(bad))
     result = chat(creq("尿酮体是什么", focus="KET"))
     assert result.used_fallback and result.answer != bad
+
+
+def test_retrieval_can_generate_without_template_draft(monkeypatch):
+    seen = {}
+    class Model:
+        name = 'test'
+        def complete(self, system, user):
+            seen.update(system=system, user=user)
+            return '酮体是身体分解脂肪时产生的物质。单看这一项，还不能确定具体原因。'
+    monkeypatch.setattr(chat_mod, '_draft', lambda req, res: ('', []))
+    monkeypatch.setattr(chat_mod, 'get_provider', lambda: Model())
+    result = chat(creq('尿酮体是什么'))
+    assert not result.no_evidence and not result.used_fallback
+    assert result.citations and 'knowledge' in seen['user']
+    assert '不局限于草稿句子' in seen['system']
+
+
+def test_followup_passes_bounded_history_as_context_not_evidence(monkeypatch):
+    from app.chat import ChatTurn
+    seen = {}
+    class Model:
+        name = 'test'
+        def complete(self, system, user):
+            seen.update(system=system, user=user)
+            return '也就是说，它反映身体分解脂肪的情况，具体原因还需要结合其他检查。'
+    monkeypatch.setattr(chat_mod, '_draft', lambda req, res: ('', []))
+    monkeypatch.setattr(chat_mod, 'get_provider', lambda: Model())
+    result = chat(creq('再解释一下', history=[ChatTurn(role='user', content='尿酮体是什么意思'),
+                                          ChatTurn(role='assistant', content='上一轮解释')]))
+    assert not result.no_evidence and result.citations
+    assert '上一轮解释' in seen['user'] and '仅作上下文，不是事实依据' in seen['user']
+    assert '尿酮体' in seen['user']
+
+
+def test_history_cannot_authorize_fabricated_report_number(monkeypatch):
+    from app.chat import ChatTurn
+    monkeypatch.setattr(chat_mod, 'get_provider', lambda: _BadProvider('您本次检查结果为8765。'))
+    result = chat(creq('尿酮体是什么', history=[ChatTurn(role='assistant', content='结果是8765')]))
+    assert result.used_fallback and '8765' not in result.answer
+
+
+def test_missing_draft_and_evidence_does_not_call_generation(monkeypatch):
+    class Never:
+        name = 'test'
+        def complete(self, system, user):
+            raise AssertionError('unrelated questions must not generate medical content')
+    monkeypatch.setattr(chat_mod, 'get_provider', lambda: Never())
+    assert chat(creq('今天天气怎么样')).no_evidence
+
+
+def test_generated_failure_without_draft_retains_retrieved_explanation(monkeypatch):
+    monkeypatch.setattr(chat_mod, '_draft', lambda req, res: ('', []))
+    monkeypatch.setattr(chat_mod, 'get_provider', lambda: _FailProvider())
+    result = chat(creq('我很担心，尿酮体是什么'))
+    assert result.used_fallback and result.citations and result.answer
+    assert '担心是可以理解的' in result.answer
