@@ -32,6 +32,7 @@ class ChatMessage {
     'content': content,
     'citations': citations,
     'safety_category': safetyCategory,
+    'used_fallback': usedFallback,
   };
 }
 
@@ -132,6 +133,36 @@ class SessionNotifier extends Notifier<ReportSession> {
     ocr: ocr ?? previous.ocr,
     report: report,
   );
+  /// Reopen the reviewed data saved on this device without uploading it.
+  void openSavedReport(SavedReport saved) {
+    final restored = ReportSession(
+      id: saved.id,
+      synthetic: saved.synthetic,
+      report: ParsedReport(
+        reportType: saved.reportType,
+        testDate: saved.testDate,
+        items: saved.items.map(LabItem.fromJson).toList(),
+      ),
+      answers: Map.unmodifiable(saved.answers),
+      answerOrder: List.unmodifiable(saved.answers.keys),
+      analysis: saved.analysis,
+      messages: [
+        for (final message in saved.messages)
+          ChatMessage(
+            message['role'] as String,
+            message['content'] as String,
+            citations: ((message['citations'] as List?) ?? const [])
+                .cast<Map<String, dynamic>>(),
+            safetyCategory: message['safety_category'] as String?,
+            usedFallback: message['used_fallback'] == true,
+          ),
+      ],
+      saved: true,
+    );
+    _invalidate();
+    state = restored;
+  }
+
   void reset() {
     _invalidate();
     state = ReportSession(id: const Uuid().v4());
@@ -328,6 +359,7 @@ class SessionNotifier extends Notifier<ReportSession> {
             id: s.id,
             testDate: s.report?.testDate,
             savedAt: DateTime.now(),
+            synthetic: s.synthetic,
             reportType: s.report?.reportType ?? 'unknown',
             items: s.report?.items.map((i) => i.toJson()).toList() ?? const [],
             answers: s.answers,

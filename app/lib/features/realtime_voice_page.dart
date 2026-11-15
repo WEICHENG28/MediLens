@@ -150,6 +150,10 @@ class _RealtimeVoicePageState extends ConsumerState<RealtimeVoicePage>
 
   Future<void> begin() async {
     if (starting || conversation.active) return;
+    if (!ref.read(settingsProvider).aiConsent) {
+      setState(() => hint = '请先在设置中允许发送确认后的指标用于解读。');
+      return;
+    }
     setState(() {
       starting = true;
       hint = '';
@@ -276,7 +280,17 @@ class _RealtimeVoicePageState extends ConsumerState<RealtimeVoicePage>
                             key: const Key('realtime_message'),
                           ),
                         if (hint.isNotEmpty) Text(hint),
-                        if (!ready) const Text('请先导入报告并完成解读，再开启实时对话。'),
+                        if (!ready) ...[
+                          const Text('可选择已保存的报告，或导入新报告并完成解读。'),
+                          FilledButton(
+                            onPressed: () => context.push('/history', extra: true),
+                            child: const Text('选择已保存的报告'),
+                          ),
+                          TextButton(
+                            onPressed: () => context.go('/home'),
+                            child: const Text('去导入报告'),
+                          ),
+                        ],
                         if (phase == RealtimePhase.pending)
                           Text('本句：${conversation.draft}'),
                         if (phase == RealtimePhase.review ||

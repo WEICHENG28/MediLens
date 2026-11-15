@@ -123,7 +123,6 @@ void main() {
           reason: 'Device connection must already be configured',
         );
         settings = saved.copyWith(
-          apiBaseUrl: 'http://101.6.162.67:8000',
           aiConsent: true,
         );
         api = ApiClient(settings.apiBaseUrl, null, settings.apiToken);

@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from . import knowledge
 from .analysis import AnalyzeResponse
 from .knowledge import Citation
-from .llm import LLMError
 from .normalize import normalize_items
 from .schemas import AnalyzeRequest
 
@@ -105,7 +104,7 @@ def parse_plan(raw: str, res: AnalyzeResponse) -> Plan | None:
 def make_plan(provider, message: str, res: AnalyzeResponse, dialogue: str = "", focus: str | None = None) -> Plan | None:
     try:
         raw = provider.complete(PLANNER_SYSTEM, planner_prompt(message, res, dialogue, focus))
-    except LLMError:
+    except Exception:  # 规划只是加分项：任何错误都回到规则路由，不影响回答
         return None
     return parse_plan(raw, res)
 
