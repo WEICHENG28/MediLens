@@ -102,9 +102,12 @@ $devices = (adb devices) -match "emulator-\d+\s+device"
 if (-not $devices) {
     Write-Host "启动模拟器 MediLens_API35（首次约 1 分钟）..."
     # 模拟器自带的文字控制台窗口最小化，避免挡住画面
-    # -gpu angle_indirect：经 ANGLE（Direct3D）绘图。默认显卡模式与软件绘图 swiftshader 都曾让模拟器程序本身崩溃
-    # （Windows 记录 qemu 0xc0000005，看起来像 APP 闪退）；swiftshader 在珍珠鸟页播放 GIF 时崩溃，ANGLE 实测进出多次稳定。
-    Start-Process emulator -ArgumentList "-avd", "MediLens_API35", "-no-snapshot-save", "-no-boot-anim", "-gpu", "angle_indirect" -WindowStyle Minimized | Out-Null
+    # -gpu host：用电脑显卡绘图。软件绘图（swiftshader_indirect，以及在 Windows 上同样基于它的 angle_indirect）
+    #   在生活页反复操作约 8 分钟会让模拟器程序本身崩溃（Windows 记录 qemu 0xc0000005，看起来像 APP 闪退）；
+    #   2026-11-16 同一套模拟使用流程：angle 第 9 轮崩溃，host 两次共 25 轮 + 停留 6 分钟无崩溃。
+    #   早先显卡模式下的崩溃，是「模拟器开着时构建 APK」导致内存不足，已由先构建、再开模拟器解决。
+    # -no-snapshot：每次冷开机，不载入也不保存快照（快照会恢复当时的画面资料，与不同绘图方式混用不稳定）。
+    Start-Process emulator -ArgumentList "-avd", "MediLens_API35", "-no-snapshot", "-no-boot-anim", "-gpu", "host" -WindowStyle Minimized | Out-Null
     adb wait-for-device | Out-Null
 }
 for ($i = 0; $i -lt 90; $i++) {

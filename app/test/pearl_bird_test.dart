@@ -9,6 +9,7 @@ import 'package:medilens/features/life_page.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:medilens/core/life_journal.dart';
 import 'package:medilens/widgets/glucose_trend.dart';
+import 'package:medilens/widgets/pearl_bird.dart';
 
 Map<String, dynamic> ev(String time, [String type = 'meal', Map<String, dynamic> extra = const {}]) =>
     {'id': time, 'time': time, 'type': type, ...extra};
@@ -135,5 +136,22 @@ void main() {
     expect(api.bodies.last['events'] as List, isEmpty);
     expect(jsonEncode(api.bodies), isNot(contains('脚有点麻')));
     await t.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('珍珠鸟逐帧播放：轮流显示 PNG 帧，不再播放 GIF（GIF 会让模拟器崩溃）', (t) async {
+    PearlBird.playFrames = true;
+    addTearDown(() => PearlBird.playFrames = false);
+    await t.pumpWidget(ProviderScope(overrides: [localStoreProvider.overrideWithValue(MemoryStore())],
+        child: const MaterialApp(home: Center(child: PearlBird(mood: BirdMood.happy)))));
+    await t.pump(); // 读取动画偏好（默认开启）
+    expect(find.byKey(const ValueKey('bird_happy_anim')), findsOneWidget);
+    String asset() => (t.widget<Image>(find.byType(Image)).image as AssetImage).assetName;
+    final seen = <String>{asset()};
+    for (var i = 0; i < 8; i++) {
+      await t.pump(const Duration(milliseconds: 160));
+      seen.add(asset());
+    }
+    expect(seen, {for (var i = 0; i < 8; i++) birdFrameAsset(BirdMood.happy, i)}); // 8 帧都轮到
+    await t.pumpWidget(const SizedBox()); // 离开后停止播放
   });
 }

@@ -80,6 +80,7 @@ flutter:
     - assets/medications/
     - assets/asr/
     - assets/pet/
+    - assets/pet/frames/
     - assets/nutrition/
 
   # The following line ensures that the Material Icons font is

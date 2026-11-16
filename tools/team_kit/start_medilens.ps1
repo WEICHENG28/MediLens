@@ -57,8 +57,9 @@ if ($serials.Count -eq 0) {
         $avd = $avds[[int]$n - 1]
     }
     Say "正在启动模拟器 $avd（第一次约 1–2 分钟，请稍等）..."
-    # ANGLE 绘图：默认显卡模式与软件绘图（swiftshader，珍珠鸟动画页会崩）都可能让模拟器本身崩溃，看起来像 APP 闪退
-    Start-Process $Emu -ArgumentList '-avd', $avd, '-gpu', 'angle_indirect', '-no-boot-anim' | Out-Null
+    # 用电脑显卡绘图（host）：软件绘图（swiftshader / angle）在生活页操作几分钟后会让模拟器本身崩溃，看起来像 APP 闪退
+    # -no-snapshot：每次冷开机，不载入快照（快照会恢复当时的画面资料，与不同绘图方式混用不稳定）
+    Start-Process $Emu -ArgumentList '-avd', $avd, '-gpu', 'host', '-no-snapshot', '-no-boot-anim' | Out-Null
     $deadline = (Get-Date).AddMinutes(4)
     while (-not ($serials = @(Ready-Emulators)) -and (Get-Date) -lt $deadline) { Start-Sleep 3 }
     if (-not $serials) { Fail '模拟器启动超时。请在 Android Studio 的 Device Manager 手动按 ▶ 启动，再双击本程序。' }
