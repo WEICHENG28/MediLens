@@ -118,6 +118,24 @@ def get_provider() -> LLMProvider:
         disable_thinking=os.environ.get(f"{name.upper()}_DISABLE_THINKING", "false").lower() == "true",
     )
 
+def get_planner_provider(base):
+    """检索规划用的模型（可与改写模型不同）。规划只输出几个工具名，用较快的小模型即可；
+    规划结束后才可能再改写一次，所以规划越快，用户等得越短。
+    LLM_PLANNER_MODEL：规划模型（默认与改写模型相同）；LLM_PLANNER_TIMEOUT：等待秒数（默认 8，超时即只用规则路由）；
+    LLM_PLANNER_DISABLE_THINKING：换用其他模型时是否发送关闭思考参数（GLM 不接受，默认 false）。
+    base 不是大模型平台（mock 或测试替身）时原样返回。"""
+    if not isinstance(base, OpenAICompatProvider):
+        return base
+    model = os.environ.get("LLM_PLANNER_MODEL", "").strip() or base.model
+    same = model == base.model
+    return OpenAICompatProvider(
+        name=base.name, base_url=base.base_url, model=model, api_key=base.api_key,
+        timeout=float(os.environ.get("LLM_PLANNER_TIMEOUT", "8")),
+        disable_thinking=base.disable_thinking if same else os.environ.get("LLM_PLANNER_DISABLE_THINKING", "false").lower() == "true",
+        max_tokens=600,
+    )
+
+
 def get_intent_provider() -> OpenAICompatProvider | None:
     """越界意图判断用的模型（可与改写模型不同）。未配置大模型时返回 None。
     LLM_INTENT_MODEL：分类模型（默认与改写模型相同）；LLM_INTENT_TIMEOUT：等待秒数（默认 15）。"""

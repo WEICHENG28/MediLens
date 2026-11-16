@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from . import guard, knowledge
 from .analysis import DISCLAIMER, AnalyzeResponse, analyze
 from .knowledge import Citation
-from .llm import LLMError, get_intent_provider, get_provider
+from .llm import LLMError, get_intent_provider, get_planner_provider, get_provider
 from .planner import adds_new_material, execute, make_plan
 from .schemas import AnalyzeRequest, Level
 
@@ -458,7 +458,7 @@ def chat(req: ChatRequest) -> ChatResponse:
     route: list[str] = []
     with ThreadPoolExecutor(3) as ex:
         intent_f = ex.submit(llm_classify, req.message, res, previous)
-        plan_f = ex.submit(make_plan, provider, req.message, res, _recent_dialogue(req), req.focus) if use_planner else None
+        plan_f = ex.submit(make_plan, get_planner_provider(provider), req.message, res, _recent_dialogue(req), req.focus) if use_planner else None
         rewrite_f = ex.submit(rewrite, draft, cites) if draft else None
         category = intent_f.result()
         if category:

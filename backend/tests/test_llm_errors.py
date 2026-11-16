@@ -55,3 +55,19 @@ def test_thinking_without_answer_counts_as_failure(monkeypatch, content):
     _reply(monkeypatch, content)
     with pytest.raises(LLMError):
         provider().complete('synthetic', 'synthetic')
+
+
+def test_planner_provider_uses_own_model_and_short_timeout(monkeypatch):
+    from app.llm import MockProvider, get_planner_provider
+    base = OpenAICompatProvider('compat', 'https://synthetic.test', 'rewrite-model', 'synthetic-secret', disable_thinking=True)
+    monkeypatch.delenv('LLM_PLANNER_MODEL', raising=False)
+    monkeypatch.delenv('LLM_PLANNER_TIMEOUT', raising=False)
+    p = get_planner_provider(base)
+    assert p.model == 'rewrite-model' and p.timeout == 8 and p.disable_thinking  # 未设定：同一模型，沿用关闭思考
+    monkeypatch.setenv('LLM_PLANNER_MODEL', 'planner-model')
+    monkeypatch.setenv('LLM_PLANNER_TIMEOUT', '5')
+    p = get_planner_provider(base)
+    assert p.model == 'planner-model' and p.timeout == 5 and not p.disable_thinking  # 换模型时默认不发关闭思考参数
+    assert p.api_key == base.api_key and p.base_url == base.base_url
+    mock = MockProvider()
+    assert get_planner_provider(mock) is mock
