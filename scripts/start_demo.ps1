@@ -102,9 +102,9 @@ $devices = (adb devices) -match "emulator-\d+\s+device"
 if (-not $devices) {
     Write-Host "启动模拟器 MediLens_API35（首次约 1 分钟）..."
     # 模拟器自带的文字控制台窗口最小化，避免挡住画面
-    # -gpu swiftshader_indirect：改用软件绘图。用电脑显卡绘图时，模拟器程序本身曾多次崩溃（Windows 记录 qemu 0xc0000005），
-    # 看起来像 APP 闪退；软件绘图稍慢但稳定。
-    Start-Process emulator -ArgumentList "-avd", "MediLens_API35", "-no-snapshot-save", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle Minimized | Out-Null
+    # -gpu angle_indirect：经 ANGLE（Direct3D）绘图。默认显卡模式与软件绘图 swiftshader 都曾让模拟器程序本身崩溃
+    # （Windows 记录 qemu 0xc0000005，看起来像 APP 闪退）；swiftshader 在珍珠鸟页播放 GIF 时崩溃，ANGLE 实测进出多次稳定。
+    Start-Process emulator -ArgumentList "-avd", "MediLens_API35", "-no-snapshot-save", "-no-boot-anim", "-gpu", "angle_indirect" -WindowStyle Minimized | Out-Null
     adb wait-for-device | Out-Null
 }
 for ($i = 0; $i -lt 90; $i++) {

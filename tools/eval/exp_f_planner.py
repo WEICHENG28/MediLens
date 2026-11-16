@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import json
+import os
 import random
 import sys
 import time
@@ -30,6 +31,9 @@ from exp_d_llm_vs_medilens import NAMES, bucket  # noqa: E402
 from eval_rules import NEG, gen_case, to_request  # noqa: E402
 
 OUT = ROOT / "tests" / "eval" / "exp_f"
+# 可选环境变量：EXP_WORKERS 同时提问数（默认 6）；EXP_TAG 输出文件后缀（默认覆盖正式结果）；等待上限用 LLM_TIMEOUT
+WORKERS = int(os.environ.get("EXP_WORKERS", "6"))
+TAG = os.environ.get("EXP_TAG", "")
 REAL_PLAN = chat_mod.make_plan
 
 
@@ -73,7 +77,7 @@ def ask(c: dict) -> dict:
 def run_arm(cases, planner: bool):
     chat_mod.make_plan = REAL_PLAN if planner else (lambda *a, **k: None)
     try:
-        with ThreadPoolExecutor(6) as ex:
+        with ThreadPoolExecutor(WORKERS) as ex:
             return list(ex.map(ask, cases))
     finally:
         chat_mod.make_plan = REAL_PLAN
@@ -103,20 +107,22 @@ def main() -> None:
     sets = {"常规题": sample(), "难题": hard_cases()}
     t0 = time.time()
     res = {"说明": "合成数据；同一现行提示词与模型，只切换检索规划；语义项由另一厂商模型评审（存在评审误差），原始回答见 outputs.json",
-           "评审模型": JUDGE_MODEL}
+           "评审模型": JUDGE_MODEL, "同时提问数": WORKERS, "等待上限（秒）": os.environ.get("LLM_TIMEOUT", "15")}
     dump = []
     for name, cases in sets.items():
         off = run_arm(cases, planner=False)
         on = run_arm(cases, planner=True)
-        with ThreadPoolExecutor(6) as ex:
+        with ThreadPoolExecutor(WORKERS) as ex:
             off_j = list(ex.map(lambda a: judge(*a), [(c, o["answer"]) for c, o in zip(cases, off)]))
             on_j = list(ex.map(lambda a: judge(*a), [(c, o["answer"]) for c, o in zip(cases, on)]))
-        res[name] = {"无检索规划": summarize(cases, off, off_j), "有检索规划": summarize(cases, on, on_j)}
         dump += [{"set": name, "id": c["id"], "bucket": c["bucket"], "question": c["question"], "off": o, "off_judge": oj, "on": n, "on_judge": nj}
                  for c, o, oj, n, nj in zip(cases, off, off_j, on, on_j)]
+        # 先存原始回答，汇总出错时也不必重跑
+        (OUT / f"outputs{TAG}.json").write_text(json.dumps(dump, ensure_ascii=False, indent=1), encoding="utf-8")
+        res[name] = {"无检索规划": summarize(cases, off, off_j), "有检索规划": summarize(cases, on, on_j)}
     print(f"完成，用时 {time.time() - t0:.0f} 秒")
-    (OUT / "results.json").write_text(json.dumps(res, ensure_ascii=False, indent=2), encoding="utf-8")
-    (OUT / "outputs.json").write_text(json.dumps(dump, ensure_ascii=False, indent=1), encoding="utf-8")
+    (OUT / f"results{TAG}.json").write_text(json.dumps(res, ensure_ascii=False, indent=2), encoding="utf-8")
+    (OUT / f"outputs{TAG}.json").write_text(json.dumps(dump, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps(res, ensure_ascii=False, indent=2))
 
 
