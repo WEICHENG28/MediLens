@@ -3,6 +3,8 @@ backend/Dockerfile
 backend/app/__init__.py
 backend/app/accounts.py
 backend/app/analysis.py
+backend/app/care.py
+backend/app/care_sim.py
 backend/app/chat.py
 backend/app/config.py
 backend/app/followup.py
@@ -31,6 +33,8 @@ backend/tests/conftest.py
 backend/tests/helpers.py
 backend/tests/test_accounts.py
 backend/tests/test_api.py
+backend/tests/test_care.py
+backend/tests/test_care_sim.py
 backend/tests/test_chat.py
 backend/tests/test_knowledge.py
 backend/tests/test_lifestyle.py

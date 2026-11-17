@@ -19,6 +19,7 @@ from .followup import validate_answer
 from .llm import get_provider
 from .pending import router as pending_router
 from .accounts import router as accounts_router
+from .care import CareRequest, CareResponse, build_profile
 from .lifestyle import LifestyleRequest, LifestyleResponse, analyze_lifestyle
 from .schemas import AnalyzeRequest
 from .ocr_review import OcrReviewRequest, OcrReviewResponse, review as review_ocr
@@ -129,6 +130,12 @@ def lifestyle_demo(req: LifestyleDemoRequest) -> dict[str, Any]:
     events = simulate(days, seed=7, start=start, miss_rate=0.02) + reminders
     return {"synthetic": True, "events": [e.model_dump(mode="json", exclude_none=True) for e in events],
             "schedule": [s.model_dump() for s in SCHEDULE]}
+
+
+@app.post("/api/v1/care/profile", response_model=CareResponse)
+def care_profile(req: CareRequest) -> CareResponse:
+    """照护档案：融合医院检验与居家记录，输出事实、关联、待问医生与仍然不能判断（只接收记录，不含身份信息）。"""
+    return build_profile(req)
 
 
 class CareDemoRequest(BaseModel):
