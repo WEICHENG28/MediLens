@@ -12,9 +12,10 @@ class ReminderReceiver : BroadcastReceiver() {
             LocalReminderScheduler.ACTION_TEST -> scheduler.deliver("test", true)
             LocalReminderScheduler.ACTION_SNOOZE -> scheduler.deliverSnooze(intent.getStringExtra("plan_id") ?: return, intent.getLongExtra("snooze_at", -1))
             CheckupScheduler.ACTION -> CheckupScheduler(context).deliver(intent.getStringExtra("checkup_id") ?: return, intent.getLongExtra("checkup_at", -1))
+            CheckupScheduler.ACTION_CARE -> CheckupScheduler(context, CheckupScheduler.KIND_CARE).deliver(intent.getStringExtra("checkup_id") ?: return, intent.getLongExtra("checkup_at", -1))
             Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED,
             Intent.ACTION_MY_PACKAGE_REPLACED, "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" -> {
-                scheduler.restore(); CheckupScheduler(context).restore()
+                scheduler.restore(); CheckupScheduler(context).restore(); CheckupScheduler(context, CheckupScheduler.KIND_CARE).restore()
             }
         }
     }

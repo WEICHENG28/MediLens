@@ -58,3 +58,28 @@ class MealNutrition {
     'meal_fdc_id': food.fdcId,
   };
 }
+
+/// 一餐（可含多样食物）：餐次、是否有甜饮料、是否用照片估算。碳水是参考配方的估算，不当作实测。
+class MealRecord {
+  final List<MealNutrition> items;
+  final String slot; // breakfast / lunch / dinner / snack
+  final bool sweetDrink;
+  final bool fromPhoto;
+  const MealRecord(this.items, this.slot, {this.sweetDrink = false, this.fromPhoto = false});
+
+  double get carbs => items.fold(0, (s, i) => s + i.carbs);
+  double? get sugars => items.any((i) => i.sugars == null) ? null : items.fold<double>(0, (s, i) => s + i.sugars!);
+
+  Map<String, dynamic> toEvent() => {
+    'type': 'meal',
+    'meal_slot': slot,
+    'food': items.map((i) => i.food.name).join('＋'),
+    'carbs_g': double.parse(carbs.toStringAsFixed(1)),
+    if (sugars != null) 'sugars_g': double.parse(sugars!.toStringAsFixed(1)),
+    'grams': items.first.grams, // 第一样（通常是主食）的份量，修正份量时以它为准
+    'sweet_drink': sweetDrink,
+    'estimate': fromPhoto ? 'photo' : 'manual',
+    'meal_size': carbs >= 80 || sweetDrink ? 'large' : 'normal',
+    'meal_fdc_id': items.first.food.fdcId,
+  };
+}

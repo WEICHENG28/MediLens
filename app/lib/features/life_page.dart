@@ -10,6 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/api_client.dart';
+import '../core/care_events.dart';
+import '../core/care_reminders.dart';
 import '../core/life_tasks.dart';
 import '../core/meal_nutrition.dart';
 import '../core/local_reminders.dart';
@@ -52,6 +54,7 @@ class _LifePageState extends ConsumerState<LifePage> {
   bool? onboarded; // 是否已完成首次设置；null 表示还在读取
   List<String> mealTimes = []; // 吃饭目标时间（只用于显示，不发送通知）
   (double, double) target = (3.9, 10.0); // 个人血糖目标，默认 3.9–10.0 mmol/L，可改为医生给的目标
+  Map<String, dynamic>? careReply; // 最近一笔记录的即时回馈（照护核心）
 
   LocalStore get store => ref.read(localStoreProvider);
 
@@ -68,6 +71,7 @@ class _LifePageState extends ConsumerState<LifePage> {
     companion = await store.getSetting('life_companion_enabled') != 'false';
     demo = await store.getSetting('life_demo_mode') == 'true';
     tasks = await loadTasks(store);
+    await ref.read(careRemindersProvider.notifier).load();
     target = parseTarget(await store.getSetting(_kTarget));
     mealTimes = List<String>.from(jsonDecode(await store.getSetting(_kMeals) ?? '[]') as List);
     onboarded = await store.getSetting(_kOnboarded) == 'true' || events.isNotEmpty || schedule.isNotEmpty;
@@ -110,10 +114,7 @@ class _LifePageState extends ConsumerState<LifePage> {
       if (!mounted) return;
       if (projected.isEmpty && tasks.isEmpty) { setState(() { result = null; error = null; }); return; }
       final r = await ref.read(apiClientProvider).lifestyle({
-        'events': [for (final e in projected) if (e['type'] != 'note') e].reversed.take(3000).toList().reversed.map((e) => {
-          for (final key in ['type', 'time', 'taken', 'insulin_kind', 'meal_size', 'minutes', 'glucose', 'task', 'slot'])
-            if (e.containsKey(key)) key: e[key],
-        }).toList(),
+        'events': careEventsJson(projected).reversed.take(3000).toList().reversed.toList(),
         'schedule': schedule,
         'tasks': tasks.map((t) => {'id': t.id, 'title': t.title, 'due': t.due, 'done': t.done}).toList(),
         'today': _today(),
@@ -153,9 +154,12 @@ class _LifePageState extends ConsumerState<LifePage> {
           }
         }
       }
-      final next = [...events, {'id': const Uuid().v4(), 'time': _now(), ...e}];
+      final record = {'id': const Uuid().v4(), 'time': _now(), ...e};
+      final history = projected;
+      final next = [...events, record];
       await store.putSetting(_kEvents, jsonEncode(next));
       events = next;
+      unawaited(_careFeedback(history, [record]));
       final g = e['glucose'];
       bird = birdReact(bird.mood, g is num ? (g >= target.$1 && g <= target.$2 ? BirdEvent.glucoseInRange : BirdEvent.glucoseOutOfRange) : BirdEvent.checkIn, feedback: companion);
       await store.putSetting(_kLastVisit, ref.read(taskClockProvider)().toIso8601String());
@@ -206,15 +210,17 @@ class _LifePageState extends ConsumerState<LifePage> {
     if (ok != true || !mounted) return;
     if (ref.read(remindersProvider).available && !await ref.read(remindersProvider.notifier).setEnabled(false)) return;
     await ref.read(taskReceiptsProvider.notifier).clear();
+    await ref.read(careRemindersProvider.notifier).clear();
     events = [];
+    careReply = null;
     demo = false;
     await _save();
     await _analyze();
   }
 
   Future<void> _openMealPhoto() async {
-    final meal = await Navigator.of(context).push<MealNutrition>(
-      MaterialPageRoute(builder: (_) => const MealPhotoPage()),
+    final meal = await Navigator.of(context).push<MealRecord>(
+      MaterialPageRoute(builder: (_) => MealPhotoPage(now: ref.read(taskClockProvider)())),
     );
     if (meal != null && mounted) await _add(meal.toEvent());
   }
@@ -237,9 +243,11 @@ class _LifePageState extends ConsumerState<LifePage> {
     final c = TextEditingController();
     final at = ref.read(taskClockProvider)();
     final hm = '${at.month}月${at.day}日 ${at.hour.toString().padLeft(2, '0')}:${at.minute.toString().padLeft(2, '0')}';
+    var source = 'finger';
+    var confirm = false;
     final v = await showDialog<double>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setD) => AlertDialog(
         title: Text(afterCheckIn ? '这次测了血糖吗？' : '记录血糖'),
         content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (afterCheckIn) Container(
@@ -251,14 +259,27 @@ class _LifePageState extends ConsumerState<LifePage> {
           ),
           TextField(key: const Key('glucose_input'), controller: c, keyboardType: const TextInputType.numberWithOptions(decimal: true), autofocus: true,
               decoration: InputDecoration(labelText: '本次血糖', suffixText: 'mmol/L', helperText: '会和你设定的目标 ${target.$1}–${target.$2} 对照')),
+          const SizedBox(height: 10),
+          Wrap(spacing: 8, children: [
+            ChoiceChip(key: const Key('glucose_src_finger'), label: const Text('指血'), selected: source == 'finger',
+                onSelected: (_) => setD(() => source = 'finger')),
+            ChoiceChip(key: const Key('glucose_src_cgm'), label: const Text('监测仪'), selected: source == 'cgm',
+                onSelected: (_) => setD(() => source = 'cgm')),
+          ]),
+          CheckboxListTile(key: const Key('glucose_confirm'), dense: true, contentPadding: EdgeInsets.zero, value: confirm,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: const Text('这是复核测量'), subtitle: const Text('监测仪读数偏低或和身体感觉不一致时，用指血再测一次'),
+              onChanged: (x) => setD(() { confirm = x ?? false; if (confirm) source = 'finger'; })),
         ]),
         actions: [
           TextButton(key: const Key('glucose_skip'), onPressed: () => Navigator.pop(ctx), child: Text(afterCheckIn ? '没测，跳过' : '取消')),
           FilledButton(onPressed: () => Navigator.pop(ctx, double.tryParse(c.text.trim())), child: const Text('记录')),
         ],
-      ),
+      )),
     );
-    if (v != null && v > 0 && v < 40) await _add({'type': 'glucose', 'glucose': v, 'after': ?after});
+    if (v != null && v > 0 && v < 40) {
+      await _add({'type': 'glucose', 'glucose': v, 'glucose_source': source, if (confirm) 'confirmatory': true, 'after': ?after});
+    }
   }
 
   Future<void> _addSchedule() async {
@@ -318,6 +339,9 @@ class _LifePageState extends ConsumerState<LifePage> {
         if (r != null)
           for (final a in (r['alerts'] as List)) _AlertCard(a as Map<String, dynamic>),
         if (r?['pet']?['safety_note'] != null) _AlertCard({'level': 'yellow', 'title': '已记录的用药疑问', 'text': r!['pet']['safety_note']}),
+        if (careReply != null) _CareReplyCard(reply: careReply!, onClose: () => setState(() => careReply = null)),
+        _CareReminderList(reminders: ref.watch(careRemindersProvider), now: ref.read(taskClockProvider)(),
+            onDone: (id) => ref.read(careRemindersProvider.notifier).markDone(id)),
         const SizedBox(height: 12),
         _GlucoseOverview(events: projected, schedule: schedule, target: target, now: ref.read(taskClockProvider)(),
             onTrend: _openTrend, onEditTarget: _editTarget),
@@ -332,7 +356,7 @@ class _LifePageState extends ConsumerState<LifePage> {
           crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 2.3,
           children: [
-            _tile('吃饭', Icons.restaurant, '打卡吃饭', _nextTime(mealTimes, '记录吃饭时间', '目标'), const Color(0xFFFFE4E1), () => _add({'type': 'meal', 'meal_size': 'normal'})),
+            _tile('吃饭', Icons.restaurant, '打卡吃饭', _nextTime(mealTimes, '记录吃饭时间', '目标'), const Color(0xFFFFE4E1), () => _add({'type': 'meal', 'meal_size': 'normal', 'meal_slot': mealSlotFor(ref.read(taskClockProvider)())})),
             _tile('吃了药', Icons.medication, '打卡吃药', _planText('medication'), const Color(0xFFE3F4EA), () => _add({'type': 'medication', 'taken': true})),
             _tile('打了胰岛素', Icons.vaccines, '打卡打针', _planText('insulin'), const Color(0xFFECE8FB), () => _add({'type': 'insulin', 'insulin_kind': 'rapid', 'taken': true})),
             _tile('日常记录', Icons.edit_note, '日常记录', '运动、睡眠、补记', const Color(0xFFFFF1D6), _openDaily),
@@ -347,6 +371,7 @@ class _LifePageState extends ConsumerState<LifePage> {
         ),
         const SizedBox(height: 10),
         SizedBox(height: 64, child: _tile('血糖变化', Icons.show_chart, '血糖变化', '记血糖、看一天 / 一周 / 一个月的变化', const Color(0xFFE2F0FB), _openTrend)),
+        ..._todayMeals(context),
         if (r != null) ..._results(context, r),
         if (tasks.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -471,6 +496,228 @@ class _LifePageState extends ConsumerState<LifePage> {
     await _analyze();
   }
 
+
+  /// 即时回馈：把刚记下的记录连同之前的记录送去照护核心；连不上服务器时安静略过，不影响记录本身。
+  Future<void> _careFeedback(List<Map<String, dynamic>> history, List<Map<String, dynamic>> added) async {
+    final body = careEventsJson(added);
+    if (body.isEmpty) return;
+    try {
+      final r = await ref.read(apiClientProvider).careRecord({
+        'events': careEventsJson(history).reversed.take(6000).toList().reversed.toList(),
+        'new': body,
+        'schedule': schedule,
+        'target_low': target.$1,
+        'target_high': target.$2,
+      });
+      if (!mounted) return;
+      final reminders = (r['reminders'] as List?) ?? const [];
+      if (reminders.isNotEmpty) await ref.read(careRemindersProvider.notifier).addFromServer(reminders);
+      if (mounted) setState(() => careReply = r);
+    } catch (_) {/* 离线或旧版服务器：只保存记录 */}
+  }
+
+  Future<void> _askSymptoms() async {
+    const options = ['出汗', '心悸', '手抖', '头晕', '饥饿', '乏力', '恶心', '口渴'];
+    final chosen = <String>{};
+    final ok = await showDialog<bool>(context: context, builder: (c) => StatefulBuilder(builder: (c, setD) => AlertDialog(
+      title: const Text('哪里不舒服？'),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Wrap(spacing: 8, runSpacing: 4, children: [
+          for (final o in options)
+            FilterChip(key: Key('symptom_$o'), label: Text(o), selected: chosen.contains(o),
+                onSelected: (v) => setD(() => v ? chosen.add(o) : chosen.remove(o))),
+        ]),
+        const SizedBox(height: 8),
+        const Text('如果意识不清、胸痛或呼吸困难，请立即就医或拨打 120。', style: TextStyle(fontSize: 12, color: Colors.black54)),
+      ]),
+      actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+        FilledButton(onPressed: chosen.isEmpty ? null : () => Navigator.pop(c, true), child: const Text('记录'))],
+    )));
+    if (ok == true) await _add({'type': 'symptom', 'symptoms': chosen.toList()});
+  }
+
+  Future<void> _askBp() async {
+    final s = TextEditingController(), d = TextEditingController();
+    final ok = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
+      title: const Text('记录血压'),
+      content: Row(children: [
+        Expanded(child: TextField(key: const Key('bp_sys'), controller: s, keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: '高压（收缩压）'))),
+        const SizedBox(width: 12),
+        Expanded(child: TextField(key: const Key('bp_dia'), controller: d, keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: '低压（舒张压）'))),
+      ]),
+      actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('记录'))],
+    ));
+    final sv = int.tryParse(s.text.trim()), dv = int.tryParse(d.text.trim());
+    if (ok != true) return;
+    if (sv == null || dv == null || sv <= dv || sv > 260 || dv < 30) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请检查血压数值：高压要大于低压')));
+      return;
+    }
+    await _add({'type': 'bp', 'systolic': sv, 'diastolic': dv});
+  }
+
+  Future<void> _askNumber(String label, String unit, double min, double max, Map<String, dynamic> Function(double) build,
+      {bool decimal = true}) async {
+    final c = TextEditingController();
+    final v = await showDialog<double>(context: context, builder: (ctx) => AlertDialog(
+      title: Text('记录$label'),
+      content: TextField(key: Key('num_$label'), controller: c, autofocus: true,
+          keyboardType: TextInputType.numberWithOptions(decimal: decimal),
+          decoration: InputDecoration(labelText: label, suffixText: unit)),
+      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+        FilledButton(onPressed: () => Navigator.pop(ctx, double.tryParse(c.text.trim())), child: const Text('记录'))],
+    ));
+    if (v == null) return;
+    if (v < min || v > max) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label请填 ${min.toStringAsFixed(0)}–${max.toStringAsFixed(0)} 之间')));
+      return;
+    }
+    await _add(build(v));
+  }
+
+  /// 医院检验：手动输入最近一次的糖化血红蛋白、空腹血糖与诊间血压（之后再加拍照识别）。
+  Future<void> _askLab() async {
+    final a1c = TextEditingController(), fpg = TextEditingController(), sbp = TextEditingController(), dbp = TextEditingController();
+    final ok = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
+      title: const Text('医院检验结果'),
+      content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Text('填最近一次的结果，没有的可以空着。', style: TextStyle(fontSize: 12, color: Colors.black54)),
+        TextField(key: const Key('lab_hba1c'), controller: a1c, keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: '糖化血红蛋白 HbA1c', suffixText: '%')),
+        TextField(key: const Key('lab_fpg'), controller: fpg, keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: '空腹血糖（静脉）', suffixText: 'mmol/L')),
+        Row(children: [
+          Expanded(child: TextField(controller: sbp, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: '诊间高压'))),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: dbp, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: '诊间低压'))),
+        ]),
+      ])),
+      actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('保存'))],
+    ));
+    if (ok != true) return;
+    double? n(TextEditingController t) => double.tryParse(t.text.trim());
+    final lab = <String, double>{
+      if (n(a1c) case final v? when v >= 3 && v <= 20) 'hba1c': v,
+      if (n(fpg) case final v? when v > 1 && v < 40) 'fpg': v,
+      if (n(sbp) case final v? when v >= 60 && v <= 260) 'clinic_sbp': v,
+      if (n(dbp) case final v? when v >= 30 && v <= 160) 'clinic_dbp': v,
+    };
+    if (lab.isEmpty) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('没有可保存的数值，请检查后再填')));
+      return;
+    }
+    await _add({'type': 'lab', 'lab': lab});
+  }
+
+  /// 说一句话记录：语音转文字（或手打）→ 本机解析 → 请用户确认后才保存。
+  Future<void> _voiceRecord() async {
+    final text = TextEditingController();
+    final said = await showModalBottomSheet<String>(context: context, isScrollControlled: true, showDragHandle: true,
+      builder: (c) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(c).bottom),
+        child: SafeArea(child: Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), child: Column(
+          mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('说一句话记录', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            const Text('例如：「我刚吃了一碗米饭和红烧肉」「饭后散步了 20 分钟」「血糖 7.8」「血压 135/80」。'
+                '说完会先请你确认。', style: TextStyle(fontSize: 12, color: Colors.black54)),
+            const SizedBox(height: 8),
+            VoiceNoteField(controller: text),
+            Align(alignment: Alignment.centerRight, child: FilledButton(key: const Key('voice_record_parse'),
+                onPressed: () => Navigator.pop(c, text.text.trim()), child: const Text('下一步'))),
+          ]))),
+      ));
+    if (said == null || said.isEmpty || !mounted) return;
+    final parsed = parseVoiceRecord(said, ref.read(taskClockProvider)());
+    if (parsed.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('没有听懂要记录什么，可以换个说法，或用下面的按钮记录。')));
+      return;
+    }
+    final ok = await showDialog<bool>(context: context, builder: (c) => AlertDialog(
+      title: const Text('要记录这些吗？'),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        for (final p in parsed) Text('· ${p.summary}', key: Key('voice_item_${p.event['type']}')),
+        if (parsed.any((p) => p.event['type'] == 'meal'))
+          const Padding(padding: EdgeInsets.only(top: 8), child: Text('说的餐点不会估算碳水；想估算可以改用「拍餐饮」。',
+              style: TextStyle(fontSize: 12, color: Colors.black54))),
+      ]),
+      actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('不对，取消')),
+        FilledButton(key: const Key('voice_record_ok'), onPressed: () => Navigator.pop(c, true), child: const Text('确认记录'))],
+    ));
+    if (ok != true || !mounted) return;
+    final now = _now();
+    final history = projected;
+    final added = [for (final p in parsed) {'id': const Uuid().v4(), ...p.event, 'time': now}];
+    events = [...events, ...added];
+    await store.putSetting(_kEvents, jsonEncode(events));
+    unawaited(_analyze(background: true));
+    unawaited(_careFeedback(history, added));
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已记录 ${added.length} 项'), duration: const Duration(seconds: 1)));
+  }
+
+  /// 今天的饮食：可以修正份量（家人复秤），原始估算会保留。
+  List<Widget> _todayMeals(BuildContext context) {
+    final day = _today();
+    final meals = [for (final e in events) if (e['type'] == 'meal' && (e['time'] as String? ?? '').startsWith(day)) e];
+    if (meals.isEmpty) return const [];
+    final small = Theme.of(context).textTheme.bodySmall;
+    return [
+      const SizedBox(height: 12),
+      Text('今天的饮食', style: Theme.of(context).textTheme.titleMedium),
+      for (final m in meals)
+        ListTile(
+          key: Key('meal_row_${m['id']}'),
+          dense: true, contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.restaurant),
+          title: Text('${(m['time'] as String).substring(11, 16)} ${mealSlotZh[m['meal_slot'] ?? mealSlotFor(DateTime.parse(m['time'] as String))]}'
+              '${(m['food'] ?? m['meal_food']) != null ? ' · ${m['food'] ?? m['meal_food']}' : ''}'),
+          subtitle: Text([
+            if ((m['carbs_g'] ?? m['meal_carbs_g']) is num) '碳水约 ${((m['carbs_g'] ?? m['meal_carbs_g']) as num).toStringAsFixed(0)} g',
+            if (m['corrected_by'] != null) '已由${m['corrected_by']}修正（原 ${(m['original_grams'] as num?)?.toStringAsFixed(0) ?? '—'} g）',
+            if (m['sweet_drink'] == true) '有甜饮料',
+          ].join(' · '), style: small),
+          trailing: (m['grams'] ?? m['meal_grams']) is num && !demo
+              ? TextButton(key: Key('meal_fix_${m['id']}'), onPressed: () => _fixPortion(m), child: const Text('修正份量'))
+              : null,
+        ),
+    ];
+  }
+
+  Future<void> _fixPortion(Map<String, dynamic> meal) async {
+    final normalized = {...meal, 'grams': meal['grams'] ?? meal['meal_grams'], 'carbs_g': meal['carbs_g'] ?? meal['meal_carbs_g'],
+      'sugars_g': meal['sugars_g'] ?? meal['meal_sugars_g'], 'food': meal['food'] ?? meal['meal_food']};
+    final c = TextEditingController(text: (normalized['grams'] as num).toStringAsFixed(0));
+    var by = '家属';
+    final grams = await showDialog<double>(context: context, builder: (ctx) => StatefulBuilder(builder: (ctx, setD) => AlertDialog(
+      title: const Text('修正份量'),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('原估算 ${(normalized['original_grams'] ?? normalized['grams'] as num).toString()} g（主食）。修正后碳水按比例换算，原始估算会保留。',
+            style: const TextStyle(fontSize: 13)),
+        TextField(key: const Key('fix_grams'), controller: c, keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: '实际克数', suffixText: 'g')),
+        const SizedBox(height: 8),
+        Wrap(spacing: 8, children: [
+          for (final who in const ['家属', '本人'])
+            ChoiceChip(label: Text('$who复秤'), selected: by == who, onSelected: (_) => setD(() => by = who)),
+        ]),
+      ]),
+      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+        FilledButton(onPressed: () => Navigator.pop(ctx, double.tryParse(c.text.trim())), child: const Text('保存修正'))],
+    )));
+    if (grams == null || grams <= 0 || grams > 5000 || !mounted) return;
+    final fixed = correctPortion(normalized, grams, by, ref.read(taskClockProvider)());
+    final history = [for (final e in projected) if (e['id'] != meal['id']) e];
+    events = [for (final e in events) e['id'] == meal['id'] ? fixed : e];
+    await store.putSetting(_kEvents, jsonEncode(events));
+    setState(() {});
+    unawaited(_analyze(background: true));
+    unawaited(_careFeedback(history, [fixed]));
+  }
+
   Future<void> _openDaily() {
     final note = TextEditingController();
     final recent = [for (final e in events.reversed) if (e['type'] == 'note') e].take(3).toList();
@@ -517,6 +764,12 @@ class _LifePageState extends ConsumerState<LifePage> {
               _chip(Icons.bloodtype_outlined, '记血糖', () { Navigator.pop(c); _askGlucose(); }),
               _chip(Icons.warning_amber, '忘了吃药', () { Navigator.pop(c); _add({'type': 'medication', 'taken': false}); }),
               _chip(Icons.warning_amber, '忘了打针', () { Navigator.pop(c); _add({'type': 'insulin', 'insulin_kind': 'rapid', 'taken': false}); }),
+              _chip(Icons.sick_outlined, '身体不舒服', () { Navigator.pop(c); _askSymptoms(); }),
+              _chip(Icons.favorite_border, '血压', () { Navigator.pop(c); _askBp(); }),
+              _chip(Icons.monitor_weight_outlined, '体重', () { Navigator.pop(c); _askNumber('体重', 'kg', 20, 300, (v) => {'type': 'weight', 'weight_kg': v}); }),
+              _chip(Icons.directions_run, '今天步数', () { Navigator.pop(c); _askNumber('今天步数', '步', 0, 100000, (v) => {'type': 'steps', 'steps': v.round()}, decimal: false); }),
+              _chip(Icons.local_hospital_outlined, '医院检验', () { Navigator.pop(c); _askLab(); }),
+              _chip(Icons.record_voice_over_outlined, '说一句话记录', () { Navigator.pop(c); _voiceRecord(); }),
             ]),
           ]),
         )),
@@ -787,4 +1040,80 @@ class _AlertCard extends StatelessWidget {
           subtitle: Text(a['text'] as String, style: const TextStyle(color: Colors.black87)),
         ),
       );
+}
+
+
+/// 即时回馈卡：这笔记录在整体状况里的意义、依据，以及照护档案的变化。
+class _CareReplyCard extends StatelessWidget {
+  final Map<String, dynamic> reply;
+  final VoidCallback onClose;
+  const _CareReplyCard({required this.reply, required this.onClose});
+  static const _bg = {'alert': Color(0xFFFDECEA), 'caution': Color(0xFFFFF4E5), 'good': Color(0xFFE8F5E9), 'info': Color(0xFFEFF4FB)};
+  static const _fg = {'alert': Color(0xFFB71C1C), 'caution': Color(0xFFE65100), 'good': Color(0xFF2E7D32), 'info': Color(0xFF1F5F99)};
+  @override
+  Widget build(BuildContext context) {
+    final fb = ((reply['feedback'] as List?) ?? const []).cast<Map<String, dynamic>>();
+    final changes = ((reply['changes'] as List?) ?? const []).cast<Map<String, dynamic>>();
+    if (fb.isEmpty && changes.isEmpty) return const SizedBox.shrink();
+    final small = Theme.of(context).textTheme.bodySmall;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(key: const Key('care_reply'), crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Text('刚才的记录', style: Theme.of(context).textTheme.titleMedium),
+          const Spacer(),
+          IconButton(icon: const Icon(Icons.close, size: 18), tooltip: '收起', onPressed: onClose),
+        ]),
+        for (final f in fb)
+          Card(
+            color: _bg[f['tone']] ?? _bg['info'],
+            margin: const EdgeInsets.only(bottom: 8),
+            child: Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('${f['title']}', style: TextStyle(fontWeight: FontWeight.bold, color: _fg[f['tone']] ?? Colors.black87)),
+              const SizedBox(height: 4),
+              Text('${f['text']}', style: const TextStyle(height: 1.45, color: Colors.black87)),
+              if ((f['based_on'] as List?)?.isNotEmpty == true) ...[
+                const SizedBox(height: 4),
+                Text('依据：${(f['based_on'] as List).join('、')}', style: small),
+              ],
+            ])),
+          ),
+        for (final c in changes)
+          Padding(padding: const EdgeInsets.only(bottom: 6), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Icon(Icons.auto_awesome, size: 16, color: Color(0xFF8C6A55)),
+            const SizedBox(width: 6),
+            Expanded(child: Text('${c['text']}', key: const Key('care_change'), style: const TextStyle(fontSize: 13))),
+          ])),
+      ]),
+    );
+  }
+}
+
+/// 接下来的照护提醒（由即时回馈产生）。
+class _CareReminderList extends StatelessWidget {
+  final List<CareReminder> reminders;
+  final DateTime now;
+  final void Function(String id) onDone;
+  const _CareReminderList({required this.reminders, required this.now, required this.onDone});
+  @override
+  Widget build(BuildContext context) {
+    final upcoming = [for (final r in reminders) if (!r.done && r.at.isAfter(now.subtract(const Duration(hours: 2)))) r];
+    if (upcoming.isEmpty) return const SizedBox.shrink();
+    String hm(DateTime t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('接下来的提醒', style: Theme.of(context).textTheme.titleMedium),
+        for (final r in upcoming)
+          ListTile(
+            key: Key('care_reminder_${r.id}'),
+            dense: true, contentPadding: EdgeInsets.zero,
+            leading: Icon(r.at.isBefore(now) ? Icons.alarm_on : Icons.alarm, color: r.at.isBefore(now) ? const Color(0xFFE65100) : null),
+            title: Text('${hm(r.at)}  ${r.title}'),
+            subtitle: Text(r.reason),
+            trailing: TextButton(onPressed: () => onDone(r.id), child: const Text('完成')),
+          ),
+      ]),
+    );
+  }
 }

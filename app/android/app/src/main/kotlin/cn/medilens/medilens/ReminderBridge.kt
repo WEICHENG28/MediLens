@@ -12,6 +12,7 @@ import io.flutter.plugin.common.MethodChannel
 class ReminderBridge(private val activity: FlutterActivity, engine: FlutterEngine) {
     private val scheduler = LocalReminderScheduler(activity)
     private val checkups = CheckupScheduler(activity)
+    private val care = CheckupScheduler(activity, CheckupScheduler.KIND_CARE)
     private var permissionResult: MethodChannel.Result? = null
 
     init {
@@ -23,6 +24,10 @@ class ReminderBridge(private val activity: FlutterActivity, engine: FlutterEngin
                     "saveCheckup" -> result.success(checkups.upsert(call.argument<String>("id") ?: error("缺少 ID"), (call.argument<Number>("at") ?: error("缺少时间")).toLong()))
                     "cancelCheckup" -> result.success(checkups.cancel(call.argument<String>("id") ?: error("缺少 ID")))
                     "clearCheckups" -> result.success(checkups.clear())
+                    "careStatus" -> result.success(care.status())
+                    "saveCare" -> result.success(care.upsert(call.argument<String>("id") ?: error("缺少 ID"), (call.argument<Number>("at") ?: error("缺少时间")).toLong()))
+                    "cancelCare" -> result.success(care.cancel(call.argument<String>("id") ?: error("缺少 ID")))
+                    "clearCare" -> result.success(care.clear())
                     "replaceDaily" -> {
                         val enabled = call.argument<Boolean>("enabled") ?: false
                         val plans = call.argument<List<Map<*, *>>>("plans") ?: emptyList()

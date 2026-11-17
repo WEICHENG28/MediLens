@@ -34,6 +34,13 @@ class LocalReminderPlatform {
   Future<Map<String, dynamic>> clearCheckups() async => await channel.invokeMapMethod<String, dynamic>('clearCheckups') ?? {};
   Future<Map<String, dynamic>> snooze(String id, int minutes, String day) async =>
       await channel.invokeMapMethod<String, dynamic>('snooze', {'id': id, 'minutes': minutes, 'day': day}) ?? {};
+  // 照护提醒（餐后测血糖、睡前测血糖等）：与复查提醒分开存放，通知只显示通用文字
+  Future<Map<String, dynamic>> careStatus() async => await channel.invokeMapMethod<String, dynamic>('careStatus') ?? {};
+  Future<Map<String, dynamic>> saveCare(String id, int at) async =>
+      await channel.invokeMapMethod<String, dynamic>('saveCare', {'id': id, 'at': at}) ?? {};
+  Future<Map<String, dynamic>> cancelCare(String id) async =>
+      await channel.invokeMapMethod<String, dynamic>('cancelCare', {'id': id}) ?? {};
+  Future<Map<String, dynamic>> clearCare() async => await channel.invokeMapMethod<String, dynamic>('clearCare') ?? {};
   Future<Map<String, dynamic>> cancelSnooze(String id) async =>
       await channel.invokeMapMethod<String, dynamic>('cancelSnooze', {'id': id}) ?? {};
 }

@@ -235,7 +235,7 @@ class LocalReminderScheduler(private val context: Context) {
     }
 
     fun scheduleOneOff(at: Long, operation: PendingIntent) { set(at, operation) }
-    fun notifyOneOff(id: String): Boolean = showNotification("checkup:$id", false)
+    fun notifyOneOff(id: String, kind: String = "checkup"): Boolean = showNotification("$kind:$id", false)
 
     private fun showNotification(id: String, test: Boolean): Boolean {
         if (!allowed()) return false

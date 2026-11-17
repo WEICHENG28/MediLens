@@ -111,6 +111,21 @@ class ApiClient {
   Future<Map<String, dynamic>> lifestyleDemo(String today) =>
       _post('/api/v1/lifestyle/demo', {'days': 14, 'today': today});
 
+  // ---- 照护核心（MVP3）：只发送记录的时间、类型与数值，不含身份信息 ----
+  /// 即时回馈：把刚记下的记录放进整体状况里回应。
+  Future<Map<String, dynamic>> careRecord(Map<String, dynamic> body) => _post('/api/v1/care/record', body);
+  Future<Map<String, dynamic>> careProfile(Map<String, dynamic> body) => _post('/api/v1/care/profile', body);
+  Future<Map<String, dynamic>> careDaily(Map<String, dynamic> body) => _post('/api/v1/care/daily', body);
+  Future<Map<String, dynamic>> careGoal(Map<String, dynamic> body) => _post('/api/v1/care/goal', body);
+  Future<Map<String, dynamic>> careWeekly(Map<String, dynamic> body) => _post('/api/v1/care/weekly', body);
+  Future<Map<String, dynamic>> careVisit(Map<String, dynamic> body) => _post('/api/v1/care/visit', body);
+  Future<Map<String, dynamic>> careChat(Map<String, dynamic> body) => _post('/api/v1/care/chat', body);
+  /// 示范：陈女士虚构病例（合成资料）的起始状态与单一情境。
+  Future<Map<String, dynamic>> careDemo(String state, String today, {bool cgm = true}) =>
+      _post('/api/v1/care/demo', {'state': state, 'today': today, 'cgm': cgm});
+  Future<Map<String, dynamic>> careScenario(String name, String at, {bool cgm = true}) =>
+      _post('/api/v1/care/scenario', {'name': name, 'at': at, 'cgm': cgm});
+
   Future<Map<String, dynamic>> chat(
     Map<String, dynamic> analysisBody,
     String message, {

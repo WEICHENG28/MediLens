@@ -9,9 +9,13 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-/** Only opaque IDs, timestamps and notification state; no report or appointment details. */
-class CheckupScheduler(private val context: Context) {
-    private val prefs = context.getSharedPreferences("checkup_clock", Context.MODE_PRIVATE)
+/**
+ * Only opaque IDs, timestamps and notification state; no report or appointment details.
+ * kind = "checkup"（复查提醒）或 "care"（照护提醒：餐后测血糖、睡前测血糖等），两者分开存放。
+ */
+class CheckupScheduler(private val context: Context, private val kind: String = KIND_CHECKUP) {
+    private val prefs = context.getSharedPreferences("${kind}_clock", Context.MODE_PRIVATE)
+    private val action = if (kind == KIND_CHECKUP) ACTION else ACTION_CARE
     private val alarms = context.getSystemService(AlarmManager::class.java)
     private val local = LocalReminderScheduler(context)
     private fun read() = JSONObject(prefs.getString("entries", "{}"))
@@ -28,8 +32,8 @@ class CheckupScheduler(private val context: Context) {
 
     private fun pending(id: String, at: Long): PendingIntent {
         val intent = Intent(context, ReminderReceiver::class.java).apply {
-            action = ACTION
-            this.data = Uri.parse("medilens://checkup/$id")
+            action = this@CheckupScheduler.action
+            this.data = Uri.parse("medilens://$kind/$id")
             putExtra("checkup_id", id); putExtra("checkup_at", at)
         }
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -56,21 +60,21 @@ class CheckupScheduler(private val context: Context) {
             }
             throw error
         }
-        context.getSystemService(android.app.NotificationManager::class.java).cancel("checkup:$id", 0)
+        context.getSystemService(android.app.NotificationManager::class.java).cancel("$kind:$id", 0)
         return status()
     }
 
     fun cancel(id: String): Map<String, Any> {
         val data = read(); data.remove(id); save(data)
         alarms.cancel(pending(id, 0))
-        context.getSystemService(android.app.NotificationManager::class.java).cancel("checkup:$id", 0)
+        context.getSystemService(android.app.NotificationManager::class.java).cancel("$kind:$id", 0)
         return status()
     }
 
     fun clear(): Map<String, Any> {
         val ids = read().keys().asSequence().toList()
         save(JSONObject())
-        ids.forEach { alarms.cancel(pending(it, 0)); context.getSystemService(android.app.NotificationManager::class.java).cancel("checkup:$it", 0) }
+        ids.forEach { alarms.cancel(pending(it, 0)); context.getSystemService(android.app.NotificationManager::class.java).cancel("$kind:$it", 0) }
         return status()
     }
 
@@ -94,9 +98,14 @@ class CheckupScheduler(private val context: Context) {
         // Commit a terminal state before posting, so duplicate broadcasts cannot repeat it.
         entry.put("state", if (day(expected) != day(now)) "expired" else "sending"); save(data)
         if (entry.getString("state") == "expired") return
-        val sent = try { local.notifyOneOff(id) } catch (_: SecurityException) { false }
+        val sent = try { local.notifyOneOff(id, kind) } catch (_: SecurityException) { false }
         entry.put("state", if (sent) "sent" else "blocked"); save(data)
     }
 
-    companion object { const val ACTION = "cn.medilens.medilens.CHECKUP" }
+    companion object {
+        const val ACTION = "cn.medilens.medilens.CHECKUP"
+        const val ACTION_CARE = "cn.medilens.medilens.CARE"
+        const val KIND_CHECKUP = "checkup"
+        const val KIND_CARE = "care"
+    }
 }
