@@ -129,3 +129,49 @@ def lifestyle_demo(req: LifestyleDemoRequest) -> dict[str, Any]:
     events = simulate(days, seed=7, start=start, miss_rate=0.02) + reminders
     return {"synthetic": True, "events": [e.model_dump(mode="json", exclude_none=True) for e in events],
             "schedule": [s.model_dump() for s in SCHEDULE]}
+
+
+class CareDemoRequest(BaseModel):
+    state: str = "chen14"       # new / day3 / chen14
+    cgm: bool = True            # True：连续血糖监测；False：只有指血
+    today: str | None = None    # YYYY-MM-DD，示范资料以此为最后一天
+
+
+class CareScenarioRequest(BaseModel):
+    name: str
+    at: str                     # ISO 时间：情境「刚刚发生」的时间
+    cgm: bool = True
+
+
+@app.post("/api/v1/care/demo")
+def care_demo(req: CareDemoRequest) -> dict[str, Any]:
+    """示范：陈女士虚构病例的起始状态（合成资料，按老师建议文件的数值生成）。"""
+    from datetime import date
+
+    from .care_sim import PROFILE, SCHEDULE as CARE_SCHEDULE, START_STATES, dump, start_state
+
+    if req.state not in START_STATES:
+        raise HTTPException(status_code=422, detail=f"state 须为 {START_STATES} 之一")
+    end = date.fromisoformat(req.today) if req.today else date.today()
+    events = start_state(req.state, end, cgm=req.cgm)
+    return {"synthetic": True, "profile": PROFILE, "events": dump(events),
+            "schedule": [s.model_dump() for s in CARE_SCHEDULE]}
+
+
+@app.get("/api/v1/care/scenarios")
+def care_scenarios() -> dict[str, str]:
+    from .care_sim import SCENARIOS
+
+    return SCENARIOS
+
+
+@app.post("/api/v1/care/scenario")
+def care_scenario(req: CareScenarioRequest) -> dict[str, Any]:
+    """示范：模拟「刚刚发生」的一件事（合成资料）。"""
+    from datetime import datetime
+
+    from .care_sim import SCENARIOS, dump, scenario
+
+    if req.name not in SCENARIOS:
+        raise HTTPException(status_code=422, detail=f"name 须为 {list(SCENARIOS)} 之一")
+    return {"synthetic": True, "events": dump(scenario(req.name, datetime.fromisoformat(req.at), cgm=req.cgm))}

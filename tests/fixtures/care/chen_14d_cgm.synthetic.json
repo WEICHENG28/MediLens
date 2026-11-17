@@ -1,0 +1,8691 @@
+{
+ "synthetic": true,
+ "profile": {
+  "name": "陈女士（虚构病例）",
+  "age": 67,
+  "diagnosis": "2 型糖尿病 8 年，合并高血压",
+  "medications": [
+   "二甲双胍",
+   "磺脲类药物"
+  ],
+  "target_range": [
+   3.9,
+   10.0
+  ],
+  "note": "教学虚构病例，不用于个体诊断或调药；目标范围须由医师个体化确定。"
+ },
+ "schedule": [
+  {
+   "task": "medication",
+   "time": "07:00",
+   "label": "二甲双胍＋磺脲类药物（早）"
+  },
+  {
+   "task": "medication",
+   "time": "18:00",
+   "label": "二甲双胍＋磺脲类药物（晚）"
+  }
+ ],
+ "truth": {
+  "synthetic": true,
+  "cgm": true,
+  "start": "2026-11-03",
+  "days": 14,
+  "high_carb_dinner_days": [
+   "2026-11-04",
+   "2026-11-06",
+   "2026-11-08",
+   "2026-11-11",
+   "2026-11-13",
+   "2026-11-15"
+  ],
+  "late_dinner_days": {
+   "2026-11-07": 75,
+   "2026-11-12": 60
+  },
+  "low_nights": [
+   "2026-11-07",
+   "2026-11-12"
+  ],
+  "walk_days": [
+   "2026-11-05",
+   "2026-11-09",
+   "2026-11-10",
+   "2026-11-14"
+  ],
+  "corrected_meal": "2026-11-11T18:15:00",
+  "expected": {
+   "post_meal_median": {
+    "breakfast": 9.0,
+    "lunch": 9.7,
+    "dinner": 12.1
+   },
+   "fasting_median": 7.4,
+   "tir": 0.58,
+   "tar": 0.39,
+   "tbr": 0.03,
+   "coverage": 0.92,
+   "steps_mean": 3800,
+   "sleep_hours_mean": 5.83,
+   "home_bp": [
+    138,
+    78
+   ],
+   "weight": [
+    66.8,
+    66.5
+   ]
+  }
+ },
+ "summary": {
+  "records": 1416,
+  "glucose_readings": 1238,
+  "coverage": 0.92,
+  "tir": 0.596,
+  "tar": 0.379,
+  "tbr": 0.024,
+  "post_meal_median": {
+   "breakfast": 9.0,
+   "lunch": 9.7,
+   "dinner": 12.1
+  },
+  "meals": 42,
+  "steps_mean": 3800,
+  "sleep_hours_mean": 5.83,
+  "home_bp_mean": [
+   138,
+   78
+  ],
+  "weight_first_last": [
+   66.8,
+   66.5
+  ]
+ },
+ "events": [
+  {
+   "type": "lab",
+   "time": "2026-11-01T09:00:00",
+   "lab": {
+    "hba1c": 7.3,
+    "fpg": 7.6,
+    "clinic_sbp": 142.0,
+    "clinic_dbp": 82.0
+   },
+   "text": "医院检查：血常规、肾功能等本例未见明显异常"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T00:00:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T00:15:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T00:30:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T00:45:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T01:00:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T01:15:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T01:30:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T01:45:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T02:00:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T02:15:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T02:30:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T02:45:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T03:00:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T03:15:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T03:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T03:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T04:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T04:15:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T04:30:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T04:45:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T05:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T05:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T05:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-03T05:39:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-03T05:44:00",
+   "weight_kg": 66.8
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T05:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T06:00:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T06:15:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T06:30:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T06:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-03T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "稀饭＋馒头＋鸡蛋",
+   "carbs_g": 55.0,
+   "grams": 100.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T07:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-03T07:01:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-03T07:03:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T07:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T07:30:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-03T07:30:00",
+   "systolic": 137,
+   "diastolic": 76
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T07:45:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T08:00:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T08:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T08:30:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T08:45:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T09:00:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T09:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T09:30:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T09:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T10:00:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T10:15:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T10:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T10:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T11:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T11:15:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T11:30:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T11:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-03T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "米饭＋炒青菜＋清蒸鱼",
+   "carbs_g": 66.0,
+   "grams": 200.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T12:00:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T12:15:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T12:30:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T12:45:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T13:00:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T13:15:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T13:30:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T13:45:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T14:00:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T14:15:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T14:30:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T15:00:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T15:15:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T15:30:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T15:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T16:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T16:15:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T16:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T16:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T17:00:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T17:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T17:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T17:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-03T17:45:00",
+   "meal_size": "normal",
+   "meal_slot": "dinner",
+   "food": "米饭＋炒青菜＋鸡肉",
+   "carbs_g": 60.0,
+   "grams": 180.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-03T17:54:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-03T17:58:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T18:00:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T18:15:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T18:30:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T18:45:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T19:00:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T19:15:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T19:30:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T19:45:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T20:00:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T20:15:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T20:30:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T20:45:00",
+   "glucose": 12.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T21:00:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T21:15:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T21:30:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T21:45:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-03T21:45:00",
+   "steps": 3532
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T22:00:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T22:15:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T22:30:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T22:45:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T23:15:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T23:30:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-03T23:40:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-03T23:45:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T00:15:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T00:30:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T00:45:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T01:00:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T01:15:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T01:30:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T01:45:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T02:00:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T02:15:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T02:30:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T02:45:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T03:00:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T03:15:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T03:30:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T04:00:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T04:15:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T04:30:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T04:45:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T05:00:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T05:15:00",
+   "glucose": 6.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T05:30:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-04T05:41:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T05:45:00",
+   "glucose": 6.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-04T05:46:00",
+   "weight_kg": 66.7
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T06:00:00",
+   "glucose": 6.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T06:30:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T06:45:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-04T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "豆浆＋菜包子",
+   "carbs_g": 52.0,
+   "grams": 120.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-04T06:59:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-04T07:01:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T07:15:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T07:30:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-04T07:30:00",
+   "systolic": 137,
+   "diastolic": 75
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T07:45:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T08:00:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T08:15:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T08:30:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T08:45:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T09:00:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T09:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T09:30:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T09:45:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T10:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T10:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T10:30:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T10:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T11:00:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T11:15:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T11:30:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T11:45:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-04T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "面条＋青菜＋鸡蛋",
+   "carbs_g": 68.0,
+   "grams": 250.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T12:15:00",
+   "glucose": 13.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T12:30:00",
+   "glucose": 14.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T13:15:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T13:30:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T13:45:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T14:00:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T14:30:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T15:00:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T15:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T15:45:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T16:00:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T16:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T16:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T17:00:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T17:15:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T17:30:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T17:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-04T17:54:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-04T17:59:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T18:00:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-04T18:00:00",
+   "meal_size": "large",
+   "meal_slot": "dinner",
+   "food": "米饭（大碗）＋红烧肉＋甜饮料",
+   "carbs_g": 104.0,
+   "grams": 300.0,
+   "sweet_drink": true,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T18:30:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T18:45:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T19:15:00",
+   "glucose": 12.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T19:30:00",
+   "glucose": 12.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T19:45:00",
+   "glucose": 13.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T20:00:00",
+   "glucose": 12.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T20:15:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T20:30:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T20:45:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T21:30:00",
+   "glucose": 12.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T21:45:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-04T21:45:00",
+   "steps": 3017
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T22:00:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T22:15:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T22:30:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T22:45:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T23:00:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T23:15:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-04T23:45:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T00:00:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-05T00:09:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T00:15:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T00:30:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T00:45:00",
+   "glucose": 12.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T01:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T01:15:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T01:30:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T02:00:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T02:15:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T02:30:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T02:45:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T03:00:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T03:15:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T03:30:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T03:45:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T04:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T04:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T04:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T05:00:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T05:15:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T05:30:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-05T05:36:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-05T05:41:00",
+   "weight_kg": 66.8
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T05:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T06:00:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T06:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T06:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T06:45:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-05T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "燕麦粥＋鸡蛋＋全麦面包",
+   "carbs_g": 50.0,
+   "grams": 80.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T07:00:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-05T07:00:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-05T07:04:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T07:15:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T07:30:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-05T07:30:00",
+   "systolic": 137,
+   "diastolic": 79
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T07:45:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T08:15:00",
+   "glucose": 9.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T08:30:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T08:45:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T09:00:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T09:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T09:30:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T09:45:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T10:00:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T10:45:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T11:00:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T11:15:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T11:30:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T11:45:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-05T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "米饭＋家常豆腐＋炒青菜",
+   "carbs_g": 63.0,
+   "grams": 190.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T12:00:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T12:30:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T12:45:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T13:00:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T13:15:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T13:30:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T13:45:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T14:00:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T14:15:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T14:30:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T14:45:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T15:00:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T15:15:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T15:30:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T15:45:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T16:15:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T16:30:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T16:45:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T17:00:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T17:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T17:30:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T17:45:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T18:00:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-05T18:00:00",
+   "meal_size": "normal",
+   "meal_slot": "dinner",
+   "food": "米饭＋炒青菜＋鸡肉",
+   "carbs_g": 60.0,
+   "grams": 180.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-05T18:03:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-05T18:06:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T18:15:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "exercise",
+   "time": "2026-11-05T18:20:00",
+   "minutes": 22
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T18:30:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T18:45:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T19:00:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T19:15:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T19:30:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T19:45:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T20:00:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T20:15:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T20:30:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T20:45:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T21:00:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T21:15:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T21:30:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T21:45:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-05T21:45:00",
+   "steps": 5483
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T22:00:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T22:15:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T22:30:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T22:45:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T23:00:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T23:15:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-05T23:30:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T00:00:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-06T00:03:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T00:30:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T00:45:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T01:00:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T01:15:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T01:30:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T01:45:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T02:00:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T02:15:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T02:30:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T02:45:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T03:00:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T03:30:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T03:45:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T04:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T04:15:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T04:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T04:45:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T05:00:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T05:15:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T05:30:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T05:45:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-06T05:51:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-06T05:56:00",
+   "weight_kg": 66.7
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T06:00:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T06:15:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T06:30:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T06:45:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-06T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "稀饭＋馒头＋鸡蛋",
+   "carbs_g": 55.0,
+   "grams": 100.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-06T06:58:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T07:00:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-06T07:00:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T07:15:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T07:30:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-06T07:30:00",
+   "systolic": 141,
+   "diastolic": 82
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T07:45:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T08:00:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T08:15:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T08:30:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T08:45:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T09:00:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T09:15:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T09:30:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T09:45:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T10:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T10:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T10:45:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T11:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T11:15:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T11:30:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T11:45:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-06T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "米饭＋炒青菜＋清蒸鱼",
+   "carbs_g": 66.0,
+   "grams": 200.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T12:00:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T12:15:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T12:30:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T12:45:00",
+   "glucose": 12.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T13:00:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T13:15:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T13:30:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T13:45:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T14:00:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T14:15:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T14:30:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T14:45:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T15:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T15:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T15:30:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T15:45:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T16:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T16:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T16:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T16:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T17:15:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T17:30:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T17:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-06T17:54:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-06T17:57:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T18:00:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-06T18:00:00",
+   "meal_size": "large",
+   "meal_slot": "dinner",
+   "food": "面条（大碗）＋点心",
+   "carbs_g": 98.0,
+   "grams": 380.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T18:15:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T18:30:00",
+   "glucose": 12.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T18:45:00",
+   "glucose": 12.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T19:00:00",
+   "glucose": 13.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T19:15:00",
+   "glucose": 13.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T19:30:00",
+   "glucose": 13.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "symptom",
+   "time": "2026-11-06T19:40:00",
+   "symptoms": [
+    "头晕"
+   ]
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T19:45:00",
+   "glucose": 13.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T20:00:00",
+   "glucose": 13.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T20:15:00",
+   "glucose": 13.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T20:30:00",
+   "glucose": 13.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T20:45:00",
+   "glucose": 13.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T21:15:00",
+   "glucose": 12.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T21:30:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-06T21:45:00",
+   "steps": 2935
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T22:00:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T22:15:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T22:30:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T22:45:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T23:00:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T23:15:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T23:30:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-06T23:45:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T00:00:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T00:15:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-07T00:17:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T00:30:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T00:45:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T01:00:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T01:15:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T01:30:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T01:45:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T02:00:00",
+   "glucose": 9.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T02:15:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T02:30:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T02:45:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T03:00:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T03:15:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T03:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T03:45:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T04:00:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T04:30:00",
+   "glucose": 6.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T04:45:00",
+   "glucose": 6.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T05:00:00",
+   "glucose": 6.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T05:15:00",
+   "glucose": 6.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T05:30:00",
+   "glucose": 6.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-07T05:40:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T05:45:00",
+   "glucose": 6.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-07T05:45:00",
+   "weight_kg": 66.7
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T06:00:00",
+   "glucose": 6.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T06:15:00",
+   "glucose": 6.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T06:30:00",
+   "glucose": 6.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T06:45:00",
+   "glucose": 6.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-07T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "豆浆＋菜包子",
+   "carbs_g": 52.0,
+   "grams": 120.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-07T06:57:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-07T06:59:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T07:00:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T07:15:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T07:30:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-07T07:30:00",
+   "systolic": 137,
+   "diastolic": 78
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T08:00:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T08:15:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T08:30:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T08:45:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T09:00:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T09:15:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T09:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T09:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T10:00:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T10:15:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T10:30:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T10:45:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T11:00:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T11:15:00",
+   "glucose": 6.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T11:30:00",
+   "glucose": 6.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T11:45:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-07T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "面条＋青菜＋鸡蛋",
+   "carbs_g": 68.0,
+   "grams": 250.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T12:00:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T12:15:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T12:30:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T12:45:00",
+   "glucose": 12.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T13:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T13:15:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T13:30:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T13:45:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T14:00:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T14:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T14:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T14:45:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T15:00:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T15:30:00",
+   "glucose": 6.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T16:00:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T16:15:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T16:30:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T16:45:00",
+   "glucose": 6.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T17:00:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T17:15:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T17:30:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T17:45:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T18:00:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-07T18:04:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-07T18:06:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T18:15:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T18:30:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T18:45:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T19:00:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-07T19:15:00",
+   "meal_size": "normal",
+   "meal_slot": "dinner",
+   "food": "米饭＋炒青菜＋鸡肉",
+   "carbs_g": 60.0,
+   "grams": 180.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T19:30:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T19:45:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T20:00:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T20:15:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T20:30:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T20:45:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T21:00:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T21:15:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T21:30:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T21:45:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-07T21:45:00",
+   "steps": 3491
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T22:00:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T22:15:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T22:30:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T22:45:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T23:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T23:15:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T23:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-07T23:45:00",
+   "glucose": 5.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-07T23:58:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T00:00:00",
+   "glucose": 3.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T00:15:00",
+   "glucose": 3.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T00:30:00",
+   "glucose": 3.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T00:45:00",
+   "glucose": 3.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T01:00:00",
+   "glucose": 3.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T01:15:00",
+   "glucose": 3.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T01:30:00",
+   "glucose": 3.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T01:45:00",
+   "glucose": 3.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T02:00:00",
+   "glucose": 3.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T02:15:00",
+   "glucose": 3.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T02:30:00",
+   "glucose": 3.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T02:45:00",
+   "glucose": 3.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T03:00:00",
+   "glucose": 3.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T03:15:00",
+   "glucose": 3.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "symptom",
+   "time": "2026-11-08T03:20:00",
+   "symptoms": [
+    "出汗",
+    "心悸"
+   ]
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T03:30:00",
+   "glucose": 3.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T03:30:00",
+   "glucose": 3.8,
+   "glucose_source": "finger",
+   "confirmatory": true
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-08T03:35:00",
+   "meal_slot": "snack",
+   "food": "糖水（低血糖处理）",
+   "carbs_g": 15.0,
+   "estimate": "manual"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T03:45:00",
+   "glucose": 4.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T04:00:00",
+   "glucose": 5.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T04:15:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T04:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T04:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T05:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T05:15:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T05:30:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T05:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-08T05:45:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-08T05:50:00",
+   "weight_kg": 66.6
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T06:00:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T06:15:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T06:30:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T06:45:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-08T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "燕麦粥＋鸡蛋＋全麦面包",
+   "carbs_g": 50.0,
+   "grams": 80.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-08T06:59:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T07:00:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-08T07:02:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T07:15:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T07:30:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-08T07:30:00",
+   "systolic": 132,
+   "diastolic": 78
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T07:45:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T08:00:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T08:15:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T08:30:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T08:45:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T09:00:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T09:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T09:30:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T09:45:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T10:00:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T10:15:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T10:30:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T10:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T11:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T11:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T11:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T11:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-08T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "米饭＋家常豆腐＋炒青菜",
+   "carbs_g": 63.0,
+   "grams": 190.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T12:00:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T12:15:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T12:30:00",
+   "glucose": 13.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T12:45:00",
+   "glucose": 13.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T13:00:00",
+   "glucose": 12.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T13:15:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T13:30:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T13:45:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T14:00:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T14:30:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T14:45:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T15:00:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T15:15:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T15:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T15:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T16:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T16:15:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T16:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T16:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T17:00:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T17:15:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T17:30:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T17:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-08T17:53:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-08T17:59:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T18:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-08T18:00:00",
+   "meal_size": "large",
+   "meal_slot": "dinner",
+   "food": "米饭＋炒面＋甜饮料",
+   "carbs_g": 110.0,
+   "grams": 260.0,
+   "sweet_drink": true,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T18:15:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T18:30:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T19:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T19:15:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T19:30:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T19:45:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T20:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T20:15:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T20:30:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T20:45:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T21:00:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T21:15:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T21:30:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T21:45:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-08T21:45:00",
+   "steps": 2709
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T22:00:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T22:15:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T22:30:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T23:00:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T23:15:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T23:30:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-08T23:45:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-09T00:11:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T00:15:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T00:30:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T00:45:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T01:00:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T01:15:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T01:30:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T01:45:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T02:00:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T02:15:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T02:30:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T02:45:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T03:00:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T03:15:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T03:30:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T03:45:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T04:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T04:15:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T04:30:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T04:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T05:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T05:15:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T05:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T05:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-09T05:45:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-09T05:50:00",
+   "weight_kg": 66.7
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T06:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T06:15:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T06:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T06:45:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-09T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "稀饭＋馒头＋鸡蛋",
+   "carbs_g": 55.0,
+   "grams": 100.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T07:00:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-09T07:02:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-09T07:04:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T07:15:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T07:30:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-09T07:30:00",
+   "systolic": 139,
+   "diastolic": 80
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T07:45:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T08:00:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T08:15:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T08:30:00",
+   "glucose": 9.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T08:45:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T09:00:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T09:15:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T09:30:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T09:45:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T10:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T10:15:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T10:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T10:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T11:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T11:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T11:45:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-09T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "米饭＋炒青菜＋清蒸鱼",
+   "carbs_g": 66.0,
+   "grams": 200.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T12:00:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T12:15:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T12:30:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T12:45:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T13:15:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T13:30:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T13:45:00",
+   "glucose": 9.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T14:00:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T14:15:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T14:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T14:45:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T15:00:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T15:15:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T15:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T15:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T16:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T16:30:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T16:45:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T17:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T17:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T17:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T17:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-09T17:54:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T18:00:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-09T18:00:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-09T18:00:00",
+   "meal_size": "normal",
+   "meal_slot": "dinner",
+   "food": "米饭＋炒青菜＋鸡肉",
+   "carbs_g": 60.0,
+   "grams": 180.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T18:15:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "exercise",
+   "time": "2026-11-09T18:20:00",
+   "minutes": 23
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T18:30:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T18:45:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T19:00:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T19:15:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T19:30:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T19:45:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T20:00:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T20:15:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T20:30:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T20:45:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T21:00:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T21:15:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T21:30:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T21:45:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-09T21:45:00",
+   "steps": 5335
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T22:00:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T22:15:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T22:30:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T22:45:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T23:00:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T23:15:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T23:30:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-09T23:45:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-09T23:50:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T00:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T00:15:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T00:30:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T00:45:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T01:00:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T01:15:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T01:30:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T01:45:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T02:00:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T02:15:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T02:30:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T02:45:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T03:00:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T03:15:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T03:30:00",
+   "glucose": 9.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T04:00:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T04:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T04:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T04:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T05:00:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T05:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T05:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T05:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-10T05:58:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T06:00:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-10T06:03:00",
+   "weight_kg": 66.7
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T06:15:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T06:30:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T06:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-10T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "豆浆＋菜包子",
+   "carbs_g": 52.0,
+   "grams": 120.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-10T06:58:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T07:00:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-10T07:02:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T07:15:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T07:30:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-10T07:30:00",
+   "systolic": 137,
+   "diastolic": 74
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T07:45:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T08:00:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T08:15:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T08:30:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T08:45:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T09:00:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T09:15:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T09:30:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T09:45:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T10:00:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T10:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T10:30:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T10:45:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T11:00:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T11:15:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T11:30:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T11:45:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-10T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "面条＋青菜＋鸡蛋",
+   "carbs_g": 68.0,
+   "grams": 250.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T12:00:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T12:15:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T12:30:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T12:45:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T13:00:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T13:15:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T13:30:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T13:45:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T14:00:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-10T18:04:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-10T18:07:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-10T18:15:00",
+   "meal_size": "normal",
+   "meal_slot": "dinner",
+   "food": "米饭＋番茄炒蛋＋青菜汤",
+   "carbs_g": 58.0,
+   "grams": 170.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "exercise",
+   "time": "2026-11-10T18:35:00",
+   "minutes": 30
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T19:45:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T20:00:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T20:15:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T20:30:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T21:00:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T21:15:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T21:30:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T21:45:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-10T21:45:00",
+   "steps": 5414
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T22:00:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T22:15:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T22:45:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T23:00:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T23:15:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-10T23:45:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-10T23:51:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T00:00:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T00:15:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T00:30:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T00:45:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T01:00:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T01:15:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T01:30:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T01:45:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T02:00:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T02:15:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T02:30:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T02:45:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T03:00:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T03:15:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T03:30:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T03:45:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T04:00:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T04:15:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T05:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T05:15:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T05:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T05:45:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T06:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-11T06:03:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-11T06:08:00",
+   "weight_kg": 66.6
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T06:15:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T06:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T06:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-11T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "燕麦粥＋鸡蛋＋全麦面包",
+   "carbs_g": 50.0,
+   "grams": 80.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-11T06:56:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T07:00:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-11T07:00:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T07:15:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T07:30:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-11T07:30:00",
+   "systolic": 137,
+   "diastolic": 77
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T07:45:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T08:00:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T08:15:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T08:30:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T08:45:00",
+   "glucose": 9.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T09:00:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T09:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T09:30:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T09:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T10:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T10:15:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T10:30:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T10:45:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T11:00:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T11:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T11:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-11T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "米饭＋家常豆腐＋炒青菜",
+   "carbs_g": 63.0,
+   "grams": 190.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T12:00:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T12:30:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T12:45:00",
+   "glucose": 12.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T13:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T13:15:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T13:30:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T13:45:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T14:00:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T14:15:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T14:30:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T14:45:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T15:30:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T15:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T16:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T16:15:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T16:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T16:45:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T17:00:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T17:15:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T17:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T17:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-11T17:59:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T18:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-11T18:00:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T18:15:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-11T18:15:00",
+   "meal_size": "large",
+   "meal_slot": "dinner",
+   "food": "米饭＋红烧排骨＋炒青菜",
+   "carbs_g": 85.0,
+   "grams": 280.0,
+   "sweet_drink": false,
+   "estimate": "photo",
+   "original_grams": 200.0,
+   "original_carbs_g": 64.3,
+   "corrected_by": "家属",
+   "corrected_at": "2026-11-11T18:35:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T18:30:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T18:45:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T19:00:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T19:15:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T19:30:00",
+   "glucose": 12.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T19:45:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T20:00:00",
+   "glucose": 13.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T20:15:00",
+   "glucose": 12.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T20:30:00",
+   "glucose": 12.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T20:45:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T21:15:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T21:30:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T21:45:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-11T21:45:00",
+   "steps": 2792
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T22:00:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T22:15:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T22:30:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T22:45:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T23:00:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T23:15:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T23:30:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-11T23:43:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-11T23:45:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T00:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T00:15:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T00:30:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T00:45:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T01:00:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T01:15:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T01:30:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T01:45:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T02:00:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T02:15:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T02:30:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T02:45:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T03:00:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T03:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T03:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T03:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T04:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T04:15:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T04:30:00",
+   "glucose": 6.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T04:45:00",
+   "glucose": 6.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T05:00:00",
+   "glucose": 6.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T05:15:00",
+   "glucose": 6.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T05:30:00",
+   "glucose": 6.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T05:45:00",
+   "glucose": 6.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-12T05:51:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-12T05:56:00",
+   "weight_kg": 66.6
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T06:00:00",
+   "glucose": 6.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T06:15:00",
+   "glucose": 6.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T06:30:00",
+   "glucose": 6.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T06:45:00",
+   "glucose": 6.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-12T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "稀饭＋馒头＋鸡蛋",
+   "carbs_g": 55.0,
+   "grams": 100.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-12T07:04:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-12T07:05:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T07:15:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T07:30:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-12T07:30:00",
+   "systolic": 138,
+   "diastolic": 79
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T07:45:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T08:15:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T08:30:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T08:45:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T09:00:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T09:15:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T09:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T10:00:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T10:15:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T10:30:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T10:45:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T11:00:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T11:30:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T11:45:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-12T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "米饭＋炒青菜＋清蒸鱼",
+   "carbs_g": 66.0,
+   "grams": 200.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T12:00:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T12:15:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T12:30:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T12:45:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T13:15:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T13:30:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T13:45:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T14:00:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T14:15:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T14:30:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T14:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T15:00:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T15:15:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T15:30:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T15:45:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T16:00:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T16:30:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T16:45:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T17:00:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T17:15:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T17:30:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T17:45:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-12T17:59:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T18:00:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-12T18:03:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T18:15:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T18:30:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T18:45:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T19:00:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-12T19:00:00",
+   "meal_size": "normal",
+   "meal_slot": "dinner",
+   "food": "米饭＋番茄炒蛋＋青菜汤",
+   "carbs_g": 58.0,
+   "grams": 170.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T19:15:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T19:45:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T20:00:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T20:15:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T20:30:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T20:45:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T21:00:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T21:15:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T21:30:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T21:45:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-12T21:45:00",
+   "steps": 3661
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T22:00:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T22:30:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T22:45:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T23:00:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T23:15:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T23:30:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-12T23:37:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-12T23:45:00",
+   "glucose": 5.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T00:00:00",
+   "glucose": 3.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T00:15:00",
+   "glucose": 3.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T00:30:00",
+   "glucose": 3.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T00:45:00",
+   "glucose": 3.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T01:00:00",
+   "glucose": 3.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T01:15:00",
+   "glucose": 3.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T01:30:00",
+   "glucose": 3.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T01:45:00",
+   "glucose": 3.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T02:00:00",
+   "glucose": 3.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T02:15:00",
+   "glucose": 3.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T02:30:00",
+   "glucose": 3.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T02:45:00",
+   "glucose": 3.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T03:00:00",
+   "glucose": 3.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T03:15:00",
+   "glucose": 3.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "symptom",
+   "time": "2026-11-13T03:20:00",
+   "symptoms": [
+    "出汗",
+    "心悸"
+   ]
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T03:30:00",
+   "glucose": 3.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T03:30:00",
+   "glucose": 3.7,
+   "glucose_source": "finger",
+   "confirmatory": true
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-13T03:35:00",
+   "meal_slot": "snack",
+   "food": "糖水（低血糖处理）",
+   "carbs_g": 15.0,
+   "estimate": "manual"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T03:45:00",
+   "glucose": 4.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T04:00:00",
+   "glucose": 6.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T04:15:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T04:30:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T04:45:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T05:00:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T05:15:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T05:30:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-13T05:37:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-13T05:42:00",
+   "weight_kg": 66.7
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T05:45:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T06:00:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T06:15:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T06:30:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T06:45:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-13T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "豆浆＋菜包子",
+   "carbs_g": 52.0,
+   "grams": 120.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-13T06:56:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T07:00:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-13T07:08:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T07:15:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T07:30:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-13T07:30:00",
+   "systolic": 139,
+   "diastolic": 81
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T07:45:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T08:00:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T08:15:00",
+   "glucose": 10.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T08:30:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T08:45:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T09:00:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T09:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T09:30:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T10:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T10:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T10:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T10:45:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T11:00:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T11:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T11:30:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T11:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-13T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "面条＋青菜＋鸡蛋",
+   "carbs_g": 68.0,
+   "grams": 250.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T12:00:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T12:15:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T12:30:00",
+   "glucose": 12.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T12:45:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T13:00:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T13:15:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T13:30:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T13:45:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T14:00:00",
+   "glucose": 9.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T14:15:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T14:30:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T14:45:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T15:00:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T15:15:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T15:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T15:45:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T16:00:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T16:15:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T16:30:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T16:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T17:00:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T17:15:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T17:45:00",
+   "glucose": 7.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-13T17:45:00",
+   "meal_size": "large",
+   "meal_slot": "dinner",
+   "food": "饺子＋甜点",
+   "carbs_g": 92.0,
+   "grams": 350.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-13T17:54:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T18:00:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-13T18:07:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T18:15:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T18:30:00",
+   "glucose": 13.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T18:45:00",
+   "glucose": 13.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T19:00:00",
+   "glucose": 13.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T19:15:00",
+   "glucose": 13.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "symptom",
+   "time": "2026-11-13T19:25:00",
+   "symptoms": [
+    "头晕"
+   ]
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T19:30:00",
+   "glucose": 13.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T19:45:00",
+   "glucose": 13.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T20:00:00",
+   "glucose": 13.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T20:15:00",
+   "glucose": 13.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T20:30:00",
+   "glucose": 13.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T20:45:00",
+   "glucose": 13.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T21:00:00",
+   "glucose": 13.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T21:15:00",
+   "glucose": 13.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T21:30:00",
+   "glucose": 13.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T21:45:00",
+   "glucose": 13.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-13T21:45:00",
+   "steps": 3609
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T22:00:00",
+   "glucose": 13.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T22:15:00",
+   "glucose": 13.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T22:30:00",
+   "glucose": 13.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T23:00:00",
+   "glucose": 12.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T23:15:00",
+   "glucose": 12.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-13T23:30:00",
+   "glucose": 12.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-13T23:49:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T00:00:00",
+   "glucose": 13.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T00:15:00",
+   "glucose": 12.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T00:30:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T00:45:00",
+   "glucose": 12.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T01:00:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T01:15:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T01:30:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T01:45:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T02:00:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T02:15:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T02:30:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T02:45:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T03:00:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T03:15:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T03:30:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T03:45:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T04:00:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T04:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T04:30:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T04:45:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T05:00:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T05:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T05:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T05:45:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-14T05:51:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-14T05:56:00",
+   "weight_kg": 66.6
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T06:00:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T06:15:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T06:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T06:45:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-14T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "燕麦粥＋鸡蛋＋全麦面包",
+   "carbs_g": 50.0,
+   "grams": 80.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-14T06:55:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-14T06:56:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T07:00:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T07:15:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T07:30:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-14T07:30:00",
+   "systolic": 142,
+   "diastolic": 77
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T07:45:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T08:00:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T08:15:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T08:30:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T08:45:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T09:00:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T09:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T09:30:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T09:45:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T10:00:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T10:15:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T10:30:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T10:45:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T11:00:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T11:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T11:30:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T11:45:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-14T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "米饭＋家常豆腐＋炒青菜",
+   "carbs_g": 63.0,
+   "grams": 190.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T12:00:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T12:15:00",
+   "glucose": 10.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T12:30:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T12:45:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T13:00:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T13:30:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T13:45:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T14:00:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T14:15:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T14:45:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T15:00:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T15:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T15:30:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T16:00:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T16:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T16:30:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T16:45:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T17:00:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T17:30:00",
+   "glucose": 8.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T17:45:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-14T17:57:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T18:00:00",
+   "glucose": 8.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-14T18:00:00",
+   "meal_size": "normal",
+   "meal_slot": "dinner",
+   "food": "米饭＋番茄炒蛋＋青菜汤",
+   "carbs_g": 58.0,
+   "grams": 170.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-14T18:05:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T18:15:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "exercise",
+   "time": "2026-11-14T18:20:00",
+   "minutes": 29
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T18:30:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T19:00:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T19:15:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T19:30:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T19:45:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T20:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T20:15:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T20:30:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T20:45:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T21:00:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T21:15:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T21:30:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T21:45:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-14T21:45:00",
+   "steps": 5252
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T22:00:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T22:15:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T22:30:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T23:00:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T23:15:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T23:30:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-14T23:45:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T00:00:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-15T00:00:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T00:15:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T00:30:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T00:45:00",
+   "glucose": 10.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T01:00:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T01:15:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T01:30:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T01:45:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T02:00:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T02:15:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T02:30:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T02:45:00",
+   "glucose": 9.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T03:00:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T03:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T03:30:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T03:45:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T04:00:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T04:15:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T04:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T04:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T05:00:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T05:15:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T05:30:00",
+   "glucose": 7.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-15T05:38:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-15T05:43:00",
+   "weight_kg": 66.4
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T05:45:00",
+   "glucose": 7.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T06:00:00",
+   "glucose": 7.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T06:15:00",
+   "glucose": 7.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T06:45:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-15T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "稀饭＋馒头＋鸡蛋",
+   "carbs_g": 55.0,
+   "grams": 100.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T07:00:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-15T07:04:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-15T07:06:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T07:15:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T07:30:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-15T07:30:00",
+   "systolic": 140,
+   "diastolic": 79
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T07:45:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T08:00:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T08:30:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T08:45:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T09:00:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T09:15:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T09:30:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T09:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T10:00:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T10:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T10:30:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T10:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T11:00:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T11:30:00",
+   "glucose": 7.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T11:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-15T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "米饭＋炒青菜＋清蒸鱼",
+   "carbs_g": 66.0,
+   "grams": 200.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T12:00:00",
+   "glucose": 10.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T12:15:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T12:30:00",
+   "glucose": 13.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T13:00:00",
+   "glucose": 12.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T13:15:00",
+   "glucose": 12.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T13:30:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T13:45:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T14:00:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T14:15:00",
+   "glucose": 9.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T14:30:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T14:45:00",
+   "glucose": 8.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T15:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T15:15:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T15:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T15:45:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T16:00:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T16:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T16:45:00",
+   "glucose": 7.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T17:00:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T17:15:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T17:30:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T17:45:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T18:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-15T18:00:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-15T18:00:00",
+   "meal_size": "large",
+   "meal_slot": "dinner",
+   "food": "米饭（大碗）＋糖醋排骨＋甜饮料",
+   "carbs_g": 106.0,
+   "grams": 300.0,
+   "sweet_drink": true,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-15T18:08:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T18:30:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T18:45:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T19:00:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T19:15:00",
+   "glucose": 12.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T19:30:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T19:45:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T20:00:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T20:15:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T20:30:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T20:45:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T21:00:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T21:15:00",
+   "glucose": 12.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T21:30:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T21:45:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-15T21:45:00",
+   "steps": 2745
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T22:00:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T22:15:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T22:30:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T22:45:00",
+   "glucose": 12.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T23:00:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T23:30:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-15T23:45:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "sleep",
+   "time": "2026-11-15T23:55:00"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T00:00:00",
+   "glucose": 12.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T00:15:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T00:30:00",
+   "glucose": 11.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T00:45:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T01:00:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T01:15:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T01:30:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T01:45:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T02:00:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T02:15:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T02:30:00",
+   "glucose": 9.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T02:45:00",
+   "glucose": 9.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T03:00:00",
+   "glucose": 9.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T03:15:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T03:30:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T03:45:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T04:00:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T04:15:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T04:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T04:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T05:00:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T05:15:00",
+   "glucose": 7.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T05:30:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "wake",
+   "time": "2026-11-16T05:36:00"
+  },
+  {
+   "type": "weight",
+   "time": "2026-11-16T05:41:00",
+   "weight_kg": 66.5
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T05:45:00",
+   "glucose": 7.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T06:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T06:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T06:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T06:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-16T06:45:00",
+   "meal_size": "normal",
+   "meal_slot": "breakfast",
+   "food": "豆浆＋菜包子",
+   "carbs_g": 52.0,
+   "grams": 120.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-16T06:52:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-16T06:55:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T07:00:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T07:15:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T07:30:00",
+   "glucose": 12.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "bp",
+   "time": "2026-11-16T07:30:00",
+   "systolic": 138,
+   "diastolic": 79
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T07:45:00",
+   "glucose": 11.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T08:00:00",
+   "glucose": 11.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T08:15:00",
+   "glucose": 11.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T08:30:00",
+   "glucose": 10.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T08:45:00",
+   "glucose": 9.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T09:00:00",
+   "glucose": 9.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T09:15:00",
+   "glucose": 9.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T09:45:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T10:00:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T10:15:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T10:30:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T10:45:00",
+   "glucose": 8.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T11:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T11:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T11:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T11:45:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-16T11:45:00",
+   "meal_size": "normal",
+   "meal_slot": "lunch",
+   "food": "面条＋青菜＋鸡蛋",
+   "carbs_g": 68.0,
+   "grams": 250.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T12:00:00",
+   "glucose": 9.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T12:15:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T12:45:00",
+   "glucose": 11.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T13:00:00",
+   "glucose": 11.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T13:30:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T13:45:00",
+   "glucose": 9.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T14:00:00",
+   "glucose": 9.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T14:30:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T14:45:00",
+   "glucose": 8.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T15:00:00",
+   "glucose": 8.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T15:15:00",
+   "glucose": 8.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T15:30:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T15:45:00",
+   "glucose": 8.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T16:00:00",
+   "glucose": 8.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T16:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T16:30:00",
+   "glucose": 7.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T16:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T17:00:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T17:15:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T17:30:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T17:45:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T18:00:00",
+   "glucose": 8.0,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-16T18:00:00",
+   "med_name": "二甲双胍"
+  },
+  {
+   "type": "meal",
+   "time": "2026-11-16T18:00:00",
+   "meal_size": "normal",
+   "meal_slot": "dinner",
+   "food": "米饭＋番茄炒蛋＋青菜汤",
+   "carbs_g": 58.0,
+   "grams": 170.0,
+   "sweet_drink": false,
+   "estimate": "photo"
+  },
+  {
+   "type": "medication",
+   "time": "2026-11-16T18:02:00",
+   "med_name": "磺脲类药物"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T18:15:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T18:30:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T18:45:00",
+   "glucose": 11.7,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T19:00:00",
+   "glucose": 12.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T19:15:00",
+   "glucose": 12.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T19:30:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T19:45:00",
+   "glucose": 12.6,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T20:00:00",
+   "glucose": 12.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T20:15:00",
+   "glucose": 12.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T20:45:00",
+   "glucose": 11.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T21:00:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T21:15:00",
+   "glucose": 11.3,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T21:30:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T21:45:00",
+   "glucose": 11.2,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "steps",
+   "time": "2026-11-16T21:45:00",
+   "steps": 3230
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T22:00:00",
+   "glucose": 10.9,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T22:15:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T22:30:00",
+   "glucose": 10.8,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T23:00:00",
+   "glucose": 10.5,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T23:15:00",
+   "glucose": 10.4,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T23:30:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  },
+  {
+   "type": "glucose",
+   "time": "2026-11-16T23:45:00",
+   "glucose": 10.1,
+   "glucose_source": "cgm"
+  }
+ ]
+}

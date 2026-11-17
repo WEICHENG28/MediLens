@@ -19,19 +19,46 @@ from pydantic import BaseModel, Field
 
 # ---------- 数据结构 ----------
 
-EventType = Literal["insulin", "medication", "meal", "exercise", "sleep", "wake", "glucose", "reminder"]
+EventType = Literal["insulin", "medication", "meal", "exercise", "sleep", "wake", "glucose", "reminder",
+                    "symptom", "bp", "weight", "steps", "lab", "note"]
+MealSlot = Literal["breakfast", "lunch", "dinner", "snack"]
 
 
 class Event(BaseModel):
+    """统一时间轴上的一笔记录。新增字段全部可选，旧版 APP 送来的记录照常可用。"""
     type: EventType
     time: datetime
     taken: bool = True                 # insulin/medication：False 表示记录「漏了」
     insulin_kind: str | None = None    # rapid（餐时）/ basal（基础）——仅记录，不做剂量建议
+    med_name: str | None = None        # medication：药名（仅记录，不做剂量建议）
     meal_size: Literal["small", "normal", "large"] | None = None
     minutes: int | None = None         # exercise 时长
     glucose: float | None = None       # mmol/L
     task: str | None = None            # reminder：提醒的任务
     slot: str | None = None            # reminder：提醒时段（自适应提醒用）
+    # ---- 餐点（照片估算可修正，保留原始估算值与修正记录：估算不当作实测）----
+    meal_slot: MealSlot | None = None
+    food: str | None = None            # 食物描述，如「米饭＋红烧肉＋甜饮料」
+    carbs_g: float | None = Field(default=None, ge=0, le=500)   # 修正后（若有）的总碳水
+    sugars_g: float | None = Field(default=None, ge=0, le=500)
+    grams: float | None = Field(default=None, ge=0, le=3000)    # 主食份量
+    sweet_drink: bool | None = None
+    estimate: Literal["photo", "manual", "voice", "weighed"] | None = None
+    original_grams: float | None = Field(default=None, ge=0, le=3000)  # 修正前的估算值
+    original_carbs_g: float | None = Field(default=None, ge=0, le=500)
+    corrected_by: str | None = None    # 例如「家属」「本人」
+    corrected_at: datetime | None = None
+    # ---- 血糖来源 ----
+    glucose_source: Literal["finger", "cgm"] | None = None  # 指血 / 连续血糖监测
+    confirmatory: bool = False         # 是否为复核读数（异常读数与症状不一致时用指血复核）
+    # ---- 其他居家资料 ----
+    symptoms: list[str] | None = Field(default=None, max_length=10)  # 出汗、心悸、头晕…
+    systolic: int | None = Field(default=None, ge=50, le=260)
+    diastolic: int | None = Field(default=None, ge=30, le=160)
+    weight_kg: float | None = Field(default=None, ge=20, le=300)
+    steps: int | None = Field(default=None, ge=0, le=100000)   # 当天步数
+    lab: dict[str, float] | None = None  # 医院检验：hba1c(%)、fpg(mmol/L)、clinic_sbp、clinic_dbp
+    text: str | None = Field(default=None, max_length=500)    # note / 检验备注
 
 
 class ScheduleItem(BaseModel):
@@ -49,7 +76,7 @@ class Task(BaseModel):
 
 
 class LifestyleRequest(BaseModel):
-    events: list[Event] = Field(default_factory=list, max_length=5000)
+    events: list[Event] = Field(default_factory=list, max_length=20000)  # 连续血糖监测 14 天约 1,300 笔
     tasks: list[Task] = Field(default_factory=list, max_length=50)
     schedule: list[ScheduleItem] = Field(default_factory=list, max_length=20)
     today: date | None = None
@@ -438,7 +465,8 @@ def analyze_lifestyle(req: LifestyleRequest) -> LifestyleResponse:
     ev = _by_type(req.events)
     now = max([e.time for e in req.events], default=datetime.now())
     today = req.today or now.date()
-    first = min([e.time.date() for e in req.events], default=today)
+    # 医院检验可能早于居家记录，不计入打卡天数（否则那几天会被当成「漏用药」）
+    first = min([e.time.date() for e in req.events if e.type != "lab"], default=today)
     days = [first + timedelta(days=i) for i in range((today - first).days + 1)][-60:]
     metrics = compute_metrics(ev, req.schedule, days, now)
     insights = analyze_patterns(ev, rng)
