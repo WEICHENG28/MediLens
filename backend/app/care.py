@@ -314,7 +314,10 @@ def build_profile(req: CareRequest) -> CareResponse:
             v = [x for _, x in post[s]]
             metrics.post_meal[s] = {"median": round(median(v), 1), "n": len(v),
                                     "high_count": sum(x >= POST_MEAL_HIGH for x in v)}
-    episodes = low_episodes(gl, ev["symptom"])
+    all_episodes = low_episodes(gl, ev["symptom"])
+    # 指血复核不低的监测仪低值：不当作低血糖，另外说明
+    refuted = [e for e in all_episodes if e.confirmed is False]
+    episodes = [e for e in all_episodes if e.confirmed is not False]
     metrics.low_episodes = len(episodes)
     metrics.night_low_nights = len({_night_of(e.start) for e in episodes if e.night})
     due = taken = 0
@@ -339,6 +342,13 @@ def build_profile(req: CareRequest) -> CareResponse:
     findings: list[Finding] = []
     watching: list[Watch] = []
     _facts(findings, metrics, personal, episodes, lo, hi)
+    if refuted:
+        vals = "、".join(f"{e.minimum:g}→指血 {e.confirm_value:g}" for e in refuted)
+        findings.append(Finding(id="cgm_low_not_confirmed", level="unknown", title="监测仪低值与指血不一致",
+                                headline="监测仪有几次显示偏低，但指血复核不低",
+                                detail=f"{vals}。可能是监测仪误差（例如睡觉压到探头），这几次不计为低血糖；"
+                                       "如果常常这样，复诊时请医生或护士看看监测仪。",
+                                evidence={"count": len(refuted)}))
     _associations(findings, watching, ev, meals, post, gl, src, episodes, personal, rng)
     _combined(findings, background, metrics, episodes, gl, meals)
     _unknowns(findings, gl, src, meals, ev, labs)
@@ -352,7 +362,7 @@ def build_profile(req: CareRequest) -> CareResponse:
     return CareResponse(background=background, personal=personal, metrics=metrics,
                         today=_today(ev, home, req.schedule, now) if home else None,
                         findings=findings, watching=watching, alerts=care_alerts(gl, ev["symptom"], now),
-                        low_episodes=episodes, doctor_questions=questions[:5])
+                        low_episodes=all_episodes, doctor_questions=questions[:5])
 
 
 # ---------- 事实 ----------

@@ -5,6 +5,7 @@ backend/app/accounts.py
 backend/app/analysis.py
 backend/app/care.py
 backend/app/care_chat.py
+backend/app/care_cohort.py
 backend/app/care_feedback.py
 backend/app/care_sim.py
 backend/app/chat.py
@@ -37,6 +38,7 @@ backend/tests/test_accounts.py
 backend/tests/test_api.py
 backend/tests/test_care.py
 backend/tests/test_care_chat.py
+backend/tests/test_care_cohort.py
 backend/tests/test_care_feedback.py
 backend/tests/test_care_sim.py
 backend/tests/test_chat.py
