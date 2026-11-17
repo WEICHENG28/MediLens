@@ -448,8 +448,8 @@ def _associations(out, watching, ev, meals, post, gl, src, episodes, personal: P
             evening_meds = [x for x in meds if x.taken and x.time.date() == m.time.date() and x.time.hour >= 15 and x.time <= m.time]
             usual_time = bool(evening_meds) and all((m.time - x.time) >= timedelta(minutes=LATE_MIN) for x in evening_meds)
             night = m.time.date()
-            if late >= LATE_MIN and usual_time:
-                exposed.append((night, night in night_lows, late))
+            if late >= LATE_MIN and usual_time and (night in night_data or night in night_lows):
+                exposed.append((night, night in night_lows, late))  # 那晚还没有夜间资料时先不计入
             elif night in night_data:
                 other.append((night, night in night_lows))
         hit = sum(x[1] for x in exposed)

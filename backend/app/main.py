@@ -20,6 +20,10 @@ from .llm import get_provider
 from .pending import router as pending_router
 from .accounts import router as accounts_router
 from .care import CareRequest, CareResponse, build_profile
+from .care_chat import CareChatRequest, CareChatResponse, care_chat
+from .care_feedback import (DailyRequest, DailySummary, GoalRequest, GoalResponse, RecordRequest, RecordResponse,
+                            VisitRequest, VisitSummary, WeeklyReport, WeeklyRequest, daily_summary, goal as care_goal_impl,
+                            on_record, visit_summary, weekly_report)
 from .lifestyle import LifestyleRequest, LifestyleResponse, analyze_lifestyle
 from .schemas import AnalyzeRequest
 from .ocr_review import OcrReviewRequest, OcrReviewResponse, review as review_ocr
@@ -136,6 +140,41 @@ def lifestyle_demo(req: LifestyleDemoRequest) -> dict[str, Any]:
 def care_profile(req: CareRequest) -> CareResponse:
     """照护档案：融合医院检验与居家记录，输出事实、关联、待问医生与仍然不能判断（只接收记录，不含身份信息）。"""
     return build_profile(req)
+
+
+@app.post("/api/v1/care/record", response_model=RecordResponse)
+def care_record(req: RecordRequest) -> RecordResponse:
+    """即时回馈：把刚记下的记录放进整体状况里回应，并回传新的照护档案与提醒。"""
+    return on_record(req)
+
+
+@app.post("/api/v1/care/daily", response_model=DailySummary)
+def care_daily(req: DailyRequest) -> DailySummary:
+    return daily_summary(CareRequest(**req.model_dump(exclude={"day"})), req.day)
+
+
+@app.post("/api/v1/care/goal", response_model=GoalResponse)
+def care_goal(req: GoalRequest) -> GoalResponse:
+    """改善计划：建议一个只涉及生活习惯的小目标，并用自己的资料比较前后。"""
+    return care_goal_impl(req)
+
+
+@app.post("/api/v1/care/weekly", response_model=WeeklyReport)
+def care_weekly(req: WeeklyRequest) -> WeeklyReport:
+    base = CareRequest(**req.model_dump(include=set(CareRequest.model_fields)))
+    return weekly_report(base, req.end, req.goal_id, req.started)
+
+
+@app.post("/api/v1/care/visit", response_model=VisitSummary)
+def care_visit(req: VisitRequest) -> VisitSummary:
+    """复诊摘要：一页整理，附要问医生的问题。"""
+    return visit_summary(CareRequest(**req.model_dump(exclude={"days"})), req.days)
+
+
+@app.post("/api/v1/care/chat", response_model=CareChatResponse)
+def care_chat_message(req: CareChatRequest) -> CareChatResponse:
+    """生活照护问答：依据照护档案回答个人问题，经同一套安全分类与输出校验。"""
+    return care_chat(req)
 
 
 class CareDemoRequest(BaseModel):
