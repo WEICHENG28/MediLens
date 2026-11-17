@@ -55,7 +55,7 @@ else
   # 没有 git 或连不上 GitHub：先试 GitHub 压缩包，不行就经 jsDelivr 逐个下载后端需要的文件（保留 .env 与虚拟环境）
   say "2/6 下载代码：$DIR"
   python3 - "$REPO" "$BRANCH" "$DIR" <<'PY' || fail "下载代码失败（检查网络）"
-import io, json, shutil, sys, urllib.request, zipfile
+import io, json, shutil, sys, time, urllib.request, zipfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 repo, ref, dest = sys.argv[1], sys.argv[2], Path(sys.argv[3])
@@ -89,13 +89,15 @@ except Exception as e:
     def fetch(rel):
         t = dest / rel
         t.parent.mkdir(parents=True, exist_ok=True)
-        for attempt in range(3):  # 偶发连线中断时重试
+        # 偶发连线中断时重试；jsDelivr 第一次被请求某个新文件时常先回 403，稍等再试就会好，所以逐次拉长等待
+        for attempt in range(6):
             try:
                 t.write_bytes(get(f"https://cdn.jsdelivr.net/gh/{lower}@{ref}/{rel}", 60))
                 return
             except Exception:
-                if attempt == 2:
+                if attempt == 5:
                     raise
+                time.sleep(2 * 2 ** attempt)
 
     with ThreadPoolExecutor(4) as ex:
         list(ex.map(fetch, files))

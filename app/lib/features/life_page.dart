@@ -12,6 +12,8 @@ import 'package:uuid/uuid.dart';
 import '../core/api_client.dart';
 import '../core/care_events.dart';
 import '../core/care_reminders.dart';
+import 'care_pages.dart';
+import 'care_sections.dart';
 import '../core/life_tasks.dart';
 import '../core/meal_nutrition.dart';
 import '../core/local_reminders.dart';
@@ -55,6 +57,13 @@ class _LifePageState extends ConsumerState<LifePage> {
   List<String> mealTimes = []; // 吃饭目标时间（只用于显示，不发送通知）
   (double, double) target = (3.9, 10.0); // 个人血糖目标，默认 3.9–10.0 mmol/L，可改为医生给的目标
   Map<String, dynamic>? careReply; // 最近一笔记录的即时回馈（照护核心）
+  Map<String, dynamic>? careProfile, careDaily, careGoal; // 照护档案、今日小结、小目标（旧版服务器没有时为 null）
+  Map<String, dynamic>? goalState; // 进行中的小目标 {id, started}
+  // 示范模式（陈女士虚构病例，合成资料）：完整 14 天的记录依日期逐日放入
+  List<Map<String, dynamic>> demoQueue = [];
+  DateTime? demoDay; // 已放到哪一天
+  bool demoCgm = true;
+  DateTime? scenarioDay; // 情境按钮发生的那一天（连按几个情境都在同一天）
 
   LocalStore get store => ref.read(localStoreProvider);
 
@@ -72,6 +81,10 @@ class _LifePageState extends ConsumerState<LifePage> {
     demo = await store.getSetting('life_demo_mode') == 'true';
     tasks = await loadTasks(store);
     await ref.read(careRemindersProvider.notifier).load();
+    goalState = _decodeMap(await store.getSetting('care_goal'));
+    final dq = await store.getSetting('care_demo_queue');
+    demoQueue = dq == null ? [] : List<Map<String, dynamic>>.from(jsonDecode(dq) as List);
+    demoDay = DateTime.tryParse(await store.getSetting('care_demo_day') ?? '');
     target = parseTarget(await store.getSetting(_kTarget));
     mealTimes = List<String>.from(jsonDecode(await store.getSetting(_kMeals) ?? '[]') as List);
     onboarded = await store.getSetting(_kOnboarded) == 'true' || events.isNotEmpty || schedule.isNotEmpty;
@@ -112,7 +125,8 @@ class _LifePageState extends ConsumerState<LifePage> {
       });
       unawaited(updateLocalCompanion(store, ref.read(taskClockProvider)()).catchError((Object _) {}));
       if (!mounted) return;
-      if (projected.isEmpty && tasks.isEmpty) { setState(() { result = null; error = null; }); return; }
+      if (projected.isEmpty && tasks.isEmpty) { setState(() { result = null; error = null; careProfile = careDaily = careGoal = null; }); return; }
+      unawaited(_loadCare(generation)); // 照护核心与原有分析各自进行，任一边失败不影响另一边
       final r = await ref.read(apiClientProvider).lifestyle({
         'events': careEventsJson(projected).reversed.take(3000).toList().reversed.toList(),
         'schedule': schedule,
@@ -132,6 +146,56 @@ class _LifePageState extends ConsumerState<LifePage> {
       if (mounted && generation == analysisGeneration) setState(() => busy = false);
     }
   }
+
+  static Map<String, dynamic>? _decodeMap(String? raw) {
+    try { final v = raw == null ? null : jsonDecode(raw); return v is Map<String, dynamic> ? v : null; } catch (_) { return null; }
+  }
+
+  /// 照护核心请求的共同内容：记录（只含时间、类型与数值）、用药时间、目标范围。
+  Map<String, dynamic> careBody() => {
+        'events': careEventsJson(projected).reversed.take(6000).toList().reversed.toList(),
+        'schedule': schedule,
+        'target_low': target.$1,
+        'target_high': target.$2,
+      };
+
+  /// 今天（示范模式时是示范进行到的那一天）。
+  DateTime get viewDay {
+    final homeTimes = [for (final e in projected) if (e['type'] != 'lab') e['time'] as String]..sort();
+    final d = demo && homeTimes.isNotEmpty ? DateTime.parse(homeTimes.last) : demo && demoDay != null ? demoDay! : ref.read(taskClockProvider)();
+    return DateTime(d.year, d.month, d.day);
+  }
+
+  String _ymd(DateTime d) => d.toIso8601String().substring(0, 10);
+
+  /// 照护档案、今日小结、小目标：三个请求同时进行；服务器较旧或连不上时保留原来的显示。
+  Future<void> _loadCare(int generation) async {
+    if (projected.isEmpty) { if (mounted) setState(() { careProfile = null; careDaily = null; careGoal = null; }); return; }
+    final api = ref.read(apiClientProvider);
+    final body = careBody();
+    Future<Map<String, dynamic>?> safe(Future<Map<String, dynamic>> f) => f.then<Map<String, dynamic>?>((v) => v).catchError((Object _) => null);
+    final res = await Future.wait([
+      safe(api.careProfile(body)),
+      safe(api.careDaily({...body, 'day': _ymd(viewDay)})),
+      safe(api.careGoal({...body, if (goalState != null) 'goal_id': goalState!['id'], if (goalState != null) 'started': goalState!['started']})),
+    ]);
+    if (!mounted || generation != analysisGeneration) return;
+    setState(() { careProfile = res[0]; careDaily = res[1]; careGoal = res[2]; });
+  }
+
+  Future<void> _startGoal(String id) async {
+    goalState = {'id': id, 'started': _ymd(viewDay)};
+    await store.putSetting('care_goal', jsonEncode(goalState));
+    await _analyze(background: true);
+  }
+
+  Future<void> _stopGoal() async {
+    goalState = null;
+    await store.putSetting('care_goal', 'null');
+    await _analyze(background: true);
+  }
+
+  void _openPage(Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
 
   Future<void> _add(Map<String, dynamic> e) async {
     if (adding || demo) return;
@@ -213,6 +277,12 @@ class _LifePageState extends ConsumerState<LifePage> {
     await ref.read(careRemindersProvider.notifier).clear();
     events = [];
     careReply = null;
+    careProfile = careDaily = careGoal = null;
+    demoQueue = [];
+    demoDay = null;
+    scenarioDay = null;
+    await store.putSetting('care_demo_queue', '[]');
+    await store.putSetting('care_demo_day', '');
     demo = false;
     await _save();
     await _analyze();
@@ -321,11 +391,11 @@ class _LifePageState extends ConsumerState<LifePage> {
     return Scaffold(
       appBar: AppBar(title: const Text('生活打卡 · 珍珠鸟陪伴'), actions: [
         PopupMenuButton<String>(
-          onSelected: (v) => v == 'demo' ? _loadDemo() : v == 'setup' ? setState(() => onboarded = false) : _clear(),
-          itemBuilder: (_) => const [
-            PopupMenuItem(value: 'setup', child: Text('重新设置目标时间与血糖')),
-            PopupMenuItem(value: 'demo', child: Text('载入两周示例记录（演示用）')),
-            PopupMenuItem(value: 'clear', child: Text('清空生活与任务记录')),
+          onSelected: (v) => v == 'demo' ? _startCareDemo() : v == 'old_demo' ? _loadDemo() : v == 'setup' ? setState(() => onboarded = false) : _clear(),
+          itemBuilder: (_) => [
+            const PopupMenuItem(value: 'setup', child: Text('重新设置目标时间与血糖')),
+            const PopupMenuItem(value: 'demo', child: Text('示范模式：陈女士（虚构病例）')),
+            PopupMenuItem(value: 'clear', child: Text(demo ? '结束示范并清空' : '清空生活与任务记录')),
           ],
         ),
       ]),
@@ -333,7 +403,7 @@ class _LifePageState extends ConsumerState<LifePage> {
         if (busy) const LinearProgressIndicator(),
         if (error != null) Card(child: Padding(padding: const EdgeInsets.all(12), child: Text(error!))),
         if (reminders.error != null) Card(child: Padding(padding: const EdgeInsets.all(12), child: Text(reminders.error!))),
-        if (demo) const Text('合成演示数据：不合并个人任务记录。请先清空演示，再记录自己的生活。', style: TextStyle(color: Colors.deepOrange)),
+        if (demo) _demoBar(context),
         _Greeting(now: ref.read(taskClockProvider)()),
         if (companion) _BirdCard(state: bird, summary: companionSummary(projected, ref.read(taskClockProvider)())),
         if (r != null)
@@ -372,7 +442,15 @@ class _LifePageState extends ConsumerState<LifePage> {
         const SizedBox(height: 10),
         SizedBox(height: 64, child: _tile('血糖变化', Icons.show_chart, '血糖变化', '记血糖、看一天 / 一周 / 一个月的变化', const Color(0xFFE2F0FB), _openTrend)),
         ..._todayMeals(context),
-        if (r != null) ..._results(context, r),
+        if (careProfile != null)
+          CareSections(
+            profile: careProfile!, daily: careDaily, goal: careGoal, events: projected, day: viewDay, target: target,
+            onStartGoal: demo && demoQueue.isEmpty ? null : _startGoal, onStopGoal: _stopGoal,
+            onWeekly: () => _openPage(WeeklyPage(body: careBody())),
+            onVisit: () => _openPage(VisitSummaryPage(body: careBody())),
+            onChat: () => _openPage(CareChatPage(body: careBody())),
+          )
+        else if (r != null) ..._results(context, r),
         if (tasks.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text('复查与咨询事项（来自报告解读）', style: Theme.of(context).textTheme.titleMedium),
@@ -429,6 +507,36 @@ class _LifePageState extends ConsumerState<LifePage> {
         Text('打卡记录保存在本机；分析时只发送记录的时间、类型与数值，不含姓名等身份信息。原型功能，规律分析与提醒未经医学审核。',
             style: Theme.of(context).textTheme.bodySmall),
       ]),
+    );
+  }
+
+  Widget _demoBar(BuildContext context) {
+    final last = _demoLastDay;
+    final first = demoQueue.isEmpty ? null : DateTime.parse(demoQueue.first['time'] as String);
+    final dayNo = first == null || demoDay == null ? null : demoDay!.difference(DateTime(first.year, first.month, first.day)).inDays + 1;
+    final canNext = demoDay != null && last != null && !demoDay!.add(const Duration(days: 1)).isAfter(last);
+    return Card(
+      key: const Key('demo_bar'),
+      color: const Color(0xFFFFF4E5),
+      child: Padding(padding: const EdgeInsets.all(10), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(demoQueue.isEmpty ? '合成演示数据：请先清空演示，再记录自己的生活。'
+            : '示范模式 · 陈女士（虚构病例，合成资料）${dayNo == null ? '' : ' · 已到第 ${dayNo.clamp(0, 14)}/14 天'}',
+            style: const TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.w600)),
+        if (demoQueue.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Row(children: [
+            FilledButton.icon(key: const Key('demo_next'), onPressed: busy || !canNext ? null : _demoNextDay,
+                icon: const Icon(Icons.skip_next), label: Text(canNext ? '下一天' : '14 天已播完')),
+          ]),
+          const SizedBox(height: 6),
+          const Text('情境（模拟刚刚发生的一件事）：', style: TextStyle(fontSize: 12)),
+          Wrap(spacing: 6, runSpacing: 4, children: [
+            for (final e in scenarioName.entries)
+              ActionChip(key: Key('scenario_${e.key}'), label: Text(e.value, style: const TextStyle(fontSize: 12)),
+                  onPressed: busy ? null : () => _demoScenario(e.key)),
+          ]),
+        ],
+      ])),
     );
   }
 
@@ -498,7 +606,7 @@ class _LifePageState extends ConsumerState<LifePage> {
 
 
   /// 即时回馈：把刚记下的记录连同之前的记录送去照护核心；连不上服务器时安静略过，不影响记录本身。
-  Future<void> _careFeedback(List<Map<String, dynamic>> history, List<Map<String, dynamic>> added) async {
+  Future<void> _careFeedback(List<Map<String, dynamic>> history, List<Map<String, dynamic>> added, {bool important = false}) async {
     final body = careEventsJson(added);
     if (body.isEmpty) return;
     try {
@@ -511,9 +619,109 @@ class _LifePageState extends ConsumerState<LifePage> {
       });
       if (!mounted) return;
       final reminders = (r['reminders'] as List?) ?? const [];
-      if (reminders.isNotEmpty) await ref.read(careRemindersProvider.notifier).addFromServer(reminders);
+      if (reminders.isNotEmpty && !demo) await ref.read(careRemindersProvider.notifier).addFromServer(reminders);
+      if (important) { // 逐日播放：一天有几十笔，只留需要注意的回应
+        final fb = ((r['feedback'] as List?) ?? const []).cast<Map<String, dynamic>>();
+        r['feedback'] = [for (final f in fb) if (f['tone'] == 'alert' || f['tone'] == 'caution' || '${f['title']}'.startsWith('已同步')) f].take(4).toList();
+      }
       if (mounted) setState(() => careReply = r);
     } catch (_) {/* 离线或旧版服务器：只保存记录 */}
+  }
+
+  // ---------- 示范模式（陈女士虚构病例，合成资料） ----------
+
+  Future<void> _startCareDemo() async {
+    final choice = await showDialog<(String, bool)>(context: context, builder: (c) {
+      var cgm = true;
+      return StatefulBuilder(builder: (c, setD) => AlertDialog(
+        title: const Text('示范模式：陈女士（虚构病例）'),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('依老师建议文件的数值生成的 14 天合成资料。会暂时替换生活记录与用药时间，并关闭本机提醒；结束示范后清空。',
+              style: TextStyle(fontSize: 13)),
+          SwitchListTile(contentPadding: EdgeInsets.zero, value: cgm, onChanged: (v) => setD(() => cgm = v),
+              title: const Text('戴连续血糖监测仪'), subtitle: Text(cgm ? '每 15 分钟一笔' : '只有指血，每天约 5 笔')),
+          for (final (k, t, d) in const [('new', '从空白开始，逐日播放', '按「下一天」看资料慢慢累积、结论慢慢出现'),
+            ('day3', '已记录 3 天', '资料还少，多数规律在「观察中」'), ('chen14', '完整 14 天', '照护档案已完整，可直接看结论与复诊摘要')])
+            ListTile(key: Key('demo_$k'), contentPadding: EdgeInsets.zero, title: Text(t), subtitle: Text(d),
+                trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.pop(c, (k, cgm))),
+        ]),
+        actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text('取消'))],
+      ));
+    });
+    if (choice == null || !mounted) return;
+    setState(() => busy = true);
+    try {
+      if (ref.read(remindersProvider).available && !await ref.read(remindersProvider.notifier).setEnabled(false)) {
+        if (mounted) setState(() => error = '请先在本机提醒中关闭通知，再开始示范。');
+        return;
+      }
+      final now = ref.read(taskClockProvider)();
+      final yesterday = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 1));
+      final d = await ref.read(apiClientProvider).careDemo('chen14', _ymd(yesterday), cgm: choice.$2);
+      final all = [for (final (i, e) in (d['events'] as List).cast<Map<String, dynamic>>().indexed) {'id': 'demo-$i', ...e}];
+      final first = yesterday.subtract(const Duration(days: 13));
+      final shown = choice.$1 == 'new' ? 0 : choice.$1 == 'day3' ? 3 : 14;
+      final cut = first.add(Duration(days: shown));
+      demo = true;
+      demoCgm = choice.$2;
+      scenarioDay = null;
+      demoQueue = all;
+      demoDay = first.add(Duration(days: shown - 1));
+      events = [for (final e in all) if (DateTime.parse(e['time'] as String).isBefore(cut)) e];
+      schedule = List<Map<String, dynamic>>.from(d['schedule'] as List);
+      careReply = null;
+      await store.putSetting('care_demo_queue', jsonEncode(demoQueue));
+      await store.putSetting('care_demo_day', demoDay!.toIso8601String());
+      await _save();
+      await _analyze();
+    } catch (e) {
+      if (mounted) setState(() => error = e.toString());
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  DateTime? get _demoLastDay => demoQueue.isEmpty ? null : DateTime.parse(demoQueue.last['time'] as String);
+
+  Future<void> _demoNextDay() async {
+    final last = _demoLastDay;
+    if (demoDay == null || last == null) return;
+    final next = demoDay!.add(const Duration(days: 1));
+    if (next.isAfter(last)) return;
+    final from = DateTime(next.year, next.month, next.day), to = from.add(const Duration(days: 1));
+    final added = [for (final e in demoQueue) if (DateTime.parse(e['time'] as String) case final t when !t.isBefore(from) && t.isBefore(to)) e];
+    final history = projected;
+    demoDay = from;
+    scenarioDay = null;
+    events = [...events, ...added];
+    await store.putSetting('care_demo_day', demoDay!.toIso8601String());
+    await store.putSetting(_kEvents, jsonEncode(events));
+    await _analyze();
+    await _careFeedback(history, added, important: true);
+  }
+
+  static const _scenarioTime = {'normal_dinner': (18, 0), 'late_high_carb_dinner': (19, 15), 'post_meal_high': (21, 15),
+    'night_low': (23, 40), 'missed_med': (18, 0), 'post_meal_walk': (18, 40), 'new_lab': (9, 0)};
+  static const scenarioName = {'normal_dinner': '一般晚餐', 'late_high_carb_dinner': '晚吃＋高碳水晚餐', 'post_meal_high': '餐后血糖偏高',
+    'night_low': '半夜低血糖', 'missed_med': '漏吃药', 'post_meal_walk': '饭后散步', 'new_lab': '新的医院检验'};
+
+  /// 情境按钮：在示范的「下一天」模拟刚刚发生的一件事。
+  Future<void> _demoScenario(String name) async {
+    final base = scenarioDay ??= viewDay.add(const Duration(days: 1)); // 情境发生在目前最后一天的隔天，之后的情境同一天
+    final (h, m) = _scenarioTime[name]!;
+    final at = DateTime(base.year, base.month, base.day, h, m);
+    try {
+      final r = await ref.read(apiClientProvider).careScenario(name, at.toIso8601String().substring(0, 19), cgm: demoCgm);
+      final added = [for (final (i, e) in (r['events'] as List).cast<Map<String, dynamic>>().indexed)
+        {'id': 'demo-s-${at.millisecondsSinceEpoch}-$i', ...e}];
+      final history = projected;
+      events = [...events, ...added];
+      await store.putSetting(_kEvents, jsonEncode(events));
+      await _analyze(background: true);
+      await _careFeedback(history, added);
+    } catch (e) {
+      if (mounted) setState(() => error = e.toString());
+    }
   }
 
   Future<void> _askSymptoms() async {
