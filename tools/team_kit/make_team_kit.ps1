@@ -16,6 +16,7 @@ Copy-Item (Join-Path $PSScriptRoot '一键启动MediLens.cmd') $Out
 $guide = Get-Content (Join-Path $PSScriptRoot '【先看我】组员安装与使用.md') -Raw -Encoding UTF8
 [IO.File]::WriteAllText((Join-Path $Out '【先看我】组员安装与使用.md'), $guide.Replace('{DATE}', (Get-Date -Format 'yyyy-MM-dd')), [Text.UTF8Encoding]::new($false))
 Copy-Item (Join-Path $Root 'docs\MediLens成果与技术说明（组员版）.md') $Out
+Copy-Item (Join-Path $Root 'docs\MVP3_照护助理说明与演示.md') $Out
 if ($Extras -and (Test-Path $Extras)) { Copy-Item $Extras (Join-Path $Out (Split-Path $Extras -Leaf)) -Recurse }
 
 $lines = foreach ($name in 'MediLens-手机版.apk', 'MediLens-模拟器版.apk') {
