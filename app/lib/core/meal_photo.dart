@@ -12,13 +12,14 @@ Future<List<FoodReference>> mealPhotoSuggestions(
   Uint8List bytes,
   List<FoodReference> references,
 ) async {
-  final labels = (await rootBundle.loadString('assets/nutrition/labels.txt'))
+  final labels = (await rootBundle.loadString('assets/nutrition/labels_cn.txt'))
       .trim()
       .split('\n');
   final tensor = await compute(_photoInput, bytes);
   final session = await OnnxRuntime().createSessionFromAsset(
     // The runtime caches by filename; a new model needs a new hash suffix.
-    'assets/nutrition/food101-8021c00d.onnx',
+    // 中式食物模型：CNFOOD-241 微调（59 类，见 assets/nutrition/SOURCES.md）
+    'assets/nutrition/food_cn-c9a5f4f7.onnx',
     options: OrtSessionOptions(intraOpNumThreads: 2),
   );
   try {
@@ -39,11 +40,18 @@ Future<List<FoodReference>> mealPhotoSuggestions(
           0,
           (sum, value) => sum + math.exp(value - peak),
         );
-        final first = labels[order.first].trim();
-        // This is a conservative UI threshold, not a calibrated probability
-        // of identifying a meal or an out-of-distribution detector.
-        if (1 / total < 0.50) return [];
-        return references.where((food) => food.labels.contains(first)).toList();
+        double prob(int i) => math.exp(scores[i] - peak) / total;
+        // 最高机率太低时不给候选（不是经过校准的机率，也不是「不是食物」的判断）。
+        // 1,986 张测试照片：门槛 0.2 时 94% 会给候选，其中前三名含正确答案 93%；由用户点选确认。
+        if (prob(order.first) < 0.20) return [];
+        final picked = [
+          for (final i in order.take(3))
+            if (i == order.first || prob(i) >= 0.05) labels[i].trim(),
+        ];
+        return [
+          for (final label in picked)
+            ...references.where((food) => food.labels.contains(label)),
+        ];
       } finally {
         for (final value in output.values) {
           await value.dispose();

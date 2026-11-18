@@ -55,7 +55,8 @@ class _MealPhotoPageState extends State<MealPhotoPage> {
       if (!mounted) return;
       setState(() {
         suggestions = matches;
-        message = matches.isEmpty ? '照片没有找到可用候选。请选择与实际配方最接近的参考食物。' : '请核对照片候选，也可以从食物库重新选择。';
+        message = matches.isEmpty ? '照片没有找到可用候选。请选择与实际配方最接近的参考食物。'
+            : '照片可能是以下几种（按可能性排列），请点选正确的，也可以从食物库重新选择。';
       });
     } catch (_) {
       if (mounted) setState(() => message = '暂时无法识别照片，可以手动选择参考食物。');
@@ -120,7 +121,7 @@ class _MealPhotoPageState extends State<MealPhotoPage> {
             if (suggestions.isNotEmpty)
               Wrap(spacing: 8, children: [
                 for (final candidate in suggestions)
-                  ChoiceChip(label: Text(candidate.name), selected: selected == candidate,
+                  ChoiceChip(label: Text(candidate.label), selected: selected == candidate,
                       onSelected: busy ? null : (value) => setState(() => selected = value ? candidate : null)),
               ]),
             const SizedBox(height: 12),
@@ -129,7 +130,7 @@ class _MealPhotoPageState extends State<MealPhotoPage> {
               child: DropdownButtonHideUnderline(child: DropdownButton<FoodReference>(
                 value: selected, isExpanded: true, hint: const Text('从 USDA 食物库选择'),
                 onChanged: busy ? null : (value) => setState(() => selected = value),
-                items: [for (final value in foods) DropdownMenuItem(value: value, child: Text(value.name))],
+                items: [for (final value in foods) DropdownMenuItem(value: value, child: Text(value.label))],
               )),
             ),
             const SizedBox(height: 8),
@@ -163,7 +164,8 @@ class _MealPhotoPageState extends State<MealPhotoPage> {
               Text('${mealSlotZh[slot]}总碳水约 ${record.carbs.toStringAsFixed(1)} g', key: const Key('meal_total'),
                   style: Theme.of(context).textTheme.titleMedium),
               Text(record.sugars == null ? '部分食物数据库未提供总糖' : '其中总糖约 ${record.sugars!.toStringAsFixed(1)} g'),
-              Text('来源：USDA FNDDS 2021–2023 · ${all.map((i) => i.food.sourceName).toSet().join('、')}'),
+              Text('来源：USDA FNDDS 2021–2023 · ${all.map((i) => i.food.sourceName).toSet().join('、')}'
+                '${all.any((i) => i.food.approx) ? '（含近似条目：USDA 没有完全对应的中式菜）' : ''}'),
             ],
             const SizedBox(height: 8),
             const Text('估算基于数据库参考配方。酱料、加糖和份量误差会改变实际结果，只供参考，不当作实测。用药请按医嘱。'),

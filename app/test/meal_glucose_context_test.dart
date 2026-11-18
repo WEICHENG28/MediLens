@@ -45,12 +45,14 @@ void main() {
 
   test('USDA grams scale total carbohydrate and sugar independently', () async {
     final foods = await FoodReference.load();
-    final rice = foods.singleWhere((food) => food.fdcId == 2708408);
+    final rice = foods.singleWhere((food) => food.fdcId == 2708408 && food.labels.isEmpty);
     final meal = MealNutrition(rice, 150);
     expect(meal.carbs, 42);
     expect(meal.sugars, closeTo(0.075, 0.0001));
     expect(meal.toEvent()['meal_fdc_id'], rice.fdcId);
-    expect(foods, hasLength(24));
+    expect(foods, hasLength(83));
+    expect(foods.where((f) => f.approx).every((f) => f.label.endsWith('（近似）')), isTrue);
+    expect(foods.firstWhere((f) => f.labels.contains('cn172')).name, '米饭');
   });
 
   test('one current measurement alone is never a direction', () {

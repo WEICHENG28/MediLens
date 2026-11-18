@@ -18,7 +18,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 BUILD = ROOT / ".datasets" / "food_cn_build"
 ZIP = ROOT / ".datasets" / "cnfood241" / "val600x600.zip"
-OLD = ROOT / "app" / "assets" / "nutrition" / "food101-8021c00d.onnx"
+OLD = ROOT / ".datasets" / "food101-8021c00d.onnx"  # 原模型已从 APP 移除；比较时从 git 历史取出：git show 282cea0:app/assets/nutrition/food101-8021c00d.onnx（labels.txt 同理）
 OVERLAP = {130: "fried_rice", 159: "dumplings", 165: "gyoza", 204: "ice_cream"}
 NAMES = {130: "炒饭", 159: "饺子", 165: "煎饺", 204: "冰激凌"}
 
@@ -36,10 +36,10 @@ def prep(data: bytes) -> np.ndarray:
 
 def main():
     split = json.loads((BUILD / "split.json").read_text(encoding="utf-8"))
-    old_labels = (ROOT / "app" / "assets" / "nutrition" / "labels.txt").read_text().split()
+    old_labels = (ROOT / ".datasets" / "food101_labels.txt").read_text().split()
     new_labels = (BUILD / "labels_cn.txt").read_text().split()
     old = ort.InferenceSession(str(OLD), providers=["CPUExecutionProvider"])
-    new = ort.InferenceSession(str(BUILD / "food_cn.onnx"), providers=["CPUExecutionProvider"])
+    new = ort.InferenceSession(str(BUILD / (sys.argv[1] if len(sys.argv) > 1 else "food_cn.onnx")), providers=["CPUExecutionProvider"])
     z = zipfile.ZipFile(ZIP)
     out = {}
     for c, lab in OVERLAP.items():

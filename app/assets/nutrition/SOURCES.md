@@ -1,4 +1,6 @@
 # 餐饮估算资料
 
 - USDA FoodData Central，FNDDS 2021–2023，2024-10 发布。每项保存 FDC ID、原文描述、每 100 g 总碳水（营养素 1005）及总糖（营养素 2000）。来源为官方 [下载页](https://fdc.nal.usda.gov/download-datasets/)。食物克重由用户确认。混合餐食的真实配方和标签可能与数据库样品不同。
-- Food-101 MobileNet V2，Apache-2.0。[训练权重](https://huggingface.co/AlexKoff88/mobilenet_v2_food101/tree/7d05d3878ee7f2aad7ad159018a8e5fdb4953d41) SHA-256 为 `42cd5d9988f0830588b3be5107197c9b622c9b73426377975c07e8b24e346680`。[训练代码](https://github.com/AlexKoff88/mobilenetv2_food101)。使用 epoch 27 权重，去掉 `module.` 前缀后载入 torchvision MobileNet V2 的 101 类模型，按 eval 模式重新导出 ONNX opset 17。ONNX SHA-256 为 `8021c00db96c89fa704faca0ed079a58ee3cc9b7806a565a55e709bafe4acc1f`。类别为 torchvision Food101 排序。照片候选须由用户确认后才能与 USDA 条目关联。
+- 中式食物辨识模型 `food_cn-c9a5f4f7.onnx`（59 类，标签 `labels_cn.txt`，cnXXX 为 CNFOOD-241 类别编号）：以 torchvision ImageNet 预训练 MobileNet V2（冻结）为特征提取器，在 [CNFOOD-241](https://data.mendeley.com/datasets/fspyss5zbb/1)（DOI 10.17632/fspyss5zbb.1，**CC BY-NC 3.0，只能非商业使用**；部分照片来自 ChineseFoodNet）上训练新的分类层（1280→512→59）。训练 56,410 张（完整训练集＋验证集 70%），验证集保留 30%（1,986 张）测试：top-1 74%、top-3 91%（三种分类层在同一测试集上比较后选出，数字可能略为乐观）。APP 在最高机率 ≥0.2 时给前三名候选：测试照片 94% 会给候选，其中前三名含正确答案 93%。ONNX SHA-256 为 `c9a5f4f77ced65b65b8847e3cb92e6c88c3824b6536203165837d25bb600644d`。训练与评估程序见 `tools/food_cn/`。若要商业使用，须改用其他授权资料重新训练。
+- 中式菜色的营养条目：`food_reference.json` 中带 `cnXXX` 标签的 59 项，取自上述 USDA FNDDS 最接近的条目（对照表 `tools/food_cn/cn_food_reference.json`）；42 项标为近似（`approx`），APP 显示「近似」。照片候选须由用户确认后才估算碳水。
+- 原 Food-101 MobileNet V2（Apache-2.0，ONNX SHA-256 `8021c00d…`）已由上述模型取代，原 24 项西式食物保留供手动选择。

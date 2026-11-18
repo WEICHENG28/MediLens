@@ -7,7 +7,9 @@
 
 用法（Anaconda Python，含 torch/torchvision）：
   python tools/food_cn/train_food_cn.py extract   # 抽特征（只需一次）
-  python tools/food_cn/train_food_cn.py train     # 训练、评估、导出
+  python tools/food_cn/train_food_cn.py train     # 训练、评估、导出（只用验证集的 70%）
+  python tools/food_cn/train_food_cn.py extract_full          # 完整训练集特征（9.3 GB 压缩档）
+  python tools/food_cn/train_food_cn.py train full [mlp512]   # 加入完整训练集；mlp512 为多一层隐藏层的分类层
 资料与特征放在 D:/MediLens/.datasets/（不上传 GitHub）。
 """
 from __future__ import annotations
@@ -29,6 +31,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / ".datasets" / "cnfood241"
 ZIP = DATA / "val600x600.zip"
+TRAIN_ZIP = DATA / "train600x600.zip"   # 完整训练集（9.3 GB），只用于训练；测试照片仍是验证集保留的 30%
 OUT = ROOT / ".datasets" / "food_cn_build"
 SEED = 2026
 
@@ -130,18 +133,60 @@ def extract():
     print("特征完成", {p: len(v) for p, v in feats.items()}, f"{time.time() - t0:.0f}s")
 
 
-def train():
+def extract_full():
+    """完整训练集里挑选类别的照片：原图＋一张增强版的特征。"""
+    torch.set_num_threads(12)
+    d = np.load(OUT / "features.npz")
+    order = [int(c) for c in d["classes"]]
+    idx = {c: i for i, c in enumerate(order)}
+    z = zipfile.ZipFile(TRAIN_ZIP)
+    names = sorted(n for n in z.namelist() if n.lower().endswith((".jpg", ".jpeg", ".png")) and class_of(n) in idx)
+    print("完整训练集照片", len(names), flush=True)
+    net = backbone()
+    rng = random.Random(SEED + 2)
+    xs, ys, t0 = [], [], time.time()
+    jobs = [(n, False) for n in names] + [(n, True) for n in names]
+    for i in range(0, len(jobs), 64):
+        part = jobs[i:i + 64]
+        batch = []
+        for n, aug in part:
+            try:
+                batch.append(load_image(z.read(n), aug, rng))
+            except Exception:
+                batch.append(None)
+        keep = [(b, class_of(n)) for b, (n, _) in zip(batch, part) if b is not None]
+        with torch.no_grad():
+            f = net(torch.stack([b for b, _ in keep])).numpy()
+        xs.extend(f)
+        ys.extend(idx[c] for _, c in keep)
+        if i % 6400 == 0:
+            print(f"{i + len(part)}/{len(jobs)}  {time.time() - t0:.0f}s", flush=True)
+    np.savez_compressed(OUT / "features_full.npz", x=np.array(xs, np.float32), y=np.array(ys, np.int64))
+    print("完整训练集特征完成", len(xs), f"{time.time() - t0:.0f}s")
+
+
+def train(full: bool = False, hidden: int = 0):
     d = np.load(OUT / "features.npz")
     order = list(d["classes"])
     xtr = torch.from_numpy(np.concatenate([d["x_train"], d["x_train_aug"]]))
     ytr = torch.from_numpy(np.concatenate([d["y_train"], d["y_train_aug"]]))
+    n_images = len(d["y_train"])  # 不含增强版
+    if full:
+        f = np.load(OUT / "features_full.npz")
+        xtr = torch.cat([xtr, torch.from_numpy(f["x"])])
+        ytr = torch.cat([ytr, torch.from_numpy(f["y"])])
+        n_images += len(f["y"]) // 2
     xte, yte = torch.from_numpy(d["x_test"]), torch.from_numpy(d["y_test"])
     torch.manual_seed(SEED)
-    head = nn.Sequential(nn.Dropout(0.2), nn.Linear(1280, len(order)))
+    if hidden:
+        head = nn.Sequential(nn.Dropout(0.2), nn.Linear(1280, hidden), nn.ReLU(), nn.Dropout(0.3), nn.Linear(hidden, len(order)))
+    else:
+        head = nn.Sequential(nn.Dropout(0.2), nn.Linear(1280, len(order)))
+    epochs = 40 if full else 60
     opt = torch.optim.AdamW(head.parameters(), lr=1e-3, weight_decay=1e-3)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, 60)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, epochs)
     lossf = nn.CrossEntropyLoss(label_smoothing=0.1)
-    for ep in range(60):
+    for ep in range(epochs):
         head.train()
         perm = torch.randperm(len(xtr))
         for i in range(0, len(perm), 256):
@@ -167,26 +212,32 @@ def train():
         keep = conf >= g
         gates[str(g)] = {"coverage": round(keep.float().mean().item(), 3),
                          "top1_when_shown": round((logits[keep].argmax(1) == yte[keep]).float().mean().item(), 3) if keep.any() else None}
-    report = {"classes": len(order), "train_images": int(len(d["y_train"])), "test_images": int(len(yte)),
+    report = {"classes": len(order), "train_images": int(n_images),
+              "full_train_set": full, "head": f"mlp{hidden}" if hidden else "linear", "test_images": int(len(yte)),
               "top1": round(top1, 3), "top3": round(top3, 3), "confidence_gate": gates, "per_class": per}
-    (OUT / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+    tag = ("_full" if full else "") + (f"_mlp{hidden}" if hidden else "")
+    (OUT / f"report{tag}.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps({k: v for k, v in report.items() if k != "per_class"}, ensure_ascii=False))
     worst = sorted(per.items(), key=lambda kv: kv[1]["top1"])[:8]
     print("最弱的类别", worst)
     # 导出：骨干＋新分类层（去掉 Dropout），输出 logits；与现有 APP 推理一致
-    full = backbone()
-    full.classifier = nn.Sequential(head[1])
-    full.eval()
+    model = backbone()
+    model.classifier = nn.Sequential(*[m for m in head if not isinstance(m, nn.Dropout)])
+    model.eval()
     # torch 2.3 在导出最后会尝试附加 onnxscript 自定义函数（需要 onnx 套件）；本模型没有自定义函数，直接略过这一步
     from torch.onnx._internal import onnx_proto_utils
     onnx_proto_utils._add_onnxscript_fn = lambda model_bytes, custom_opsets: model_bytes
-    torch.onnx.export(full, torch.zeros(1, 3, 224, 224), str(OUT / "food_cn.onnx"), input_names=["input"],
+    torch.onnx.export(model, torch.zeros(1, 3, 224, 224), str(OUT / f"food_cn{tag}.onnx"), input_names=["input"],
                       output_names=["logits"], opset_version=17, dynamic_axes=None)
     (OUT / "labels_cn.txt").write_text("\n".join(f"cn{int(c):03d}" for c in order) + "\n", encoding="utf-8")
     (OUT / "names_cn.json").write_text(json.dumps({f"cn{int(c):03d}": CLASSES[int(c)] for c in order}, ensure_ascii=False, indent=1),
                                         encoding="utf-8")
-    print("已导出", OUT / "food_cn.onnx")
+    print("已导出", OUT / f"food_cn{tag}.onnx")
 
 
 if __name__ == "__main__":
-    {"extract": extract, "train": train}[sys.argv[1]]()
+    cmd = sys.argv[1]
+    if cmd == "train":
+        train(full="full" in sys.argv[2:], hidden=int(next((a[3:] for a in sys.argv[2:] if a.startswith("mlp")), 0)))
+    else:
+        {"extract": extract, "extract_full": extract_full}[cmd]()

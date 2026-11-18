@@ -9,6 +9,7 @@ class FoodReference {
   final double carbs;
   final double? sugars;
   final List<String> labels;
+  final bool approx; // USDA 没有完全对应的中式菜，用最接近的条目
 
   const FoodReference({
     required this.fdcId,
@@ -17,7 +18,11 @@ class FoodReference {
     required this.carbs,
     required this.sugars,
     required this.labels,
+    this.approx = false,
   });
+
+  /// 显示名称：近似条目加注「近似」。
+  String get label => approx ? '$name（近似）' : name;
 
   factory FoodReference.fromJson(Map<String, dynamic> data) => FoodReference(
     fdcId: data['fdc_id'] as int,
@@ -26,6 +31,7 @@ class FoodReference {
     carbs: (data['carbs_per_100g'] as num).toDouble(),
     sugars: (data['sugars_per_100g'] as num?)?.toDouble(),
     labels: (data['labels'] as List<dynamic>).cast<String>(),
+    approx: data['approx'] == true,
   );
 
   String get source => 'https://fdc.nal.usda.gov/food-details/$fdcId/nutrients';
