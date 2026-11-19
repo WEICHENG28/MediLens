@@ -11,11 +11,11 @@ from __future__ import annotations
 
 import random
 from collections import defaultdict
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from statistics import median
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # ---------- 数据结构 ----------
 
@@ -26,22 +26,32 @@ MealSlot = Literal["breakfast", "lunch", "dinner", "snack"]
 
 class Event(BaseModel):
     """统一时间轴上的一笔记录。新增字段全部可选，旧版 APP 送来的记录照常可用。"""
+    model_config = ConfigDict(extra="allow", allow_inf_nan=False)
+    id: str | None = None
+    schema_version: int = Field(default=1, ge=1)
+    is_simulated: bool = False
+    source: str | None = None
+    recorded_at: datetime | None = None
+    timezone_name: str = "Asia/Shanghai"
+    unit: Literal["mmol/L", "mg/dL"] = "mmol/L"
+    original_glucose: float | None = Field(default=None, gt=0)
+    original_unit: str | None = None
     type: EventType
     time: datetime
     taken: bool = True                 # insulin/medication：False 表示记录「漏了」
     insulin_kind: str | None = None    # rapid（餐时）/ basal（基础）——仅记录，不做剂量建议
     med_name: str | None = None        # medication：药名（仅记录，不做剂量建议）
     meal_size: Literal["small", "normal", "large"] | None = None
-    minutes: int | None = None         # exercise 时长
-    glucose: float | None = None       # mmol/L
+    minutes: int | None = Field(default=None, gt=0, le=1440)         # exercise 时长
+    glucose: float | None = Field(default=None, gt=0)       # mmol/L
     task: str | None = None            # reminder：提醒的任务
     slot: str | None = None            # reminder：提醒时段（自适应提醒用）
     # ---- 餐点（照片估算可修正，保留原始估算值与修正记录：估算不当作实测）----
     meal_slot: MealSlot | None = None
-    food: str | None = None            # 食物描述，如「米饭＋红烧肉＋甜饮料」
-    carbs_g: float | None = Field(default=None, ge=0, le=500)   # 修正后（若有）的总碳水
-    sugars_g: float | None = Field(default=None, ge=0, le=500)
-    grams: float | None = Field(default=None, ge=0, le=3000)    # 主食份量
+    food: str | None = Field(default=None, validation_alias=AliasChoices("food", "meal_food"))            # 食物描述，如「米饭＋红烧肉＋甜饮料」
+    carbs_g: float | None = Field(default=None, ge=0, le=500, validation_alias=AliasChoices("carbs_g", "meal_carbs_g"))   # 修正后（若有）的总碳水
+    sugars_g: float | None = Field(default=None, ge=0, le=500, validation_alias=AliasChoices("sugars_g", "meal_sugars_g"))
+    grams: float | None = Field(default=None, ge=0, le=3000, validation_alias=AliasChoices("grams", "meal_grams"))    # 主食份量
     sweet_drink: bool | None = None
     estimate: Literal["photo", "manual", "voice", "weighed"] | None = None
     original_grams: float | None = Field(default=None, ge=0, le=3000)  # 修正前的估算值
@@ -59,6 +69,71 @@ class Event(BaseModel):
     steps: int | None = Field(default=None, ge=0, le=100000)   # 当天步数
     lab: dict[str, float] | None = None  # 医院检验：hba1c(%)、fpg(mmol/L)、clinic_sbp、clinic_dbp
     text: str | None = Field(default=None, max_length=500)    # note / 检验备注
+
+    @field_validator("time", "recorded_at")
+    @classmethod
+    def normalize_time(cls, value):
+        if value is None:
+            return None
+        # Legacy timestamps represent local China time. Algorithms use a single
+        # local time convention, including when a client sends UTC timestamps.
+        china = timezone(timedelta(hours=8))
+        local = value.astimezone(china).replace(tzinfo=None) if value.tzinfo else value
+        return local
+
+    @model_validator(mode="after")
+    def validate_measurement(self):
+        if self.type == "glucose":
+            if self.glucose is None:
+                raise ValueError("血糖记录必须填写数值")
+            if self.unit == "mg/dL":
+                self.original_glucose = self.glucose
+                self.original_unit = self.unit
+                self.glucose /= 18
+                self.unit = "mmol/L"
+            if self.glucose > 60:
+                raise ValueError("请核对血糖数值及单位")
+        if self.type == "exercise" and self.minutes is None:
+            raise ValueError("运动记录必须填写时长")
+        if self.type == "bp":
+            if self.systolic is None or self.diastolic is None:
+                raise ValueError("血压记录必须同时填写高压与低压")
+            if self.systolic <= self.diastolic:
+                raise ValueError("高压（收缩压）应大于低压（舒张压）")
+        if self.type == "weight" and self.weight_kg is None:
+            raise ValueError("体重记录必须填写数值")
+        if self.type == "steps" and self.steps is None:
+            raise ValueError("步数记录必须填写数值")
+        if self.type == "lab" and not self.lab:
+            raise ValueError("医院检验记录至少要有一项数值")
+        if self.sugars_g is not None and self.carbs_g is not None and self.sugars_g > self.carbs_g + 0.5:
+            raise ValueError("总糖不能大于总碳水")
+        if self.original_carbs_g is not None and self.carbs_g is None:
+            raise ValueError("有修正前的碳水，就要有修正后的碳水")
+        return self
+
+
+def validate_actual_event_times(events: list[Event]) -> None:
+    """所有接收记录的入口共用：模拟与实际记录不能混在一起分析；实际记录不能晚于现在（容许 5 分钟时钟误差）。"""
+    if any(e.is_simulated for e in events) and not all(e.is_simulated for e in events):
+        raise ValueError("模拟记录与实际记录请分开分析")
+    china = timezone(timedelta(hours=8))
+    limit = datetime.now(china).replace(tzinfo=None) + timedelta(minutes=5)
+    if any(e.time > limit and not e.is_simulated for e in events):
+        raise ValueError("记录时间不能晚于当前时间")
+
+
+def dedupe_events(events: list[Event]) -> list[Event]:
+    """相同编号的记录只算一次（重送、导入重复时不重复统计）；没有编号的旧记录照常保留。"""
+    seen: set[str] = set()
+    out = []
+    for e in events:
+        if e.id:
+            if e.id in seen:
+                continue
+            seen.add(e.id)
+        out.append(e)
+    return out
 
 
 class ScheduleItem(BaseModel):
@@ -194,7 +269,7 @@ def _compare(id_, title, a_label, a, b_label, b, rng, min_n=4, min_diff=1.0, fin
 
 def _by_type(events: list[Event]) -> dict[str, list[Event]]:
     out: dict[str, list[Event]] = defaultdict(list)
-    for e in sorted(events, key=lambda e: e.time):
+    for e in sorted(dedupe_events(events), key=lambda e: e.time):
         out[e.type].append(e)
     return out
 

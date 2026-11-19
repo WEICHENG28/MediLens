@@ -110,7 +110,7 @@ class _LifePageState extends ConsumerState<LifePage> {
     await ref.read(remindersProvider.notifier).syncFromStore();
   }
 
-  String _now() => ref.read(taskClockProvider)().toIso8601String().substring(0, 19);
+  String _now() => ref.read(taskClockProvider)().toIso8601String();
   String _today() => taskDay(ref.read(taskClockProvider)());
 
   Future<void> _analyze({bool background = false}) async {
@@ -218,7 +218,7 @@ class _LifePageState extends ConsumerState<LifePage> {
           }
         }
       }
-      final record = {'id': const Uuid().v4(), 'time': _now(), ...e};
+      final record = {'id': const Uuid().v4(), 'time': _now(), 'recorded_at': _now(), 'schema_version': 2, 'timezone_name': DateTime.now().timeZoneName, 'source': 'manual', 'is_simulated': false, if (e['type'] == 'glucose') 'unit': 'mmol/L', ...e};
       final history = projected;
       final next = [...events, record];
       await store.putSetting(_kEvents, jsonEncode(next));
@@ -1167,11 +1167,11 @@ class _GlucoseOverview extends StatelessWidget {
           Row(children: [
             box('最近一次记录',
                 Text.rich(TextSpan(children: [
-                  TextSpan(text: last == null ? '—' : fmt((last['glucose'] as num).toDouble()),
+                  TextSpan(text: last == null ? '—' : fmt(double.parse(glucoseMmol(last)!.toStringAsFixed(1))),
                       style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
                   const TextSpan(text: ' mmol/L', style: TextStyle(fontSize: 12, color: Colors.black54)),
                 ]), key: const Key('last_glucose')),
-                last == null ? '还没有血糖记录' : '${(last['time'] as String).substring(11, 16)} · ${rangeLabel((last['glucose'] as num).toDouble(), target).replaceAll('目标', '').replaceAll('在', '')}'),
+                last == null ? '还没有血糖记录' : '${(last['time'] as String).substring(11, 16)} · ${rangeLabel(glucoseMmol(last)!, target).replaceAll('目标', '').replaceAll('在', '')}'),
             const SizedBox(width: 10),
             box('我的目标范围',
                 Text('${fmt(target.$1)}–${fmt(target.$2)}', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),

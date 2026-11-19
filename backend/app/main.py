@@ -24,7 +24,7 @@ from .care_chat import CareChatRequest, CareChatResponse, care_chat
 from .care_feedback import (DailyRequest, DailySummary, GoalRequest, GoalResponse, RecordRequest, RecordResponse,
                             VisitRequest, VisitSummary, WeeklyReport, WeeklyRequest, daily_summary, goal as care_goal_impl,
                             on_record, visit_summary, weekly_report)
-from .lifestyle import LifestyleRequest, LifestyleResponse, analyze_lifestyle
+from .lifestyle import LifestyleRequest, LifestyleResponse, analyze_lifestyle, validate_actual_event_times
 from .schemas import AnalyzeRequest
 from .ocr_review import OcrReviewRequest, OcrReviewResponse, review as review_ocr
 
@@ -109,6 +109,10 @@ def chat_message(req: ChatRequest) -> ChatResponse:
 @app.post("/api/v1/lifestyle", response_model=LifestyleResponse)
 def lifestyle(req: LifestyleRequest) -> LifestyleResponse:
     """生活作息 × 血糖规律、陪伴宠物状态与提醒（原型）。只接收打卡记录，不含身份信息。"""
+    try:
+        validate_actual_event_times(req.events)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
     return analyze_lifestyle(req)
 
 
@@ -136,31 +140,44 @@ def lifestyle_demo(req: LifestyleDemoRequest) -> dict[str, Any]:
             "schedule": [s.model_dump() for s in SCHEDULE]}
 
 
+def _check_events(*groups) -> None:
+    """与 /lifestyle、账户存档相同的检查：模拟与实际不混用、实际记录不晚于现在。"""
+    try:
+        validate_actual_event_times([e for g in groups for e in g])
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
 @app.post("/api/v1/care/profile", response_model=CareResponse)
 def care_profile(req: CareRequest) -> CareResponse:
     """照护档案：融合医院检验与居家记录，输出事实、关联、待问医生与仍然不能判断（只接收记录，不含身份信息）。"""
+    _check_events(req.events)
     return build_profile(req)
 
 
 @app.post("/api/v1/care/record", response_model=RecordResponse)
 def care_record(req: RecordRequest) -> RecordResponse:
     """即时回馈：把刚记下的记录放进整体状况里回应，并回传新的照护档案与提醒。"""
+    _check_events(req.events, req.new)
     return on_record(req)
 
 
 @app.post("/api/v1/care/daily", response_model=DailySummary)
 def care_daily(req: DailyRequest) -> DailySummary:
+    _check_events(req.events)
     return daily_summary(CareRequest(**req.model_dump(exclude={"day"})), req.day)
 
 
 @app.post("/api/v1/care/goal", response_model=GoalResponse)
 def care_goal(req: GoalRequest) -> GoalResponse:
     """改善计划：建议一个只涉及生活习惯的小目标，并用自己的资料比较前后。"""
+    _check_events(req.events)
     return care_goal_impl(req)
 
 
 @app.post("/api/v1/care/weekly", response_model=WeeklyReport)
 def care_weekly(req: WeeklyRequest) -> WeeklyReport:
+    _check_events(req.events)
     base = CareRequest(**req.model_dump(include=set(CareRequest.model_fields)))
     return weekly_report(base, req.end, req.goal_id, req.started)
 
@@ -168,12 +185,14 @@ def care_weekly(req: WeeklyRequest) -> WeeklyReport:
 @app.post("/api/v1/care/visit", response_model=VisitSummary)
 def care_visit(req: VisitRequest) -> VisitSummary:
     """复诊摘要：一页整理，附要问医生的问题。"""
+    _check_events(req.events)
     return visit_summary(CareRequest(**req.model_dump(exclude={"days"})), req.days)
 
 
 @app.post("/api/v1/care/chat", response_model=CareChatResponse)
 def care_chat_message(req: CareChatRequest) -> CareChatResponse:
     """生活照护问答：依据照护档案回答个人问题，经同一套安全分类与输出校验。"""
+    _check_events(req.events)
     return care_chat(req)
 
 
@@ -200,7 +219,7 @@ def care_demo(req: CareDemoRequest) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail=f"state 须为 {START_STATES} 之一")
     end = date.fromisoformat(req.today) if req.today else date.today()
     events = start_state(req.state, end, cgm=req.cgm)
-    return {"synthetic": True, "profile": PROFILE, "events": dump(events),
+    return {"synthetic": True, "profile": PROFILE, "events": [{**event, "is_simulated": True} for event in dump(events)],
             "schedule": [s.model_dump() for s in CARE_SCHEDULE]}
 
 
@@ -220,4 +239,4 @@ def care_scenario(req: CareScenarioRequest) -> dict[str, Any]:
 
     if req.name not in SCENARIOS:
         raise HTTPException(status_code=422, detail=f"name 须为 {list(SCENARIOS)} 之一")
-    return {"synthetic": True, "events": dump(scenario(req.name, datetime.fromisoformat(req.at), cgm=req.cgm))}
+    return {"synthetic": True, "events": [{**event, "is_simulated": True} for event in dump(scenario(req.name, datetime.fromisoformat(req.at), cgm=req.cgm))]}

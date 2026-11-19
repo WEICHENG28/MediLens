@@ -8,6 +8,7 @@
 """
 from __future__ import annotations
 
+import json
 import hashlib
 import hmac
 import os
@@ -216,6 +217,9 @@ def delete_account(body: PasswordCheck, user: User = Depends(current_user)) -> d
 # ---------- 个人资料（对应 APP 的 LocalStore：报告 + 设置） ----------
 class Value(BaseModel):
     value: str
+    # 上次读到的版本（updated_at）。带上时，若服务器已有更新的版本（例如另一台设备写入），回 409 并附上服务器内容，
+    # 由 APP 合并后重送；不带时照旧直接覆盖（旧版 APP 兼容）。
+    base: float | None = None
 
 
 def _check_size(s: str) -> None:
@@ -229,15 +233,36 @@ def all_settings(user: User = Depends(current_user)) -> dict[str, str]:
         return dict(con.execute("SELECT key, value FROM settings WHERE user_id = ?", (user.id,)).fetchall())
 
 
+@router.get("/store/settings-versions")
+def settings_versions(user: User = Depends(current_user)) -> dict[str, float]:
+    with _db() as con:
+        return dict(con.execute("SELECT key, updated_at FROM settings WHERE user_id = ?", (user.id,)).fetchall())
+
+
 @router.put("/store/settings/{key}")
-def put_setting(key: str, body: Value, user: User = Depends(current_user)) -> dict[str, bool]:
+def put_setting(key: str, body: Value, user: User = Depends(current_user)) -> dict[str, Any]:
     if not 0 < len(key) <= 100:
         raise HTTPException(status_code=422, detail="设置名称不正确")
     _check_size(body.value)
+    if key == "life_events":
+        from .lifestyle import Event, validate_actual_event_times
+        try:
+            records = json.loads(body.value)
+            if not isinstance(records, list) or len(records) > 20000:
+                raise ValueError("生活记录必须是最多20000条的列表")
+            validate_actual_event_times([Event.model_validate(record) for record in records])
+        except (ValueError, TypeError) as error:
+            raise HTTPException(status_code=422, detail="生活记录格式或数值不正确") from error
     with _db() as con:
+        if body.base is not None:
+            row = con.execute("SELECT value, updated_at FROM settings WHERE user_id = ? AND key = ?", (user.id, key)).fetchone()
+            if row and row[1] > body.base + 1e-6:
+                raise HTTPException(status_code=409, detail={"message": "另一台设备已更新这份记录，请合并后重试",
+                                                             "value": row[0], "updated_at": row[1]})
+        now = time.time()
         con.execute("INSERT INTO settings VALUES (?, ?, ?, ?) ON CONFLICT(user_id, key) DO UPDATE SET value = excluded.value, "
-                    "updated_at = excluded.updated_at", (user.id, key, body.value, time.time()))
-    return {"ok": True}
+                    "updated_at = excluded.updated_at", (user.id, key, body.value, now))
+    return {"ok": True, "updated_at": now}
 
 
 @router.get("/store/reports")

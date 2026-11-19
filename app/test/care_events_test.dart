@@ -5,11 +5,11 @@ import 'package:medilens/core/care_reminders.dart';
 void main() {
   final now = DateTime(2026, 11, 17, 19, 10);
 
-  test('送往后端只带时间、类型与数值；日记文字不送出；旧版拍餐字段换成新名称', () {
+  test('送往后端只带编号、时间、类型与数值；日记文字不送出；旧版拍餐字段换成新名称', () {
     expect(careEventJson({'id': 'x', 'type': 'note', 'time': '2026-11-17T08:00:00', 'text': '心情不好'}), isNull);
     final g = careEventJson({'id': 'a', 'type': 'glucose', 'time': '2026-11-17T08:00:00', 'glucose': 7.2, 'after': 'meal',
       'glucose_source': 'finger'})!;
-    expect(g.keys, unorderedEquals(['type', 'time', 'glucose', 'glucose_source']));
+    expect(g.keys, unorderedEquals(['id', 'type', 'time', 'glucose', 'glucose_source'])); // 编号用来让后端去除重复
     final old = careEventJson({'type': 'meal', 'time': '2026-11-17T18:00:00', 'meal_food': '米饭', 'meal_grams': 150,
       'meal_carbs_g': 42.0, 'meal_fdc_id': 1})!;
     expect(old['food'], '米饭');

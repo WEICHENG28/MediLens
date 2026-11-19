@@ -29,7 +29,7 @@ class SettingsPage extends ConsumerWidget {
         Builder(builder: (_) {
           final auth = ref.watch(authProvider);
           return ListTile(key: const Key('account_tile'), leading: Icon(auth.loggedIn ? Icons.account_circle : Icons.person_outline),
-              title: Text(auth.loggedIn ? '已登入：${auth.username}' : '当前：游客（记录不会保留）'),
+              title: Text(auth.loggedIn ? '已登入：${auth.username}' : '当前：游客（本机加密保存）'),
               subtitle: Text(auth.loggedIn ? '记录保存在你的账户；点这里修改密码、登出或删除账户' : '注册或登入后，记录会保存在你的账户'),
               onTap: () => context.push('/auth'));
         }),
@@ -81,12 +81,18 @@ class SettingsPage extends ConsumerWidget {
         ),
         const ListTile(leading: Icon(Icons.backup_outlined), title: Text('云端备份（待实现）'), subtitle: Text('注册后可按类别选择：报告、结构化指标、对话记录；未选中的不会上传')),
         ListTile(
+          key: const Key('delete_all_tile'),
           leading: const Icon(Icons.delete_forever_outlined, color: Colors.red),
-          title: const Text('删除本机全部记录'),
+          title: Text(ref.watch(authProvider).loggedIn ? '删除账户里的全部记录' : '删除本机全部记录'),
+          subtitle: ref.watch(authProvider).loggedIn ? const Text('删除服务器上这个账户的报告与生活记录；账户本身保留') : null,
           onTap: () async {
+            final loggedIn = ref.read(authProvider).loggedIn;
             final ok = await showDialog<bool>(
               context: context,
-              builder: (c) => AlertDialog(content: const Text('删除本机全部报告、药名记录、生活打卡、任务完成记录和用药时间？本机提醒也会关闭。此操作不可恢复。'), actions: [
+              builder: (c) => AlertDialog(content: Text(loggedIn
+                  ? '会删除你账户在服务器上的全部报告、生活打卡、任务完成记录和用药时间（所有登入这个账户的设备都会看不到）；'
+                    '这台手机的药名记录也会清除，本机提醒会关闭。账户本身保留，要删除账户请到「账户」页。此操作不可恢复。'
+                  : '删除本机全部报告、药名记录、生活打卡、任务完成记录和用药时间？本机提醒也会关闭。此操作不可恢复。'), actions: [
                 TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
                 FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('删除')),
               ]),

@@ -3,6 +3,7 @@
 
 /// 送往后端的字段（其余字段如 id、after、日记文字都不发送）。
 const careEventKeys = [
+  'id', 'is_simulated', 'unit', 'original_glucose', 'original_unit', 'source',
   'type', 'time', 'taken', 'insulin_kind', 'med_name', 'meal_size', 'minutes', 'glucose', 'task', 'slot',
   'meal_slot', 'food', 'carbs_g', 'sugars_g', 'grams', 'sweet_drink', 'estimate', 'original_grams',
   'original_carbs_g', 'corrected_by', 'corrected_at', 'glucose_source', 'confirmatory', 'symptoms',
@@ -26,6 +27,13 @@ Map<String, dynamic>? careEventJson(Map<String, dynamic> e) {
 
 List<Map<String, dynamic>> careEventsJson(Iterable<Map<String, dynamic>> events) =>
     [for (final e in events) ?careEventJson(e)];
+
+/// 血糖值一律换成 mmol/L 显示（导入或账户里可能有 mg/dL 的记录；原值保留在记录里）。
+double? glucoseMmol(Map<String, dynamic> e) {
+  final g = e['glucose'];
+  if (g is! num) return null;
+  return e['unit'] == 'mg/dL' ? g / 18 : g.toDouble();
+}
 
 /// 按时间推断餐次（与后端一致）：10 点前早餐、15 点前午餐、之后晚餐。
 String mealSlotFor(DateTime t) => t.hour < 10 ? 'breakfast' : t.hour < 15 ? 'lunch' : 'dinner';

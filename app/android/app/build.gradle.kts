@@ -14,9 +14,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    val recordFixPreview = providers.gradleProperty("recordFixPreview").orNull == "true"
     val nutritionPreview = providers.gradleProperty("nutritionPreview").orNull == "true"
     defaultConfig {
-        manifestPlaceholders["medilensAppLabel"] = if (nutritionPreview) "MediLens 餐饮体验版" else "MediLens"
+        manifestPlaceholders["medilensAppLabel"] = if (recordFixPreview) "MediLens 记录修复版" else if (nutritionPreview) "MediLens 餐饮体验版" else "MediLens"
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "cn.medilens.medilens"
         // You can update the following values to match your application needs.
@@ -33,7 +34,8 @@ android {
 
     buildTypes {
         release {
-            if (nutritionPreview) applicationIdSuffix = ".nutritionpreview"
+            if (recordFixPreview) applicationIdSuffix = ".recordfix"
+            else if (nutritionPreview) applicationIdSuffix = ".nutritionpreview"
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.

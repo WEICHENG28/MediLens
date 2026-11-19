@@ -82,7 +82,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         FilledButton(key: const Key('auth_submit'), onPressed: busy ? null : _submit,
             child: Text(busy ? '请稍候…' : (registering ? '注册并登入' : '登入'))),
         const SizedBox(height: 16),
-        Text('不登入也可以用（游客模式）：记录只在这次使用期间保留，关闭 APP 后就不见了。', style: Theme.of(context).textTheme.bodySmall),
+        Text('游客记录加密保存在这台手机，关闭和重启后仍会保留。可在设置中删除本机记录。', style: Theme.of(context).textTheme.bodySmall),
         Text('忘记密码请联系负责同学重置。', style: Theme.of(context).textTheme.bodySmall),
       ]);
 }

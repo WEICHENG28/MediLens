@@ -5,6 +5,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../core/care_events.dart';
+
 /// 某一天（00:00–24:00）的血糖与生活记录。
 class DayTimeline extends StatelessWidget {
   final List<Map<String, dynamic>> events;
@@ -44,7 +46,7 @@ class _TimelinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     const lo = 2.0;
-    final pts = [for (final (t, e) in items) if (e['type'] == 'glucose' && e['glucose'] is num) (t, (e['glucose'] as num).toDouble(), e)];
+    final pts = [for (final (t, e) in items) if (e['type'] == 'glucose' && glucoseMmol(e) != null) (t, glucoseMmol(e)!, e)];
     final hi = math.max(16.0, pts.isEmpty ? 0.0 : pts.map((p) => p.$2).reduce(math.max) + 1);
     final plot = Rect.fromLTRB(26, 8, size.width - 6, size.height - 46);
     double x(DateTime t) => plot.left + t.difference(start).inMinutes / 1440 * plot.width;

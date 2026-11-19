@@ -10,7 +10,8 @@ import 'http_client.dart';
 class AccountException implements Exception {
   final String message;
   final int? status;
-  AccountException(this.message, [this.status]);
+  final Object? data; // 409 冲突时：服务器目前的内容与版本
+  AccountException(this.message, [this.status, this.data]);
   @override
   String toString() => message;
 }
@@ -46,6 +47,9 @@ class AccountApi {
     }
     if (r.statusCode == 200) return data;
     final detail = data is Map ? (data['detail'] ?? data['message']) : null;
+    if (r.statusCode == 409 && detail is Map) {
+      throw AccountException('${detail['message'] ?? '记录已被另一台设备更新'}', 409, detail);
+    }
     final msg = detail is String ? detail : switch (r.statusCode) {
       401 => '请重新登入',
       429 => '尝试次数太多，请稍后再试',
@@ -72,8 +76,22 @@ class AccountApi {
 
   Future<Map<String, String>> settings() async =>
       Map<String, String>.from(await _send('GET', '/api/v1/store/settings') as Map);
-  Future<void> putSetting(String key, String value) =>
-      _send('PUT', '/api/v1/store/settings/${Uri.encodeComponent(key)}', {'value': value});
+  /// 各设置的版本（updated_at）。旧版服务器没有这个接口时返回空表。
+  Future<Map<String, double>> settingsVersions() async {
+    try {
+      final d = await _send('GET', '/api/v1/store/settings-versions');
+      return {for (final e in (d as Map).entries) '${e.key}': (e.value as num).toDouble()};
+    } on AccountException catch (e) {
+      if (e.status == 404) return {};
+      rethrow;
+    }
+  }
+
+  /// 写入设置；带 base（上次读到的版本）时，服务器已有更新版本会回 409。返回新的版本（旧版服务器为 null）。
+  Future<double?> putSetting(String key, String value, {double? base}) async {
+    final d = await _send('PUT', '/api/v1/store/settings/${Uri.encodeComponent(key)}', {'value': value, 'base': ?base});
+    return d is Map && d['updated_at'] is num ? (d['updated_at'] as num).toDouble() : null;
+  }
   Future<List<Map<String, dynamic>>> reports() async =>
       (await _send('GET', '/api/v1/store/reports') as List).cast<Map<String, dynamic>>();
   Future<void> putReport(Map<String, Object?> row) =>

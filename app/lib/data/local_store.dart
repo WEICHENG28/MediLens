@@ -1,10 +1,11 @@
-// 个人资料存储接口。登入后存服务器（RemoteStore）；游客模式只在内存（MemoryStore）。
+// 个人资料存储接口。登入后存服务器（RemoteStore）；游客模式使用独立的本机加密数据库。
 // SqlCipherStore 是旧版的本机加密数据库：只用来把登入前留下的记录搬到账户，搬完即删除。
 // 原始报告图片从不保存、不上传。
 
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -81,20 +82,34 @@ abstract class LocalStore {
 
 class SqlCipherStore implements LocalStore {
   Database? _db;
+  Future<Database>? _opening;
   final String _fileName, _keyName;
   SqlCipherStore() : _fileName = 'medilens.db', _keyName = 'medilens_db_key';
+
+  SqlCipherStore.guest()
+    : _fileName = 'medilens_guest.db',
+      _keyName = 'medilens_guest_db_key';
 
   /// Dedicated device-test database and keystore entry; never touches the user's store.
   SqlCipherStore.forTesting()
     : _fileName = 'medilens_device_test.db',
       _keyName = 'medilens_device_test_key';
   Future<void> close() async {
-    await _db?.close();
+    final database = _db ?? await _opening;
+    await database?.close();
     _db = null;
+    _opening = null;
   }
 
   Future<Database> get _database async {
     if (_db != null) return _db!;
+    return _opening ??= _open().catchError((Object error, StackTrace stack) {
+      _opening = null;
+      Error.throwWithStackTrace(error, stack);
+    });
+  }
+
+  Future<Database> _open() async {
     const secure = FlutterSecureStorage();
     var key = await secure.read(key: _keyName);
     if (key == null) {
@@ -201,10 +216,10 @@ class MemoryStore implements LocalStore {
       settings[key] = value;
 }
 
-/// 游客模式：资料只在内存，关闭 APP 即消失。
-final guestStoreProvider = Provider<LocalStore>((ref) => MemoryStore());
+/// 游客记录保存在本机独立加密数据库，重启后继续使用。
+final guestStoreProvider = Provider<LocalStore>((ref) => kIsWeb ? MemoryStore() : SqlCipherStore.guest());
 
-/// 个人资料存储：登入后存服务器（按账户分开），未登入为游客模式（不在本机留下任何资料）。
+/// 个人资料存储：登入后存服务器（按账户分开），未登入时使用本机游客加密记录。
 final localStoreProvider = Provider<LocalStore>((ref) {
   final token = ref.watch(authProvider.select((a) => a.token));
   return token == null

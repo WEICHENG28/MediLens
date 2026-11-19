@@ -44,10 +44,12 @@ backend/tests/test_care_sim.py
 backend/tests/test_chat.py
 backend/tests/test_knowledge.py
 backend/tests/test_lifestyle.py
+backend/tests/test_lifestyle_record_validation.py
 backend/tests/test_llm_errors.py
 backend/tests/test_normalize.py
 backend/tests/test_ocr_review.py
 backend/tests/test_planner.py
+backend/tests/test_record_integrity.py
 backend/tests/test_rules_and_followup.py
 backend/tests/test_server_manifest.py
 backend/tests/test_token.py

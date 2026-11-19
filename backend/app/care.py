@@ -17,7 +17,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from .lifestyle import (HIGH, LOW, VERY_HIGH, Event, ScheduleItem, _by_type, _fasting, _perm_p, analyze_patterns,
-                        scheduled_doses)
+                        dedupe_events, scheduled_doses)
 
 SLOTS = ("breakfast", "lunch", "dinner")
 SLOT_ZH = {"breakfast": "早餐", "lunch": "午餐", "dinner": "晚餐", "snack": "加餐"}
@@ -246,6 +246,7 @@ def low_episodes(gl: list[Event], symptoms: list[Event]) -> list[LowEpisode]:
 # ---------- 照护档案 ----------
 
 def build_profile(req: CareRequest) -> CareResponse:
+    req = req.model_copy(update={"events": dedupe_events(req.events)})
     rng = random.Random(req.seed)
     ev = _by_type(req.events)
     home = [e for e in req.events if e.type != "lab"]

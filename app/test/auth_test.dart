@@ -49,11 +49,12 @@ class FakeServer {
 
 ProviderContainer containerFor(FakeServer s, MemoryDeviceStore device) => ProviderContainer(overrides: [
       deviceStoreProvider.overrideWithValue(device),
+      guestStoreProvider.overrideWithValue(MemoryStore()),
       accountApiBaseProvider.overrideWithValue(AccountApi('https://server.test', accessCode: 'code', client: s.client)),
     ]);
 
 void main() {
-  test('游客模式不写入设备；登入后资料走服务器，登出回到游客', () async {
+  test('游客与账户资料隔离；登入后资料走服务器，登出回到游客', () async {
     final s = FakeServer(), device = MemoryDeviceStore();
     final c = containerFor(s, device);
     addTearDown(c.dispose);

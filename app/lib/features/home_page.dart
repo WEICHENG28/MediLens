@@ -120,7 +120,7 @@ class HomePage extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.person_outline),
               title: const Text('现在是游客模式'),
-              subtitle: const Text('记录只在这次使用期间保留。注册或登入后，记录会保存在你的账户。'),
+              subtitle: const Text('游客记录加密保存在这台手机，重启后继续保留。登入后使用独立的账户记录。'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push('/auth'),
             ),

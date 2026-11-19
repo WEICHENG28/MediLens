@@ -55,10 +55,10 @@ def test_login_lockout_after_repeated_failures(client):
 def test_store_is_per_user_and_requires_login(client):
     a, b = signup(client, "user_a"), signup(client, "user_b")
     assert client.get("/api/v1/store/settings").status_code == 401
-    client.put("/api/v1/store/settings/life_events", json={"value": "[1]"}, headers=a)
+    client.put("/api/v1/store/settings/life_events", json={"value": '[{"type":"meal","time":"2026-11-01T12:00:00"}]'}, headers=a)
     report = {"id": "r1", "test_date": "2026-11-01", "saved_at": "2026-11-01T08:00:00", "report_type": "urinalysis", "payload": "{}"}
     client.put("/api/v1/store/reports/r1", json=report, headers=a)
-    assert client.get("/api/v1/store/settings", headers=a).json() == {"life_events": "[1]"}
+    assert client.get("/api/v1/store/settings", headers=a).json() == {"life_events": '[{"type":"meal","time":"2026-11-01T12:00:00"}]'}
     assert client.get("/api/v1/store/settings", headers=b).json() == {}
     assert client.get("/api/v1/store/reports", headers=b).json() == []
     assert client.get("/api/v1/store/reports", headers=a).json() == [report]

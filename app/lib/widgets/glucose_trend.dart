@@ -4,6 +4,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../core/care_events.dart';
 import 'glucose_context_card.dart';
 
 (double, double) parseTarget(String? raw) {
@@ -30,10 +31,11 @@ class GlucoseRecord {
 List<GlucoseRecord> glucoseRecords(List<Map<String, dynamic>> events, DateTime from, DateTime to) {
   final out = <GlucoseRecord>[];
   for (final e in events) {
-    if (e['type'] != 'glucose' || e['glucose'] is! num) continue;
+    final v = e['type'] == 'glucose' ? glucoseMmol(e) : null;
+    if (v == null) continue;
     final t = DateTime.tryParse(e['time'] as String? ?? '');
     if (t == null || t.isBefore(from) || t.isAfter(to)) continue;
-    out.add(GlucoseRecord(t, (e['glucose'] as num).toDouble(), _afterName[e['after']] ?? '血糖'));
+    out.add(GlucoseRecord(t, v, _afterName[e['after']] ?? '血糖'));
   }
   out.sort((a, b) => a.time.compareTo(b.time));
   return out;

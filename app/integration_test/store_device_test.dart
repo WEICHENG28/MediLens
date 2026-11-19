@@ -24,6 +24,7 @@ void main() {
         key: 'medilens_device_test_key',
       );
     });
+    await Future.wait([store.listReports(), store.getSetting("life_events")]);
     await store.deleteAll();
     SavedReport r(String id, String date) => SavedReport(
       id: id,
@@ -52,6 +53,22 @@ void main() {
 
     await store.putSetting('k', 'v');
     expect(await store.getSetting('k'), 'v');
+
+    await Future.wait([
+      store.putSetting('life_events', '[{"id":"audit-one","type":"glucose","time":"2026-11-19T08:00:00","glucose":6.2}]'),
+      store.putSetting('life_tasks', '[]'),
+    ]);
+    await store.close();
+    final reopened = SqlCipherStore.forTesting();
+    expect(await reopened.getSetting('life_events'), contains('audit-one'));
+    await reopened.close();
+
+    // 单笔写入后关闭再开，同样要读得到
+    await store.putSetting('life_events', '[{"id":"audit-one","type":"glucose","time":"2026-11-19T08:00:00","glucose":6.2}]');
+    await store.close();
+    final reopenedAgain = SqlCipherStore.forTesting();
+    expect(await reopenedAgain.getSetting('life_events'), contains('audit-one'));
+    await reopenedAgain.close();
 
     // 数据库文件确实被加密：文件头不是明文 SQLite 标识
     final path = testPath;

@@ -71,7 +71,9 @@ void main() {
     expect(sent['glucose'], 3.6);
     expect(sent['glucose_source'], 'finger');
     expect(sent['confirmatory'], isTrue);
-    expect(sent.containsKey('id'), isFalse); // 只送时间、类型与数值
+    expect(sent['id'], isA<String>()); // 编号让后端去除重复；其余只送时间、类型与数值
+    expect(sent['is_simulated'], isFalse);
+    expect(sent.containsKey('recorded_at'), isFalse);
     expect(api.careBodies.single['target_low'], 3.9);
 
     await t.drag(find.byType(ListView).first, const Offset(0, 3000));
